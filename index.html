@@ -302,6 +302,208 @@
   .access-note { display: inline-block; float: right; background: var(--edge); border: 2px solid var(--line); border-radius: 12px; padding: 4px 12px; color: #fff; font-family: var(--display); }
   .access-note.soon { border-color: var(--yellow); color: var(--yellow); }
 
+  /* ═════════ Brand colors over the game layout: black ground, signal yellow, racing red ═════════ */
+  :root {
+    --bg: #0a0a0a; --card: #141414; --card-hi: #1e1e1e; --muted: #cfc8b4; --line: #34312a; --edge: #000;
+    --accent: #ffd400; --accent-ink: #141000; --accent-edge: #a88a00;
+    --yellow: #ffd400; --yellow-ink: #141000; --soft: #1c1a12; --field: #0c0c0c; --err: #ff5a6e;
+    --red: #e3182d; --red-hi: #ff3b4e; --red-edge: #7d0a16;
+  }
+  body {
+    background:
+      radial-gradient(ellipse 70% 55% at 50% 110%, rgba(227, 24, 45, .45), transparent 70%),
+      radial-gradient(ellipse 50% 40% at 0% 0%, rgba(255, 212, 0, .10), transparent 70%),
+      repeating-linear-gradient(135deg, rgba(255,255,255,.02) 0 2px, transparent 2px 14px),
+      #0a0a0a;
+    background-attachment: fixed;
+  }
+  body::before {  /* three flat lines along the top: yellow, black, red */
+    content: ""; position: fixed; inset: 0 0 auto 0; height: 12px; z-index: 5;
+    background: linear-gradient(180deg, var(--yellow) 0 4px, #000 4px 8px, var(--red) 8px 12px);
+  }
+  h1 { text-shadow: 0 3px 0 var(--red-edge), 0 0 18px rgba(227,24,45,.35); }
+  h1 .by { background: var(--red); border-color: var(--red-hi); }
+  h2 { text-shadow: 0 2px 0 #000; }
+  h2::after { content: ""; display: block; width: 56px; height: 4px; margin-top: 6px; border-radius: 4px;
+              background: linear-gradient(90deg, var(--yellow) 0 60%, var(--red) 60%); }
+  .gate h2::after { margin-inline: 0; }
+  .sub { color: var(--yellow); font-family: var(--display); font-weight: 600; font-size: 17px; }
+
+  .card, .tabs {
+    background: linear-gradient(180deg, var(--card-hi), var(--card)); border-color: #2c2a24;
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.06), 0 8px 0 #000, 0 18px 40px rgba(0,0,0,.6);
+  }
+  .tab { color: var(--muted); }
+  .tab::before { background: #000; box-shadow: inset 0 -3px 0 rgba(255,212,0,.15); }
+  .tab:hover { background: rgba(255,212,0,.07); color: #fff; }
+  .tab[aria-selected="true"] {
+    background: linear-gradient(180deg, var(--red-hi), var(--red)); border-color: #ff7a87; color: #fff;
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.25), 0 4px 0 var(--red-edge);
+  }
+  .tab[aria-selected="true"]::before { background: rgba(0,0,0,.25); }
+
+  .primary {
+    background: linear-gradient(180deg, #ffe55c, var(--yellow)); color: var(--yellow-ink); border-color: #fff09a;
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.55), 0 6px 0 var(--accent-edge), 0 10px 18px rgba(0,0,0,.5);
+  }
+  a.dl, button.dl {
+    background: linear-gradient(180deg, var(--red-hi), var(--red)); border-color: #ff7a87; color: #fff;
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.25), 0 4px 0 var(--red-edge);
+  }
+  a.ghost, button.ghost { background: #0c0c0c; border-color: #3a372e; box-shadow: 0 4px 0 #000; }
+  a.ghost:hover, button.ghost:hover { border-color: var(--yellow); }
+  .quick button { background: linear-gradient(180deg, #262626, #1a1a1a); border-color: #3a372e; box-shadow: 0 3px 0 #000; }
+  .quick button:hover { border-color: var(--yellow); }
+  .quick button.picked {
+    background: linear-gradient(180deg, #ffe55c, var(--yellow)); color: var(--yellow-ink); border-color: #fff09a;
+    box-shadow: 0 3px 0 var(--accent-edge), 0 0 0 3px rgba(255,212,0,.25);
+  }
+
+  input[type=text], input[type=password], input[type=number], textarea, select { background: var(--field); border-color: #34312a; }
+  input::placeholder, textarea::placeholder { color: #7d776a; }
+  .drop { border-color: #4a463b; background: rgba(0,0,0,.35); }
+  .drop.over, .drop:hover { border-color: var(--yellow); background: rgba(255,212,0,.06); }
+
+  .panel { background: linear-gradient(180deg, #1c1c1c, #121212); border-color: var(--yellow); box-shadow: 0 6px 0 #000; }
+  pre.prompt { background: #0a0a0a; border-color: #2c2a24; }
+  .stat { background: #0c0c0c; border-color: #2c2a24; box-shadow: 0 4px 0 #000; }
+  .md th { background: #000; }
+  .md th, .md td { border-color: #2c2a24; }
+
+  /* Niche cards cycle red / yellow / black */
+  .niche:nth-child(3n+1) { --edge-c: var(--red-edge); background: linear-gradient(180deg, var(--red-hi), #c4111f); }
+  .niche:nth-child(3n+2) { --edge-c: var(--accent-edge); background: linear-gradient(180deg, #ffe14d, #f2bd00); color: #141000; }
+  .niche:nth-child(3n) { --edge-c: #000; background: linear-gradient(180deg, #262626, #121212); border-color: #3a372e; }
+  .niche:nth-child(3n+2) .en, .niche:nth-child(3n+2) p, .niche:nth-child(3n+2) .sub { color: rgba(20,16,0,.78); }
+  .niche:nth-child(3n+2) .chans a { background: rgba(0,0,0,.14); color: #141000; }
+  .niche:nth-child(3n+2) .use { background: #141000; color: var(--yellow); border-color: #000; box-shadow: 0 3px 0 #000; }
+  .niche.picked { border-color: var(--yellow); }
+  .niche:nth-child(3n+2).picked { border-color: #000; }
+
+  .access-note { background: #000; border-color: var(--yellow); color: var(--yellow); margin-top: 4px; }
+  .gate { border-color: var(--yellow); }
+
+  /* Circuit background outside, solid black panels inside */
+  /* BG_START */
+  body {
+    background:
+      radial-gradient(ellipse 60% 55% at 50% 45%, rgba(255,20,20,.28), transparent 70%),
+      linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,.35)),
+      url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAwIDEwMDAiIHByZXNlcnZlQXNwZWN0UmF0aW89InhNaWRZTWlkIHNsaWNlIj4NCjxkZWZzPg0KPGZpbHRlciBpZD0iZyIgeD0iLTIwJSIgeT0iLTIwJSIgd2lkdGg9IjE0MCUiIGhlaWdodD0iMTQwJSI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMiIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPg0KPHJhZGlhbEdyYWRpZW50IGlkPSJjb3JlIiBjeD0iMC41IiBjeT0iMC41IiByPSIwLjUiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmMmEyYSIgc3RvcC1vcGFjaXR5PSIuNDUiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNjMDAwMDAiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+DQo8L2RlZnM+DQo8cmVjdCB3aWR0aD0iMTYwMCIgaGVpZ2h0PSIxMDAwIiBmaWxsPSIjMDUwNTA1Ii8+DQo8cmVjdCB4PSI2MzAuMCIgeT0iLTEwLjAiIHdpZHRoPSIyNjAiIGhlaWdodD0iMjYwIiBmaWxsPSIjMmEyYTJmIiBzdHJva2U9IiMzYTNhNDIiIHN0cm9rZS13aWR0aD0iMiIgdHJhbnNmb3JtPSJyb3RhdGUoNDUgNzYwIDEyMCkiIG9wYWNpdHk9Ii44NSIvPjxyZWN0IHg9Ijg5NS4wIiB5PSItNDUuMCIgd2lkdGg9IjE3MCIgaGVpZ2h0PSIxNzAiIGZpbGw9IiMxZjFmMjQiIHN0cm9rZT0iIzNhM2E0MiIgc3Ryb2tlLXdpZHRoPSIyIiB0cmFuc2Zvcm09InJvdGF0ZSg0NSA5ODAgNDApIiBvcGFjaXR5PSIuODUiLz48cmVjdCB4PSI0OTAuMCIgeT0iMTkwLjAiIHdpZHRoPSIxNDAiIGhlaWdodD0iMTQwIiBmaWxsPSIjMjMyMzI4IiBzdHJva2U9IiMzYTNhNDIiIHN0cm9rZS13aWR0aD0iMiIgdHJhbnNmb3JtPSJyb3RhdGUoNDUgNTYwIDI2MCkiIG9wYWNpdHk9Ii44NSIvPjxyZWN0IHg9IjExOTAuMCIgeT0iMjQwLjAiIHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiBmaWxsPSIjMWIxYjIwIiBzdHJva2U9IiMzYTNhNDIiIHN0cm9rZS13aWR0aD0iMiIgdHJhbnNmb3JtPSJyb3RhdGUoNDUgMTI1MCAzMDApIiBvcGFjaXR5PSIuODUiLz48cmVjdCB4PSIyNzUuMCIgeT0iMjUuMCIgd2lkdGg9IjExMCIgaGVpZ2h0PSIxMTAiIGZpbGw9IiMxZDFkMjIiIHN0cm9rZT0iIzNhM2E0MiIgc3Ryb2tlLXdpZHRoPSIyIiB0cmFuc2Zvcm09InJvdGF0ZSg0NSAzMzAgODApIiBvcGFjaXR5PSIuODUiLz48cmVjdCB4PSIxMzQwLjAiIHk9IjY4MC4wIiB3aWR0aD0iMTYwIiBoZWlnaHQ9IjE2MCIgZmlsbD0iIzE4MTgxYyIgc3Ryb2tlPSIjM2EzYTQyIiBzdHJva2Utd2lkdGg9IjIiIHRyYW5zZm9ybT0icm90YXRlKDQ1IDE0MjAgNzYwKSIgb3BhY2l0eT0iLjg1Ii8+DQo8ZyBmaWxsPSJub25lIiBzdHJva2U9IiNmZjIyMjIiIHN0cm9rZS1saW5lY2FwPSJzcXVhcmUiIHN0cm9rZS1saW5lam9pbj0ibWl0ZXIiIGZpbHRlcj0idXJsKCNnKSIgb3BhY2l0eT0iLjgiPjxwb2x5bGluZSBwb2ludHM9IjY2Myw5NzAgNjYzLDkxMiA2NjMsNzc5IDY2Myw2MTAgNjYzLDU2MSIgc3Ryb2tlLXdpZHRoPSIyLjYiIG9wYWNpdHk9IjAuNjUiLz48cG9seWxpbmUgcG9pbnRzPSIxNzYsNDQ0IDIyMSw0ODkgMjc2LDQ4OSAzNzMsNDg5IDUxNCw0ODkgNjEwLDQ4OSA2ODQsNDg5IiBzdHJva2Utd2lkdGg9IjEuMiIgb3BhY2l0eT0iMC42NSIvPjxwb2x5bGluZSBwb2ludHM9IjU5Myw0MjkgNTkzLDUxNSA1OTMsNjAzIDU0OCw2NDggNTA5LDY4NyIgc3Ryb2tlLXdpZHRoPSIxLjIiIG9wYWNpdHk9IjAuMzUiLz48cG9seWxpbmUgcG9pbnRzPSIxMjY3LDIxMCAxMzc5LDk4IDEzNzksMTAgMTQ1MiwxMCAxNTI0LDEwIDE1OTAsMTAgMTU5MCwxMCIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjUiLz48cG9seWxpbmUgcG9pbnRzPSIxNDkzLDQ1OSAxNTkwLDU2MyAxNTkwLDY1MyAxNTkwLDc2OSAxNTkwLDc2OSAxNTkwLDc2OSIgc3Ryb2tlLXdpZHRoPSIxLjYiIG9wYWNpdHk9IjAuNjUiLz48cG9seWxpbmUgcG9pbnRzPSI2OTYsNzExIDY5Niw2NTQgNjk2LDU0NSA2NTYsNTA1IDU3Miw0MjEgNDYwLDQyMSIgc3Ryb2tlLXdpZHRoPSIyLjYiIG9wYWNpdHk9IjAuOTUiLz48cG9seWxpbmUgcG9pbnRzPSIxNDY3LDM5NSAxNTU5LDMwMyAxNTkwLDI1NCAxNTkwLDE5OSAxNTkwLDg2IDE1OTAsMTAiIHN0cm9rZS13aWR0aD0iMiIgb3BhY2l0eT0iMC41Ii8+PHBvbHlsaW5lIHBvaW50cz0iODE0LDQwMCA5MjMsNTA5IDEwMzQsNTA5IDExODQsNTA5IDEyODcsNjEyIDEyODcsNzQ5IDEyODcsODI3IiBzdHJva2Utd2lkdGg9IjIiIG9wYWNpdHk9IjAuOCIvPjxwb2x5bGluZSBwb2ludHM9IjE2OSwxODAgMTM5LDIxMCAxMzksMjk2IDU5LDM3NiAxMCw0MzAiIHN0cm9rZS13aWR0aD0iMS4yIiBvcGFjaXR5PSIwLjgiLz48cG9seWxpbmUgcG9pbnRzPSI4NTgsNTQ3IDgyMSw1MTAgNjgxLDUxMCA1ODAsNjEwIDU4MCw2NzYgNjgxLDc3NiIgc3Ryb2tlLXdpZHRoPSIzLjIiIG9wYWNpdHk9IjAuOTUiLz48cG9seWxpbmUgcG9pbnRzPSIxMjcsMTk1IDEyNywyNzYgMTI3LDQwMyAxMjcsNDY5IiBzdHJva2Utd2lkdGg9IjEuNiIgb3BhY2l0eT0iMC4zNSIvPjxwb2x5bGluZSBwb2ludHM9IjAsNTgwIDEwLDYyNiAxMCw3MTkgNjUsNzc0IDY1LDkwMiIgc3Ryb2tlLXdpZHRoPSIxLjIiIG9wYWNpdHk9IjAuOCIvPjxwb2x5bGluZSBwb2ludHM9IjEyMzMsMzcyIDEzNDksNDg4IDE1MTEsNDg4IDE1OTAsNDA0IDE1OTAsMzUwIDE1OTAsMjYwIDE1OTAsMjYwIiBzdHJva2Utd2lkdGg9IjIuNiIgb3BhY2l0eT0iMC45NSIvPjxwb2x5bGluZSBwb2ludHM9IjE0MTcsMTY1IDE1NDksMTY1IDE1OTAsMTY1IDE1OTAsMjEwIDE1OTAsMzQzIDE1OTAsNDc0IDE1OTAsNjQyIDE1MjEsNzEwIiBzdHJva2Utd2lkdGg9IjEuNiIgb3BhY2l0eT0iMC42NSIvPjxwb2x5bGluZSBwb2ludHM9IjEyNTUsODMwIDEyNTUsOTI4IDEyNTUsOTkwIDEyMjIsOTkwIDExNDMsOTkwIiBzdHJva2Utd2lkdGg9IjIuNiIgb3BhY2l0eT0iMC4zNSIvPjxwb2x5bGluZSBwb2ludHM9Ijk2NywyNjUgODM4LDI2NSA3OTYsMjIzIDc0OSwxNzYgNjM2LDYzIiBzdHJva2Utd2lkdGg9IjMuMiIgb3BhY2l0eT0iMC41Ii8+PHBvbHlsaW5lIHBvaW50cz0iNDAyLDM0NSA1MTcsMjMwIDU3OCwyMzAgNzE3LDIzMCA4NzksMjMwIiBzdHJva2Utd2lkdGg9IjEuNiIgb3BhY2l0eT0iMC44Ii8+PHBvbHlsaW5lIHBvaW50cz0iMzY1LDQ0NCA1MjMsNDQ0IDU2Niw0MDEgNjI1LDM0MiA2NTgsMzA5IDc3MCwxOTciIHN0cm9rZS13aWR0aD0iMi42IiBvcGFjaXR5PSIwLjY1Ii8+PHBvbHlsaW5lIHBvaW50cz0iMTM0MywxNDkgMTQyMiwxNDkgMTQ2NywxNDkgMTUzMywxNDkgMTU5MCwxNDkgMTU5MCwxNDkgMTU5MCwxNDkgMTU5MCwxNDkiIHN0cm9rZS13aWR0aD0iMiIgb3BhY2l0eT0iMC42NSIvPjxwb2x5bGluZSBwb2ludHM9IjEwMjYsMjQ2IDEwMjYsOTkgMTAyNiw0NCAxMTM3LDEwIDExMzcsMTAgMTEzNywxMCAxMTM3LDEwIDExMzcsMTAiIHN0cm9rZS13aWR0aD0iMiIgb3BhY2l0eT0iMC42NSIvPjxwb2x5bGluZSBwb2ludHM9IjE1ODksODE4IDE1ODksOTc5IDE1ODksOTkwIDE0NzQsOTkwIDE0MzYsOTkwIiBzdHJva2Utd2lkdGg9IjIuNiIgb3BhY2l0eT0iMC41Ii8+PHBvbHlsaW5lIHBvaW50cz0iNTA4LDE5NSA2NzcsMTk1IDcxMCwxNjIgODE4LDU0IDk4Nyw1NCAxMDk3LDU0IiBzdHJva2Utd2lkdGg9IjIiIG9wYWNpdHk9IjAuOCIvPjxwb2x5bGluZSBwb2ludHM9IjkyNiw1MjAgMTAwMSw0NDUgMTExMCwzMzYgMTIxMywyMzMgMTMxMiwxMzQgMTMxMiwxNCAxMzEyLDEwIDEyNzEsMTAiIHN0cm9rZS13aWR0aD0iMy4yIiBvcGFjaXR5PSIwLjgiLz48cG9seWxpbmUgcG9pbnRzPSI0MzUsNjg1IDUyOSw3NzkgNjAzLDg1MyA3MTUsOTY1IDc2MCw5OTAgOTI0LDk5MCIgc3Ryb2tlLXdpZHRoPSIxLjIiIG9wYWNpdHk9IjAuNSIvPjxwb2x5bGluZSBwb2ludHM9IjMzMyw2ODMgNDM0LDc4NCA0MzQsOTMxIDQzNCw5OTAgMzkwLDk5MCIgc3Ryb2tlLXdpZHRoPSIxLjYiIG9wYWNpdHk9IjAuMzUiLz48cG9seWxpbmUgcG9pbnRzPSIxNDc4LDM3NCAxMzI2LDM3NCAxMTg4LDM3NCAxMTA3LDI5MyIgc3Ryb2tlLXdpZHRoPSIxLjYiIG9wYWNpdHk9IjAuOTUiLz48cG9seWxpbmUgcG9pbnRzPSIxMDQ5LDk4MyAxMDk2LDk5MCAxMTcxLDk5MCAxMTcxLDk5MCIgc3Ryb2tlLXdpZHRoPSIyLjYiIG9wYWNpdHk9IjAuOTUiLz48cG9seWxpbmUgcG9pbnRzPSIxNTk1LDE4NSAxNTkwLDI2MCAxNTkwLDI2MCAxNTkwLDE3MyAxNTkwLDk0IDE1OTAsMzQiIHN0cm9rZS13aWR0aD0iMS42IiBvcGFjaXR5PSIwLjgiLz48cG9seWxpbmUgcG9pbnRzPSI4NzEsOTE2IDgwOSw5MTYgNzY2LDg3MyA3MjYsODMzIiBzdHJva2Utd2lkdGg9IjIiIG9wYWNpdHk9IjAuOCIvPjxwb2x5bGluZSBwb2ludHM9IjU0MSw4ODMgNjMwLDc5NCA2MzAsNjg2IDYzMCw2MzUiIHN0cm9rZS13aWR0aD0iMi42IiBvcGFjaXR5PSIwLjUiLz48cG9seWxpbmUgcG9pbnRzPSIxMDc5LDcyNiAxMTU1LDgwMiAxMjE1LDg2MiAxMzAwLDk0NyAxMzAwLDk5MCIgc3Ryb2tlLXdpZHRoPSIzLjIiIG9wYWNpdHk9IjAuNSIvPjxwb2x5bGluZSBwb2ludHM9IjU5Myw0NTYgNTAyLDU0NyA0MjksNjIwIDM5OSw2NTAgMjc5LDc3MCAxNjUsODg0IDU2LDk5MCAxMCw5OTAiIHN0cm9rZS13aWR0aD0iMS42IiBvcGFjaXR5PSIwLjM1Ii8+PHBvbHlsaW5lIHBvaW50cz0iMTM0NCw1MDYgMTQxMSw0MzkgMTUwMSwzNDkgMTU1NCwyOTYgMTU1NCwxNjggMTU1NCw5NSAxNTU0LDM3IDE1OTAsMTAiIHN0cm9rZS13aWR0aD0iMS42IiBvcGFjaXR5PSIwLjY1Ii8+PHBvbHlsaW5lIHBvaW50cz0iMzM0LDU2IDQwNiwxMCA0NTcsMTAgNTE5LDEwIiBzdHJva2Utd2lkdGg9IjMuMiIgb3BhY2l0eT0iMC4zNSIvPjxwb2x5bGluZSBwb2ludHM9IjMyMiwyNzUgNDE2LDM2OSA0MTYsNDkxIDQxNiw1MzkgMzQ5LDYwNiAyNjMsNjA2IDEzOCw2MDYiIHN0cm9rZS13aWR0aD0iMiIgb3BhY2l0eT0iMC41Ii8+PHBvbHlsaW5lIHBvaW50cz0iNzgxLDg1IDY3OCw4NSA2MTUsODUgNTcxLDQxIDQ3MSwxMCAzNzIsMTAgMjkwLDEwIiBzdHJva2Utd2lkdGg9IjIiIG9wYWNpdHk9IjAuNjUiLz48cG9seWxpbmUgcG9pbnRzPSI2MjMsNjQ0IDcyMSw3NDIgNzIxLDkwOCA3MjEsOTkwIDcyMSw5OTAiIHN0cm9rZS13aWR0aD0iMy4yIiBvcGFjaXR5PSIwLjUiLz48cG9seWxpbmUgcG9pbnRzPSIxNDY0LDkxMyAxNDY0LDc0NCAxNDY0LDY0NiAxNDY0LDU5OSAxNDY0LDUyNSAxNTExLDQ3OCAxNTExLDMyMyAxNTExLDI3OSIgc3Ryb2tlLXdpZHRoPSIxLjIiIG9wYWNpdHk9IjAuOCIvPjxwb2x5bGluZSBwb2ludHM9IjEyODIsNTQ0IDEzMjIsNTQ0IDEzNjIsNTA0IDE0MDIsNDY0IDE0MDIsMzYwIiBzdHJva2Utd2lkdGg9IjIuNiIgb3BhY2l0eT0iMC44Ii8+PHBvbHlsaW5lIHBvaW50cz0iMTUyLDg2NiA4Miw5MzYgODIsOTkwIDEyNCw5OTAgMjM3LDk5MCAzMjcsOTkwIiBzdHJva2Utd2lkdGg9IjMuMiIgb3BhY2l0eT0iMC41Ii8+PHBvbHlsaW5lIHBvaW50cz0iMTU4LDYxNCAxNTgsNDk3IDE1OCw0NTQgMTE5LDQxNSAxMSw0MTUiIHN0cm9rZS13aWR0aD0iMi42IiBvcGFjaXR5PSIwLjY1Ii8+PHBvbHlsaW5lIHBvaW50cz0iMTM3NiwxMDEgMTQ4OSwxMDEgMTU5MCwxMCAxNTkwLDEwIDE1OTAsMTAiIHN0cm9rZS13aWR0aD0iMiIgb3BhY2l0eT0iMC4zNSIvPjxwb2x5bGluZSBwb2ludHM9IjE3NSw5NTggMjg2LDk5MCA0MDYsOTkwIDUxNCw5OTAgNTc5LDkyNCA2MjEsODgzIDY3NSw4MjkiIHN0cm9rZS13aWR0aD0iMi42IiBvcGFjaXR5PSIwLjY1Ii8+PHBvbHlsaW5lIHBvaW50cz0iMTUzMCw1MzYgMTQxMCw0MTYgMTQxMCwzNDggMTQ4MCwyNzggMTQ4MCwxMTQgMTQ0Nyw4MSIgc3Ryb2tlLXdpZHRoPSIzLjIiIG9wYWNpdHk9IjAuNjUiLz48cG9seWxpbmUgcG9pbnRzPSIzMjUsMyAzMjUsMTAgMzI1LDEwIDQyMSwxMCA0OTEsMTAgNTE5LDM4IDUxOSwxNjQiIHN0cm9rZS13aWR0aD0iMS42IiBvcGFjaXR5PSIwLjk1Ii8+PHBvbHlsaW5lIHBvaW50cz0iODE1LDEyMiA4ODksMTk2IDg4OSwyNTIgOTg3LDM1MCAxMDgwLDQ0MyIgc3Ryb2tlLXdpZHRoPSIzLjIiIG9wYWNpdHk9IjAuNSIvPjwvZz4NCjxnIGZpbGw9IiNmZjUwNTAiIGZpbHRlcj0idXJsKCNnKSIgb3BhY2l0eT0iLjkiPjxjaXJjbGUgY3g9IjY2MyIgY3k9IjU2MSIgcj0iMi41Ii8+PGNpcmNsZSBjeD0iNTA5IiBjeT0iNjg3IiByPSIzLjUiLz48Y2lyY2xlIGN4PSIxNTkwIiBjeT0iNzY5IiByPSIyLjUiLz48Y2lyY2xlIGN4PSIxNTkwIiBjeT0iMTAiIHI9IjMuNSIvPjxjaXJjbGUgY3g9IjEwIiBjeT0iNDMwIiByPSIzLjUiLz48Y2lyY2xlIGN4PSIxMjciIGN5PSI0NjkiIHI9IjQuNSIvPjxjaXJjbGUgY3g9IjE1OTAiIGN5PSIyNjAiIHI9IjMuNSIvPjxjaXJjbGUgY3g9IjExNDMiIGN5PSI5OTAiIHI9IjMuNSIvPjxjaXJjbGUgY3g9Ijg3OSIgY3k9IjIzMCIgcj0iMy41Ii8+PGNpcmNsZSBjeD0iMTU5MCIgY3k9IjE0OSIgcj0iMi41Ii8+PGNpcmNsZSBjeD0iMTQzNiIgY3k9Ijk5MCIgcj0iMi41Ii8+PGNpcmNsZSBjeD0iMTI3MSIgY3k9IjEwIiByPSIyLjUiLz48Y2lyY2xlIGN4PSIzOTAiIGN5PSI5OTAiIHI9IjMuNSIvPjxjaXJjbGUgY3g9IjExNzEiIGN5PSI5OTAiIHI9IjQuNSIvPjxjaXJjbGUgY3g9IjcyNiIgY3k9IjgzMyIgcj0iMy41Ii8+PGNpcmNsZSBjeD0iMTMwMCIgY3k9Ijk5MCIgcj0iNC41Ii8+PGNpcmNsZSBjeD0iMTU5MCIgY3k9IjEwIiByPSIzLjUiLz48Y2lyY2xlIGN4PSIxMzgiIGN5PSI2MDYiIHI9IjIuNSIvPjxjaXJjbGUgY3g9IjcyMSIgY3k9Ijk5MCIgcj0iMi41Ii8+PGNpcmNsZSBjeD0iMTQwMiIgY3k9IjM2MCIgcj0iMy41Ii8+PGNpcmNsZSBjeD0iMTEiIGN5PSI0MTUiIHI9IjQuNSIvPjxjaXJjbGUgY3g9IjY3NSIgY3k9IjgyOSIgcj0iMy41Ii8+PGNpcmNsZSBjeD0iNTE5IiBjeT0iMTY0IiByPSIzLjUiLz48L2c+DQo8Y2lyY2xlIGN4PSI2MjAiIGN5PSI0MzAiIHI9IjE2MCIgZmlsbD0idXJsKCNjb3JlKSIvPg0KPGNpcmNsZSBjeD0iNjIwIiBjeT0iNDMwIiByPSI0IiBmaWxsPSIjZDk4YThlIiBmaWx0ZXI9InVybCgjZykiIG9wYWNpdHk9Ii44Ii8+DQo8L3N2Zz4=") center / cover no-repeat,
+      #050505;
+    background-attachment: fixed;
+  }
+  /* BG_END */
+  .card, .tabs { background: #000; box-shadow: 0 8px 0 #000, 0 0 0 1px rgba(255,31,31,.15), 0 18px 50px rgba(0,0,0,.8); }
+  .panel { background: #050505; }
+  pre.prompt, input[type=text], input[type=password], input[type=number], textarea, select, .stat { background: #0b0b0b; }
+  .niche:nth-child(3n) { background: #0b0b0b; }
+
+  /* ═════════ Easy on the eyes: same black / yellow / red, lower glare ═════════
+     softer amber instead of signal yellow, deep red instead of neon, off-white text, charcoal panels */
+  :root {
+    --text: #e8e3d6; --muted: #a9a394; --yellow: #e9b949; --yellow-ink: #1f1806; --accent: #e9b949;
+    --accent-ink: #1f1806; --accent-edge: #8a6a1c; --red: #a8323a; --red-hi: #bf434b; --red-edge: #5c161b;
+  }
+  body { color: var(--text); }
+  body::before { opacity: .75; }
+  h1 { text-shadow: 0 2px 0 #000; }
+  h1 .brand, .sub, .stat b { color: var(--yellow); }
+  .card, .tabs { background: #141414; border-color: #2a2824; box-shadow: 0 6px 0 #000, 0 16px 40px rgba(0,0,0,.6); }
+  .panel { background: #111; border-color: rgba(233,185,73,.55); }
+  pre.prompt, input[type=text], input[type=password], input[type=number], textarea, select, .stat { background: #0e0e0e; color: var(--text); }
+  .tab { color: var(--muted); }
+  .tab[aria-selected="true"] { background: linear-gradient(180deg, var(--red-hi), var(--red)); border-color: #c9666c; color: #f4eee2; }
+  .primary { background: linear-gradient(180deg, #f0c968, var(--yellow)); border-color: #f5d991;
+             box-shadow: inset 0 2px 0 rgba(255,255,255,.35), 0 5px 0 var(--accent-edge), 0 8px 14px rgba(0,0,0,.45); }
+  a.dl, button.dl { background: linear-gradient(180deg, var(--red-hi), var(--red)); border-color: #c9666c; color: #f4eee2; }
+  .quick button.picked { background: linear-gradient(180deg, #f0c968, var(--yellow)); border-color: #f5d991; box-shadow: 0 3px 0 var(--accent-edge); }
+  .quick button { color: var(--text); }
+  .niche:nth-child(3n+1) { background: linear-gradient(180deg, #a8424a, #86272f); }
+  .niche:nth-child(3n+2) { background: linear-gradient(180deg, #e3bb5c, #c99a2e); }
+  .niche:nth-child(3n) { background: #161616; }
+  .niche { color: #f1ebdf; }
+  .niche:nth-child(3n+1) .en, .niche:nth-child(3n+1) p, .niche:nth-child(3n) .en, .niche:nth-child(3n) p { color: rgba(241,235,223,.78); }
+  .access-note { border-color: rgba(233,185,73,.6); }
+  h2::after { background: linear-gradient(90deg, var(--yellow) 0 60%, var(--red-hi) 60%); }
+
+  /* ═════════ Gamer red: black, vivid red glow, silver-white metal (as in the RDX BLOX art) ═════════
+     red = actions and the active item, silver = selection and highlights, everything sits on black */
+  :root {
+    --text: #f2f2f4; --muted: #b9b4b6; --red: #e0141e; --red-hi: #ff2a2a; --red-edge: #7a0008; --glow: rgba(255, 30, 30, .55);
+    --yellow: #e6e6ec; --yellow-ink: #121214; --accent: #ff2a2a; --accent-ink: #fff; --accent-edge: #7a0008;
+    --silver: linear-gradient(180deg, #ffffff 0%, #d9d9e0 45%, #9a9aa6 55%, #e9e9ef 100%);
+  }
+  body::before { opacity: 1; background: linear-gradient(180deg, var(--red-hi) 0 4px, #000 4px 8px, #e6e6ec 8px 12px); }
+  h1 { text-shadow: 0 0 18px var(--glow), 0 3px 0 #000; }
+  h1 .brand { color: #ff2a2a; text-shadow: 0 3px 0 #000, 0 0 14px rgba(255, 30, 30, .75); }
+  h1 .by { background: #000; border-color: var(--red-hi); box-shadow: 0 0 10px var(--glow); }
+  .sub { color: #fff; text-shadow: 0 0 12px var(--glow); }
+  h2::after { background: linear-gradient(90deg, var(--red-hi), #e6e6ec); box-shadow: 0 0 10px var(--glow); }
+
+  .card, .tabs {
+    background: #070707; border: 2px solid rgba(255, 42, 42, .75);
+    box-shadow: 0 0 0 1px #000, 0 0 22px rgba(255, 30, 30, .35), inset 0 0 30px rgba(255, 0, 0, .06);
+  }
+  .tab { color: #d6d0d2; }
+  .tab::before { background: #120203; box-shadow: inset 0 0 0 1px rgba(255,42,42,.6); }
+  .tab:hover { background: rgba(255, 42, 42, .1); }
+  .tab[aria-selected="true"] {
+    background: linear-gradient(180deg, #ff3d3d, #c80c16); border-color: #ff7070; color: #fff;
+    box-shadow: 0 0 16px var(--glow), inset 0 2px 0 rgba(255,255,255,.25), 0 4px 0 var(--red-edge);
+  }
+  .primary {
+    background: linear-gradient(180deg, #ff3d3d, #c80c16); color: #fff; border-color: #ff7a7a; text-shadow: 0 2px 0 rgba(0,0,0,.35);
+    box-shadow: 0 0 22px var(--glow), inset 0 2px 0 rgba(255,255,255,.3), 0 5px 0 var(--red-edge);
+  }
+  a.dl, button.dl {
+    background: var(--silver); color: #121214; border-color: #fff; text-shadow: none;
+    box-shadow: 0 0 12px rgba(255,255,255,.25), 0 4px 0 #55555f;
+  }
+  a.ghost, button.ghost { background: #0b0b0b; border-color: rgba(255,42,42,.55); }
+  a.ghost:hover, button.ghost:hover { border-color: #fff; }
+  .quick button { background: #0e0e0e; border-color: rgba(255,42,42,.45); color: #eee; box-shadow: 0 3px 0 #000; }
+  .quick button:hover { border-color: var(--red-hi); box-shadow: 0 0 10px var(--glow); }
+  .quick button.picked { background: var(--silver); color: #121214; border-color: #fff; box-shadow: 0 0 12px rgba(255,255,255,.3), 0 3px 0 #55555f; }
+  input[type=text], input[type=password], input[type=number], textarea, select { background: #0b0b0b; border-color: rgba(255,42,42,.4); }
+  input:focus, textarea:focus { border-color: var(--red-hi); box-shadow: 0 0 0 3px rgba(255,42,42,.25), 0 0 14px var(--glow); }
+  .drop { border-color: rgba(255,42,42,.5); }
+  .drop.over, .drop:hover { border-color: var(--red-hi); background: rgba(255,42,42,.06); }
+  .panel { background: #0a0a0a; border-color: var(--red-hi); box-shadow: 0 0 18px rgba(255,30,30,.3); }
+  .stat b, .md th { color: #fff; }
+  .stat { border-color: rgba(255,42,42,.4); }
+  .access-note { background: #000; border-color: var(--red-hi); color: #fff; box-shadow: 0 0 10px var(--glow); }
+  .access-note.soon { border-color: #fff; }
+  .gate { border-color: var(--red-hi); }
+
+  .niche:nth-child(3n+1) { --edge-c: var(--red-edge); background: linear-gradient(180deg, #ff3d3d, #b80a14); color: #fff; }
+  .niche:nth-child(3n+2) { --edge-c: #000; background: #0b0b0b; border-color: var(--red-hi); color: #fff; }
+  .niche:nth-child(3n) { --edge-c: #44444c; background: linear-gradient(180deg, #2a2a30, #141418); border-color: #8a8a94; color: #fff; }
+  .niche:nth-child(3n+2) .en, .niche:nth-child(3n+2) p, .niche:nth-child(3n+2) .sub { color: #c9c3c5; }
+  .niche:nth-child(3n+2) .chans a { background: rgba(255,42,42,.15); color: #fff; }
+  .niche:nth-child(3n+2) .use, .use { background: var(--silver); color: #121214; border-color: #fff; box-shadow: 0 3px 0 #55555f; }
+  .niche.picked, .niche:nth-child(3n+2).picked { border-color: #fff; box-shadow: 0 0 0 3px rgba(255,255,255,.35), 0 0 18px var(--glow); }
+  .warn.lv-mid { --lv: #e6e6ec; }
+
+  /* ═════════ Button colors (owner's pick): charcoal pill + cream text, selected = yellow + black text ═════════ */
+  :root { --btn: #161514; --btn-line: #2f2b25; --btn-text: #f7f5ef; --pick: #ffc61a; --pick-text: #121212; --pick-edge: #a8800c; }
+  .tab, .quick button, a.ghost, button.ghost {
+    background: var(--btn); color: var(--btn-text); border: 1px solid var(--btn-line); box-shadow: none; text-shadow: none;
+  }
+  .tab::before { background: #0c0c0b; box-shadow: none; }
+  .tab:hover, .quick button:hover, a.ghost:hover, button.ghost:hover { background: #1f1d1b; border-color: var(--pick); box-shadow: none; }
+  .tab[aria-selected="true"], .quick button.picked {
+    background: var(--pick); color: var(--pick-text); border-color: var(--pick); box-shadow: none; font-weight: 600;
+  }
+  .tab[aria-selected="true"]::before { background: rgba(0,0,0,.12); }
+  .primary, a.dl, button.dl, .use, .niche:nth-child(3n+2) .use {
+    background: var(--pick); color: var(--pick-text); border-color: var(--pick); text-shadow: none;
+    box-shadow: 0 4px 0 var(--pick-edge);
+  }
+  .primary:hover:not(:disabled), a.dl:hover, button.dl:hover { filter: brightness(1.06); }
+  .niche.picked .use { background: var(--btn); color: var(--pick); border-color: var(--pick); }
+  .primary:active:not(:disabled), a.dl:active, button.dl:active, .use:active { box-shadow: 0 1px 0 var(--pick-edge); }
+
   /* Wide screens: menu on the left, tool on the right */
   @media (min-width: 900px) {
     main:not(.locked) { display: grid; grid-template-columns: 270px minmax(0, 1fr); column-gap: 22px; align-items: start; }
@@ -340,7 +542,7 @@
   </section>
   <p class="access-note" id="accessNote" hidden></p>
   <h1>YTS Tools for <span class="brand">MR YSDIY</span> <span class="by">by <b>Noii &amp; Pierrick</b></span></h1>
-  <p class="sub">สร้างเสียง 11Labs หาคีย์เวิร์ด หาคลิป ตัดเสียงเงียบ และดึงคอมเมนต์ YouTube ทำงานในเบราว์เซอร์ ไม่ต้องติดตั้งอะไร</p>
+  <p class="sub">Don't Give Up, We are here to support YOU!</p>
 
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" aria-selected="true" data-tab="voice">สร้างเสียง 11Labs</button>
@@ -393,7 +595,7 @@
     <input type="text" id="video" placeholder="https://www.youtube.com/shorts/...">
     <label for="apiKey">YouTube Data API v3 key</label>
     <input type="password" id="apiKey" placeholder="AIza..." autocomplete="off">
-    <label class="check"><input type="checkbox" id="rememberKey" checked> จำ key ไว้ในเบราว์เซอร์นี้</label>
+    <label class="check"><input type="checkbox" id="rememberKey"> จำ key ไว้ในเบราว์เซอร์นี้ (ไม่ต้องติ๊ก ถ้าใช้เครื่องร่วมกับคนอื่น)</label>
     <button class="primary" id="commentsBtn">ดึงคอมเมนต์</button>
     <div class="status" id="commentsStatus"></div>
     <div class="result" id="commentsResult" hidden></div>
@@ -416,9 +618,7 @@
 
   <!-- Clip finder -->
   <section class="card" id="clips" role="tabpanel" hidden>
-    <h2>หาคลิปจาก X และ IG</h2>
-    <p class="hint">สร้างคำสั่งให้ AI หาคลิปจริงที่มีจังหวะพีค engagement ดี และทำ commentary ได้ โหลดผ่าน cobalt.tools เป็น MP4 ตั้งชื่อไฟล์ให้ เซฟลง Desktop\Clips\นีช พร้อมรายการคลิปและชื่อคลิปแบบ SoUnseen
-      ต้องใช้กับ AI ที่ควบคุมคอมพิวเตอร์ได้ เช่น Claude Code หรือ Claude Desktop เพราะต้องโหลดไฟล์ลงเครื่อง</p>
+    <h2>หาคลิปจาก X | IG | FB | TT</h2>
     <label for="clipNiche">นีชของคลิป <span style="font-weight:400;color:var(--muted)">ใส่เอง หรือเลือกจากปุ่มด้านล่าง</span></label>
     <input type="text" id="clipNiche" placeholder="เช่น Dashcam, Wholesome, Funny Animals">
     <div class="quick" id="clipNicheQuick"></div>
@@ -473,7 +673,7 @@
   <section class="card" id="story" role="tabpanel" hidden>
     <h2>Storyboard ตัดต่อ Shorts Commentary</h2>
     <p class="hint">แปลงสคริปต์เสียงบรรยายเป็นตารางแนวทางตัดต่อทีละช่วงเวลา: ภาพ มุมกล้องและการเคลื่อนไหว ข้อความบนจอ และเสียงประกอบ
-      ตามหลัก Hook 0–3 วินาทีแรก สลับภาพทุก 1.5–3 วินาที และสลับ A-Roll / B-Roll</p>
+      ตามหลัก Hook 0–3 วินาทีแรก สลับภาพทุก 1.5–3 วินาที</p>
     <label for="sbTopic">หัวข้อ / ประเด็น</label>
     <input type="text" id="sbTopic" placeholder="เช่น ทำไมโลโก้ Apple ถึงต้องมีรอยแหว่ง">
     <label for="sbVibe">โทนอารมณ์ (Vibe)</label>
@@ -1522,7 +1722,7 @@ const KEYWORD_PROMPT = (niche, audience) => `คุณคือผู้เช�
 // ═════════════ Clip finder (X / IG) ═════════════
 const CLIP_PROMPT = (niche, count) => {
   const tag = niche.trim().replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '_');
-  return `หาคลิปแนว ${niche} จาก X และ IG มา ${count} คลิป
+  return `หาคลิปแนว ${niche} จาก X, IG, Facebook และ TikTok มา ${count} คลิป
 - คนดูหลักคืออเมริกา เอาคลิปจริงที่มีจังหวะพีคชัด ยาวไม่เกิน 90 วินาที
 - เลือกโพสต์ที่วิวหรือไลก์สูง และเป็นคลิปช่วงหลังๆ
 - เน้นคลิปที่ engagement ดี คือคอมเมนต์และแชร์เยอะเมื่อเทียบกับยอดวิว คนถกเถียงหรือแท็กเพื่อนกันในคอมเมนต์
@@ -2071,7 +2271,7 @@ $('clipBtn').addEventListener('click', async () => {
 $('niche').addEventListener('keydown', e => { if (e.key === 'Enter') $('voiceBtn').click(); });
 
 const savedKey = store.get('ytKey');
-if (savedKey) $('apiKey').value = savedKey;
+if (savedKey) { $('apiKey').value = savedKey; $('rememberKey').checked = true; }
 
 $('commentsBtn').addEventListener('click', async () => {
   const btn = $('commentsBtn'), status = $('commentsStatus'), result = $('commentsResult');
