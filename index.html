@@ -1,0 +1,1961 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>YTS Tools for MR YSDIY by Noii &amp; Pierrick</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+<!--
+  YTS Tools - ทำงานในเบราว์เซอร์ทั้งหมด ไม่ต้องติดตั้งอะไร
+  1) ตัดเสียงเงียบ 11Labs  (port จาก trim_11labs_silence.py)
+  2) ดึงคอมเมนต์ YouTube    (port จาก comments-dl.py)
+  ต้องต่ออินเทอร์เน็ตตอนเปิดไฟล์ (โหลดตัวเข้ารหัส MP3 และเรียก YouTube API)
+-->
+<style>
+  /* Yellow / red / black: black ground, red for actions, yellow for selection and highlights */
+  :root {
+    --bg: #0b0b0b; --card: #161514; --text: #f7f5ef; --muted: #a9a49a;
+    --line: #2f2b25; --accent: #e3262f; --accent-ink: #ffffff;
+    --yellow: #ffc61a; --yellow-ink: #121212; --soft: #221c10;
+    --err: #ff6b6b; --field: #0f0f0e; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.6 "IBM Plex Sans Thai", system-ui, sans-serif;
+    border-top: 6px solid var(--yellow);
+    box-shadow: inset 0 6px 0 var(--accent);
+  }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 28px; margin: 0 0 4px; font-weight: 600; }
+  h1 .brand { color: var(--yellow); }
+  h1 .by { font-weight: 400; color: var(--muted); font-size: .6em; }
+  h1 .by b { color: var(--accent); font-weight: 600; }
+  .sub { color: var(--muted); margin: 0 0 24px; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tab {
+    border: 1px solid var(--line); background: var(--card); color: var(--text);
+    padding: 10px 18px; border-radius: 999px; font: inherit; cursor: pointer;
+  }
+  .tab:hover { border-color: var(--yellow); }
+  .tab[aria-selected="true"] { background: var(--yellow); color: var(--yellow-ink); border-color: var(--yellow); font-weight: 600; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; }
+  [hidden] { display: none !important; }
+  h2 { font-size: 20px; margin: 0 0 4px; font-weight: 600; }
+  .hint { color: var(--muted); font-size: 14px; margin: 0 0 20px; }
+  .hint a { color: var(--yellow); }
+  label { display: block; font-weight: 500; margin: 16px 0 6px; }
+  input[type=text], input[type=password], input[type=number], textarea {
+    width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--field); color: var(--text); font: inherit;
+  }
+  input:focus-visible, button:focus-visible, .drop:focus-visible, a:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
+  input:focus { border-color: var(--yellow); outline: none; }
+  input[type=checkbox] { accent-color: var(--yellow); }
+  .drop {
+    border: 2px dashed var(--line); border-radius: 14px; padding: 36px 16px; text-align: center;
+    cursor: pointer; transition: border-color .15s, background .15s;
+  }
+  .drop.over, .drop:hover { border-color: var(--yellow); background: var(--soft); }
+  .drop strong { display: block; font-size: 18px; }
+  .drop span { color: var(--muted); font-size: 14px; }
+  .files { margin: 12px 0 0; padding: 0; list-style: none; font-size: 14px; color: var(--muted); }
+  details { margin-top: 16px; }
+  summary { cursor: pointer; color: var(--muted); font-size: 14px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0 16px; }
+  .check { display: flex; gap: 8px; align-items: center; margin-top: 16px; font-weight: 400; }
+  .primary {
+    margin-top: 20px; width: 100%; padding: 14px; border: 0; border-radius: 12px;
+    background: var(--accent); color: var(--accent-ink); font: inherit; font-weight: 600; cursor: pointer;
+  }
+  .primary:hover:not(:disabled) { filter: brightness(1.12); }
+  .primary:disabled { opacity: .5; cursor: progress; }
+  .status { margin-top: 16px; font-size: 14px; white-space: pre-wrap; }
+  .status.err { color: var(--err); }
+  .result { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 16px; }
+  .result-item { margin-bottom: 16px; }
+  .result-item audio { width: 100%; margin: 8px 0; }
+  .log { font-size: 13px; color: var(--muted); white-space: pre-wrap; margin: 0; }
+  a.dl {
+    display: inline-block; padding: 8px 14px; border-radius: 10px; background: var(--yellow);
+    color: var(--yellow-ink); text-decoration: none; font-size: 14px; font-weight: 600; word-break: break-all;
+  }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 12px 0; }
+  .stat { border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+  .stat b { display: block; font-size: 22px; font-variant-numeric: tabular-nums; color: var(--yellow); }
+  .stat span { color: var(--muted); font-size: 13px; }
+  .quote { border-left: 3px solid var(--accent); padding-left: 12px; color: var(--muted); font-size: 14px; margin: 12px 0; }
+  .analyze { margin-top: 20px; border-top: 1px solid var(--line); padding-top: 4px; }
+  .panel { margin-top: 16px; background: var(--soft); border: 1px solid #3a2f14; border-left: 4px solid var(--yellow); border-radius: 12px; padding: 16px; font-size: 14px; }
+  .panel p { margin: 0 0 8px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  a.ghost, button.ghost {
+    font-family: inherit; cursor: pointer;
+    display: inline-block; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--line);
+    background: var(--card); color: var(--text); text-decoration: none; font-size: 14px; font-weight: 500;
+  }
+  .quick { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .quick button {
+    padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--card);
+    color: var(--text); font: inherit; font-size: 13px; cursor: pointer;
+  }
+  a.ghost:hover, button.ghost:hover { border-color: var(--yellow); }
+  .quick button:hover { border-color: var(--yellow); }
+  .quick button.picked { background: var(--yellow); border-color: var(--yellow); color: var(--yellow-ink); font-weight: 600; }
+  .warn { --lv: var(--muted); border: 2px solid var(--lv); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; background: var(--card); }
+  .lv-low { --lv: #3fb950; } .lv-mid { --lv: var(--yellow); } .lv-high { --lv: #ff8a3d; } .lv-bad { --lv: var(--accent); }
+  .warn .lv { display: inline-block; padding: 2px 12px; border-radius: 999px; background: var(--lv); color: #111; font-weight: 700; font-size: 15px; }
+  .warn .lv-title { font-size: 17px; font-weight: 600; margin-right: 8px; }
+  .warn ul { margin: 10px 0 0; padding-left: 20px; }
+  .warn li { margin-bottom: 6px; }
+  .warn li .tag { font-size: 12px; font-weight: 700; color: var(--lv); margin-left: 6px; }
+  .warn .none { margin: 8px 0 0; color: var(--muted); }
+  main.locked > :not(#gate) { display: none !important; }
+  main:not(.locked) > #gate { display: none; }
+  .gate { max-width: 440px; margin: 12vh auto 0; }
+  .access-note { margin: 0 0 12px; font-size: 13px; color: var(--muted); text-align: right; }
+  .access-note.soon { color: var(--yellow); }
+  #gateCode { font-size: 20px; letter-spacing: .08em; text-transform: uppercase; text-align: center; }
+  .md { font-size: 14px; line-height: 1.65; min-width: 0; }
+  .md p { margin: 0 0 8px; white-space: pre-wrap; }
+  .md .tbl { overflow-x: auto; margin: 8px 0 12px; }
+  .md table { border-collapse: collapse; min-width: 640px; width: 100%; font-size: 13px; }
+  .md th, .md td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+  .md th { background: var(--soft); color: var(--yellow); font-weight: 600; }
+  .frames { display: flex; gap: 6px; overflow-x: auto; margin-top: 10px; }
+  .frames img { height: 72px; border-radius: 6px; border: 1px solid var(--line); }
+  textarea { resize: vertical; }
+  .niches { margin-top: 28px; border-top: 1px solid var(--line); padding-top: 20px; }
+  .niches h3 { font-size: 17px; margin: 0 0 4px; font-weight: 600; }
+  .niche-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  .niche { border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .niche.picked { border-color: var(--accent); background: var(--soft); }
+  .niche b { font-size: 15px; font-weight: 600; }
+  .niche .en { color: var(--muted); font-size: 12px; }
+  .niche p { margin: 0; font-size: 13px; color: var(--muted); }
+  .niche .sub { font-size: 12px; font-weight: 500; color: var(--text); margin: 4px 0 0; }
+  .chans { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chans a {
+    font-size: 12px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line);
+    color: var(--text); text-decoration: none; background: var(--card);
+  }
+  .chans a:hover { border-color: var(--accent); }
+  .chans a.warn { border-color: var(--err); color: var(--err); }
+  .use {
+    margin-top: auto; align-self: flex-start; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--accent);
+    background: transparent; color: var(--accent); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  .niche.picked .use { background: var(--accent); color: var(--accent-ink); }
+  pre.prompt {
+    white-space: pre-wrap; font: 13px/1.6 "IBM Plex Sans Thai", system-ui, sans-serif; color: var(--muted);
+    max-height: 320px; overflow: auto; margin: 8px 0 0; background: var(--card); padding: 12px; border-radius: 10px;
+  }
+</style>
+</head>
+<body>
+<main class="locked">
+  <!-- Access gate: one personal code per member; only SHA-256 hashes live in this page -->
+  <section class="card gate" id="gate">
+    <h2>YTS Tools for <span style="color:var(--yellow)">MR YSDIY</span></h2>
+    <p class="hint">ใส่รหัสเข้าใช้งานของคุณ (ได้รับจากทีม MR YSDIY) ใส่ครั้งเดียว เบราว์เซอร์นี้จะจำไว้</p>
+    <form id="gateForm" autocomplete="off">
+      <label for="gateCode">รหัสเข้าใช้งาน</label>
+      <input type="text" id="gateCode" placeholder="YTS-XXXX-XXXX" spellcheck="false" autocapitalize="characters">
+      <button class="primary" type="submit" id="gateBtn">เข้าใช้งาน</button>
+      <div class="status" id="gateStatus"></div>
+    </form>
+  </section>
+  <p class="access-note" id="accessNote" hidden></p>
+  <h1>YTS Tools for <span class="brand">MR YSDIY</span> <span class="by">by <b>Noii &amp; Pierrick</b></span></h1>
+  <p class="sub">สร้างเสียง 11Labs หาคีย์เวิร์ด หาคลิป ตัดเสียงเงียบ และดึงคอมเมนต์ YouTube ทำงานในเบราว์เซอร์ ไม่ต้องติดตั้งอะไร</p>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" data-tab="voice">สร้างเสียง 11Labs</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="keywords">หาคีย์เวิร์ด</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="clips">หาคลิป X / IG</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="policy">เช็คกฎ Shorts Commentary</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="story">Storyboard ตัดต่อ</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="trim">ตัดเสียงเงียบ 11Labs</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="comments">ดึงคอมเมนต์ YouTube</button>
+  </div>
+
+  <!-- Trim -->
+  <section class="card" id="trim" role="tabpanel" hidden>
+    <h2>ตัดเสียงเงียบ</h2>
+    <p class="hint">ตัดช่วงเงียบหัวและท้ายไฟล์ และย่อช่วงหยุดระหว่างคำให้สั้นลง ได้ไฟล์ MP3 320kbps ไฟล์ไม่ถูกอัปโหลดไปไหน</p>
+    <div class="drop" id="drop" tabindex="0" role="button">
+      <strong>ลากไฟล์ MP3 มาวางที่นี่</strong>
+      <span>หรือคลิกเพื่อเลือกไฟล์ (เลือกได้หลายไฟล์)</span>
+    </div>
+    <input type="file" id="fileInput" accept=".mp3,audio/mpeg" multiple hidden>
+    <ul class="files" id="fileList"></ul>
+
+    <details>
+      <summary>ตั้งค่าเพิ่มเติม</summary>
+      <div class="grid">
+        <div>
+          <label for="threshold">ระดับเสียงเงียบ (dB)</label>
+          <input type="number" id="threshold" value="-25" step="1">
+        </div>
+        <div>
+          <label for="maxPause">ช่วงหยุดสูงสุดระหว่างคำ (วินาที)</label>
+          <input type="number" id="maxPause" value="0.15" step="0.05" min="0">
+        </div>
+      </div>
+      <label class="check"><input type="checkbox" id="compress" checked> ย่อช่วงหยุดระหว่างคำ</label>
+      <p class="hint" style="margin-top:8px">ถ้าตัดไม่เจอช่วงเงียบ ลองลดเป็น -35</p>
+    </details>
+
+    <button class="primary" id="trimBtn" disabled>เริ่มตัดเสียง</button>
+    <div class="status" id="trimStatus"></div>
+    <div class="result" id="trimResult" hidden></div>
+  </section>
+
+  <!-- Comments -->
+  <section class="card" id="comments" role="tabpanel" hidden>
+    <h2>ดึงคอมเมนต์ YouTube</h2>
+    <p class="hint">ดึงคอมเมนต์และคำตอบทั้งหมดเป็นไฟล์ JSON พร้อมโยนให้ Claude หรือ ChatGPT
+      ต้องใช้ YouTube Data API v3 key ของตัวเอง ขอฟรีได้ที่ <a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" rel="noopener">Google Cloud Console</a></p>
+    <label for="video">ลิงก์วิดีโอหรือ Shorts</label>
+    <input type="text" id="video" placeholder="https://www.youtube.com/shorts/...">
+    <label for="apiKey">YouTube Data API v3 key</label>
+    <input type="password" id="apiKey" placeholder="AIza..." autocomplete="off">
+    <label class="check"><input type="checkbox" id="rememberKey" checked> จำ key ไว้ในเบราว์เซอร์นี้</label>
+    <button class="primary" id="commentsBtn">ดึงคอมเมนต์</button>
+    <div class="status" id="commentsStatus"></div>
+    <div class="result" id="commentsResult" hidden></div>
+  </section>
+
+  <!-- Keyword research -->
+  <section class="card" id="keywords" role="tabpanel" hidden>
+    <h2>หาคีย์เวิร์ด YouTube Shorts</h2>
+    <p class="hint">ให้ AI หาคีย์เวิร์ดที่คนดูพิมพ์ค้นหาจริงสำหรับนีชของคุณ แบ่ง 6 หมวด พร้อมระดับการค้นหา ความยากในการแข่ง และไอเดียคลิปที่มีโอกาสไวรัล</p>
+    <label for="kwNiche">นีชของช่อง <span style="font-weight:400;color:var(--muted)">ใส่เอง หรือเลือกจากปุ่มด้านล่าง</span></label>
+    <input type="text" id="kwNiche" placeholder="เช่น DIY ปลูกผักบนระเบียง / อาชีพแปลกที่รายได้ดี / ญี่ปุ่น">
+    <div class="quick" id="kwNicheQuick"></div>
+    <label for="kwAudience">กลุ่มเป้าหมาย <span style="font-weight:400;color:var(--muted)">ภาษา / ประเทศ</span></label>
+    <input type="text" id="kwAudience" placeholder="เช่น คนดูภาษาอังกฤษ US">
+    <div class="quick" id="kwAudienceQuick"></div>
+    <button class="primary" id="kwBtn">สร้างพรอมต์หาคีย์เวิร์ด</button>
+    <div class="status" id="kwStatus"></div>
+    <div class="panel" id="kwPanel" hidden></div>
+  </section>
+
+  <!-- Clip finder -->
+  <section class="card" id="clips" role="tabpanel" hidden>
+    <h2>หาคลิปจาก X และ IG</h2>
+    <p class="hint">สร้างคำสั่งให้ AI หาคลิปจริงที่มีจังหวะพีค engagement ดี และทำ commentary ได้ โหลดผ่าน cobalt.tools เป็น MP4 ตั้งชื่อไฟล์ให้ เซฟลง Desktop\Clips\นีช พร้อมรายการคลิปและชื่อคลิปแบบ SoUnseen
+      ต้องใช้กับ AI ที่ควบคุมคอมพิวเตอร์ได้ เช่น Claude Code หรือ Claude Desktop เพราะต้องโหลดไฟล์ลงเครื่อง</p>
+    <label for="clipNiche">นีชของคลิป <span style="font-weight:400;color:var(--muted)">ใส่เอง หรือเลือกจากปุ่มด้านล่าง</span></label>
+    <input type="text" id="clipNiche" placeholder="เช่น Dashcam, Wholesome, Funny Animals">
+    <div class="quick" id="clipNicheQuick"></div>
+    <p class="hint" style="margin:8px 0 0">ใช้ภาษาอังกฤษสั้นๆ เพราะจะเอาไปตั้งชื่อไฟล์และโฟลเดอร์ด้วย</p>
+    <label for="clipCount">จำนวนคลิป</label>
+    <input type="number" id="clipCount" value="10" min="1" max="50" step="1">
+    <div class="quick" id="clipCountQuick"></div>
+    <button class="primary" id="clipBtn">สร้างคำสั่งหาคลิป</button>
+    <div class="status" id="clipStatus"></div>
+    <div class="panel" id="clipPanel" hidden></div>
+  </section>
+
+  <!-- YouTube policy check for commentary -->
+  <section class="card" id="policy" role="tabpanel" hidden>
+    <h2>เช็คกฎ YouTube Shorts Commentary</h2>
+    <p class="hint">ตรวจว่าคลิป Shorts แนว commentary เสี่ยงผิดกฎ YouTube ไหม ทั้ง Community Guidelines ลิขสิทธิ์และ fair use นโยบายสร้างรายได้ ความเหมาะกับโฆษณา และกฎเฉพาะของ Shorts (ความยาว Content ID ลายน้ำ คลิปไม่เป็นต้นฉบับ)
+      ผลที่ได้เป็นการประเมินความเสี่ยงจาก AI ไม่ใช่คำปรึกษาทางกฎหมาย</p>
+    <div class="drop" id="polDrop" tabindex="0" role="button">
+      <strong>ลากคลิปที่ตัดเสร็จมาวางที่นี่</strong>
+      <span>หรือคลิกเพื่อเลือกไฟล์ (MP4, MOV, WebM) ไม่บังคับ แต่จะเช็คได้แม่นขึ้น</span>
+    </div>
+    <input type="file" id="polFile" accept="video/*" hidden>
+    <div class="frames" id="polFrames"></div>
+    <label for="polLink">ลิงก์คลิปต้นฉบับ <span style="font-weight:400;color:var(--muted)">ถ้ามี</span></label>
+    <input type="text" id="polLink" placeholder="https://x.com/... หรือ https://www.instagram.com/reel/...">
+    <label for="polDesc">ในคลิปมีอะไรเกิดขึ้น</label>
+    <textarea id="polDesc" rows="3" placeholder="เช่น กล้องหน้ารถถ่ายรถชนกันที่สี่แยก เห็นคนขับลงมาทะเลาะกัน มีเพลงเปิดในรถ"></textarea>
+    <label for="polPlan">แผน commentary ของคุณ</label>
+    <textarea id="polPlan" rows="3" placeholder="เช่น พากย์เล่าเหตุการณ์ หยุดภาพอธิบายว่าใครผิด ใส่ความเห็นตอนท้าย"></textarea>
+    <div class="grid">
+      <div>
+        <label for="polUsed">ใช้คลิปต้นฉบับกี่วินาที</label>
+        <input type="number" id="polUsed" min="0" step="1" placeholder="เช่น 20">
+      </div>
+      <div>
+        <label for="polTotal">Short ยาวทั้งหมดกี่วินาที</label>
+        <input type="number" id="polTotal" min="0" step="1" placeholder="เช่น 45">
+      </div>
+    </div>
+    <button class="primary" id="polAiBtn" hidden>เช็คเลย</button>
+    <button class="primary" id="polBtn">สร้างพรอมต์เช็คกฎ</button>
+    <div class="status" id="polStatus"></div>
+    <div class="panel" id="polAi" hidden>
+      <div class="actions" style="margin:0 0 8px"><button type="button" class="ghost" id="polAiStop">หยุด</button></div>
+      <div class="warn" id="polWarn" hidden></div>
+      <pre class="prompt" id="polAiText" style="max-height:none;color:var(--text)"></pre>
+    </div>
+    <div class="panel" id="polPanel" hidden></div>
+  </section>
+
+  <!-- Editing storyboard (Shorts Commentary Editing Prompt guide) -->
+  <section class="card" id="story" role="tabpanel" hidden>
+    <h2>Storyboard ตัดต่อ Shorts Commentary</h2>
+    <p class="hint">แปลงสคริปต์เสียงบรรยายเป็นตารางแนวทางตัดต่อทีละช่วงเวลา: ภาพ มุมกล้องและการเคลื่อนไหว ข้อความบนจอ และเสียงประกอบ
+      ตามหลัก Hook 0–3 วินาทีแรก สลับภาพทุก 1.5–3 วินาที และสลับ A-Roll / B-Roll</p>
+    <label for="sbTopic">หัวข้อ / ประเด็น</label>
+    <input type="text" id="sbTopic" placeholder="เช่น ทำไมโลโก้ Apple ถึงต้องมีรอยแหว่ง">
+    <label for="sbVibe">โทนอารมณ์ (Vibe)</label>
+    <input type="text" id="sbVibe" placeholder="เช่น ลึกลับชวนคิด">
+    <div class="quick" id="sbVibeQuick"></div>
+    <label for="sbRef">สไตล์ช่องอ้างอิง <span style="font-weight:400;color:var(--muted)">ไม่บังคับ เว้นว่างได้</span></label>
+    <input type="text" id="sbRef" placeholder="เช่น Vox, MagnatesMedia, Johnny Harris">
+    <div class="quick" id="sbRefQuick"></div>
+    <label for="sbLen">ความยาววิดีโอเป้าหมาย</label>
+    <input type="text" id="sbLen" placeholder="เช่น 30–45 วินาที">
+    <div class="quick" id="sbLenQuick"></div>
+    <label for="sbScript">สคริปต์เสียงบรรยาย</label>
+    <textarea id="sbScript" rows="6" placeholder="วางสคริปต์คำพูดของคุณที่นี่"></textarea>
+    <label style="margin-top:20px">ขอเพิ่มเติม</label>
+    <label class="check" style="margin-top:4px"><input type="checkbox" id="sbBroll"> เขียน AI Image Prompt (Midjourney) ภาษาอังกฤษสำหรับฉาก B-Roll แต่ละช่วง</label>
+    <label class="check" style="margin-top:4px"><input type="checkbox" id="sbFx" checked> บอกชื่อเอฟเฟกต์ในโปรแกรม
+      <select id="sbFxApp" style="margin-left:6px;padding:4px 8px;border-radius:8px;background:var(--field);color:var(--text);border:1px solid var(--line);font:inherit">
+        <option>CapCut</option><option>Premiere Pro</option>
+      </select></label>
+    <label class="check" style="margin-top:4px"><input type="checkbox" id="sbLoop" checked> ออกแบบประโยคปิดให้วนกลับไปที่ Hook (Seamless Loop)</label>
+    <button class="primary" id="sbAiBtn" hidden>สร้าง Storyboard เลย</button>
+    <button class="primary" id="sbBtn">สร้างพรอมต์ Storyboard</button>
+    <div class="status" id="sbStatus"></div>
+    <div class="panel" id="sbAi" hidden>
+      <div class="actions" style="margin:0 0 8px">
+        <button type="button" class="ghost" id="sbAiStop">หยุด</button>
+        <button type="button" class="ghost" id="sbAiCopy" hidden>คัดลอกผลลัพธ์</button>
+      </div>
+      <div class="md" id="sbAiOut"></div>
+    </div>
+    <div class="panel" id="sbPanel" hidden></div>
+
+    <div class="niches">
+      <h3>✅ เช็กลิสต์ก่อน Export</h3>
+      <label class="check"><input type="checkbox"> ซับไตเติลวางกึ่งกลางแนวตั้ง ไม่โดน UI ด้านขวาและด้านล่างบัง</label>
+      <label class="check"><input type="checkbox"> มีเสียง Whoosh / Swish รองรับทุกจังหวะการเปลี่ยนภาพ</label>
+      <label class="check"><input type="checkbox"> ข้อความบนจอสว่างและคอนทราสต์เด่นชัดบนพื้นหลัง</label>
+      <label class="check"><input type="checkbox"> เสียงบรรยายดังชัดกว่าเพลง BGM (เพลงเบากว่าเสียงพูดราว 18 dB)</label>
+    </div>
+  </section>
+
+  <!-- Voice design -->
+  <section class="card" id="voice" role="tabpanel">
+    <h2>สร้างเสียงเองใน 11Labs</h2>
+    <p class="hint">ใส่นีชของช่อง แล้วให้ AI ออกแบบเสียงที่เหมาะกับคนดูกลุ่มนั้น ได้พรอมต์ Voice Design ไม่เกิน 1,000 ตัวอักษร และสคริปต์สำหรับช่อง Text to Preview นำไปวางใน ElevenLabs ได้เลย</p>
+    <label for="niche">นีชของช่อง <span style="font-weight:400;color:var(--muted)">ใส่เอง หรือเลือกจากปุ่มด้านล่าง</span></label>
+    <input type="text" id="niche" placeholder="เช่น true crime stories, personal finance tips, cat facts">
+    <div class="quick" id="nicheQuick"></div>
+    <p class="hint" style="margin:8px 0 0">พิมพ์เป็นภาษาอังกฤษจะได้ผลแม่นที่สุด ดูช่องตัวอย่างของแต่ละนีชได้ท้ายหน้านี้</p>
+    <label class="check"><input type="checkbox" id="voiceThai" checked> ให้ AI อธิบายเป็นภาษาไทย (พรอมต์เสียงและสคริปต์ยังเป็นภาษาอังกฤษ)</label>
+    <button class="primary" id="voiceBtn">สร้างพรอมต์</button>
+    <div class="status" id="voiceStatus"></div>
+    <div class="panel" id="voicePanel" hidden></div>
+
+    <div class="niches">
+      <h3>ตัวอย่างนีชและช่อง</h3>
+      <p class="hint">กด "ใช้นีชนี้" เพื่อใส่ลงในช่องด้านบน หรือกดชื่อช่องเพื่อเปิดดูใน YouTube</p>
+      <div class="niche-grid" id="nicheGrid"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} },
+};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const tick = () => new Promise(r => setTimeout(r, 0));
+
+// ═════════════ Access gate ═════════════
+// Hashes are written by access-codes/update_codes.py apply (codes themselves stay in the CSV).
+// ACCESS_HASHES_START
+// hash -> [last valid day (yyyy-mm-dd) or '' = counted from first use, days valid]
+const ACCESS_HASHES = new Map([
+  ['007c1c82795ad247dc28fce11f5e187058db88a4747c790fb568e3749336dbf1', ['', 30]],
+  ['007f817e03a9a7c08bad7fef8f61b6c688014e1a4e014f373e689ddca6d363e8', ['', 30]],
+  ['00d908d79119baf476bd6a473d67181626a8cf3a7e9a72dd3ddb6665565c8306', ['', 30]],
+  ['011881bea40e43c6dffff6a492a0077d12d7c426078350d1584e7cdd81620b94', ['', 90]],
+  ['017bf052c218b41ff288a99b6bc4a749c569bc9a3b1c2aefa4bcf77e10481c70', ['', 90]],
+  ['01aa27e8ea2f3616dcd22e6419d39933a6e2342ec6de4160679c5e9caa382b17', ['', 30]],
+  ['01ba950abcb290c70931968b73dfe62045a4bbecbe4a9cbdfb21765228bfe524', ['2026-11-17', 30]],
+  ['03004edb224fcea4393a7d785fbae7ab942872631fa7833b0a54765d778b030f', ['2026-11-17', 30]],
+  ['033e0e4aa718a5d7564a6e4292ff4b6cbd319c8ffa9ccd5195fe430cc5db4680', ['', 30]],
+  ['03a6ccdb07bd449627f2297f572274287a398e9dfe5ccdfeb2aef84ce757ba21', ['', 30]],
+  ['03bfc93d3d91d9400698bc61d047b2e00abc917c9b178d55b381e14a73913557', ['', 30]],
+  ['043e79bf4279d9ddec6ca1307c878c71e3efaa541cca723b64e9a2617bf390bd', ['', 30]],
+  ['0479e8e992adee76a1cc56c8081205e5be206fbd6c446933f2fbbb75564a2b48', ['', 30]],
+  ['0522d387ce0e671caf1de176911de30e373a1929dae9377d357bbe7d39264463', ['', 30]],
+  ['0537558ee2759840f6b48ef7c6089a117a5806b7fa2d0f07bb1aa2d78ac5a293', ['2026-11-17', 30]],
+  ['053f8d876f081a32f5f5ba96d0d66cc3b9db604824932b10eeb7bf13c9996ad3', ['', 90]],
+  ['05791adc43aba86368f64d6e6e607b4a3f787309a3d0f65c28741ce17c3b59b7', ['', 30]],
+  ['060f8d63f554a90cdbf4f1a71880237a29793420ca7b12b8c72615447196842e', ['', 30]],
+  ['06b26a63fa864112cf76ceb2f8f314da0da8e9ec012e499900fb388d0816e0ec', ['', 90]],
+  ['06f9514bcb6b74fd9b4b37855fda288dff416fce32ccf965b393258ec3b4a7a2', ['', 90]],
+  ['0707f8c6993e9d4633026655ea19e0e3e038cb15545caea8fbbc351ed9185705', ['', 30]],
+  ['0761058f2da27a90af4c5689f9f53b16759d93599a988f3821dfaf8896e932d2', ['', 30]],
+  ['08d7cc2dec7534240e4a5ac6cc4f343945e7fc181161ede5a38caee2c0401672', ['', 90]],
+  ['0905398525a71e5e6e8b687a450a9ac89613fe2a1dc49ba93ad6a14815bb39df', ['', 90]],
+  ['096608c6dc3e633bf9ca3d73b6b202046a30b92f9db8764d059d8a7169af3914', ['', 30]],
+  ['09d5e6ecc9b354a3013da502c26465db4df7b279a31bfc1170bb6b01ef8f4b1d', ['', 90]],
+  ['0a7877cad812337ec60ad8933017bd4aaf3c54bf16bcbbab1485d3a202d7e684', ['', 30]],
+  ['0aa1726c27e24b79ab722a409b0fe25459c3b7981d83f9a007e1022d6beb74d2', ['', 30]],
+  ['0c859e043f33168135822c7045058a91d414e9d4d223fd61b795771e7e5535e2', ['', 30]],
+  ['0db4e0409e2981b674c8fe60851da4c121014fe298828cad61380a463920e962', ['', 90]],
+  ['1009a27e55ceb6c3d6a974b27bcfd34af4c5b072bd12deab8c7227b11ba142d9', ['', 30]],
+  ['10fdc576f41d8289fe4c6926c2f6dab82521fde3ce2d2eb3fb5f4a598ab9cfcc', ['', 30]],
+  ['110db850c733984e44b2dcceb2c29e599fba910faca357ab5631c2118875e7d5', ['', 30]],
+  ['117f5d23948850d2ea7bcaf35655c5db8c5e504c3fd772c545a2e0dc276539a3', ['', 30]],
+  ['1184de2271c0bcd4886f6f4539401b2768eb037cf53caa6ab1a563a8ae14f422', ['2026-11-17', 30]],
+  ['11ff8977601906e61da07b9499b793208b02d14d6be99601eb8b9871eaed1e3d', ['', 90]],
+  ['120ad82dc056e89e05887fc35f60d8c57019c95bbebc3338b20bf7ad56fac362', ['', 30]],
+  ['137e32c35ecbcccba52470a20305ead59087baacc76d47e5516bfb94af5b2786', ['', 30]],
+  ['13cef653812e0372be04e71228b01df1581d52816661a214402f72c72209b78b', ['', 30]],
+  ['14edf47aa1993b32a5ecc52315b4845a96a542c9a2d6ac83fdc58098d55afc6d', ['', 30]],
+  ['1531d7ee664055fd957bbc3c8c9d379a29bd7875ceee60d234de6aede936bcf6', ['2026-11-17', 30]],
+  ['17226fe217e2e384ffb2d14a9b9a884d6a3f7aef5b2fc783221f18f9c4bf4d40', ['2026-11-17', 30]],
+  ['172fd3f3e3bf9d49485e2cb281de88b603ae4fee50232d9f9965c884f3c07459', ['', 30]],
+  ['1861e411f7a9d96619529a2018c5ae09dfc28b4d5a5f755d591fe9c0ab16a9e1', ['', 30]],
+  ['1992e5aa9f98fbd20035b9853b3b2dfae2a29bac687c199c7350d32f3310039e', ['', 30]],
+  ['1a37577b4e1b91552c6084304e9707c1dd687a4fa37ebbf7f751df2611e565c9', ['', 90]],
+  ['1a69959677e8bf7bdca39a3ac0cf5c98e6d475b5d872d23322aa127b486f640a', ['', 30]],
+  ['1aa1dbf4b3d550821b1537e0061382f73fd88136208ab32cbfd1cf6cbcc7e5f2', ['', 30]],
+  ['1abe26de58c47b026fe73fba791f7fb7522d0a5d1a965543761d43e0b7929fa3', ['', 30]],
+  ['1b07ad131cb6638b147b9bd8d31f679ae9a1016e87e4052d231ffe27bac8b0e1', ['', 30]],
+  ['1b8bf748d0c898d5491b30cfbb69fb692d59fa9d6c062736c81bf58e3549e6ce', ['2026-11-17', 30]],
+  ['1d1738f5980a825db578c009e28673fd854bb922a533de746c7e68b3006bbd95', ['2026-11-17', 30]],
+  ['1d324b6995d0a6a75a9466355d77dea2efd1fc4f5babfc228c4ad3235b934bb0', ['', 30]],
+  ['1d428d5fda8e6ca4092875ec872b444b81f34ec78f0ce77b62bafa3d347127eb', ['', 30]],
+  ['1d4b1c8e91a35370d210fb47a824b68f67624b2d95bd00de19894b00ea657f52', ['', 90]],
+  ['1dce3a8e78b647054ebe34d0317f7e3681e00a481e9e396fb1504da0caf8c696', ['', 30]],
+  ['1de9a58afbfdab8e47342a06f68e284a5b3faac1d9bfbffd06c474fee3e0a505', ['', 30]],
+  ['1e5d32dd79d243fc9f15995ec8245b7a26992daeef841b8aa7a7af9484efdf05', ['', 30]],
+  ['1e7f3f7301921daaa9809a446aa2238558023710bcc3c4b68b651ebc2fab73fd', ['', 30]],
+  ['1e8b51e5e7ef557aaa2448c236728337611737dc5e7449d8e0ddadf4dd5fd60a', ['', 90]],
+  ['1f08745c56be6ec2fbcb266126d62fd94c164ba7f11031e85032134df8ebd4d2', ['', 30]],
+  ['1f5b39d51adf546dbcef0feec1513f65389b5b8fc9d4c5439dfebdaf99e3f0fd', ['', 30]],
+  ['1f965e932ecc41b2ad004841a76b24d3e8122d3b8c7344131b3da0525b9ecf92', ['', 90]],
+  ['20265a3fc3e28b3366f05c352addd531cb3db72d077ed78a6e7dadc99e4143fa', ['', 30]],
+  ['20799241ac00b72be40774182260d40b633958178f0de8511cb973db9d4ec4a3', ['', 30]],
+  ['20eae2078237df13f4f4888995483b896942494801fd73039aec8d1f107cbd03', ['', 90]],
+  ['217ae5a34befd5ff85b34e7b8a18ffd22e8d2dc6ef3c6bab222e968175835e92', ['', 30]],
+  ['21ee0bd60381bad826e0c9b3875cee6e9289385bff2ae50d3608d7d3b04097e3', ['', 30]],
+  ['2268af31a7e9bece1f6e5037db441558bfd901391477e2c76e1a1ffa07a820d3', ['', 30]],
+  ['22ad266844e68a1f6e32840a82e0661e3965d2a5f1f49dcab2e34f178876441d', ['', 30]],
+  ['22ec9031cfe7abc626fb7170f4ee800c4584dced677dcaa10c5d9fea82c18db0', ['', 30]],
+  ['238122c5ab74448b3c16e935b1529c1f682cf7eb999f827ffbb630066f837ae9', ['', 30]],
+  ['24351f5b3326ec5d3aa7a9daf7df1939f1c978d14285f73f76eb0459e1897112', ['', 30]],
+  ['251c2854344296d64d131906d3c59b44ff4e394a9e919bf9f89685be03194a29', ['', 30]],
+  ['2526bf7769db611f19d546cd3a5ff6a0dd70951ed8af32f416488941f68f58c1', ['', 30]],
+  ['25edee73dc8f30b74f566d9fd9d559c9e040aca965d2174e67879535b6d52456', ['', 30]],
+  ['2660fccb2c49638f16b9c4eadccd743cdacd75ea9f98a4ad8565f86efc8dc164', ['', 30]],
+  ['274d3132265843583fe7675eee629e6379d3119cb468ebdedb7d87311943a325', ['2026-11-17', 30]],
+  ['2752d167a3db08ee3c7a7fd6d0acfbcccde4b6e7624c750a81ebf94142e840ce', ['', 90]],
+  ['28734deb75ca2a30ffa54bc2309e14e21302592c75047119e9c0164138ddab2b', ['', 30]],
+  ['290b2f0e152d63b7a3844d4f6081e48c42b0f76671fdf43821c93705a432cdcf', ['', 30]],
+  ['2a4935ef9acf95080ca38e3d8b2ba3d9113054080c40f30d04dc7f67c8c92cd2', ['', 90]],
+  ['2a67924624b52b3be7c2935406d1645ab875e0873bdf4a24068b73d433c3c1f3', ['', 30]],
+  ['2b2990a33d02336677ae83de748513b6cea00189a5de033f9d9a12a6f8fb8961', ['', 90]],
+  ['2b5d08898fb439894adc9deec93b52db03ff75acdae14138a0e9148d54a701c5', ['', 30]],
+  ['2b6918263917da3c026dfe02d1f86149b1b76e0e45f6ec9469e67f09cb9a794b', ['', 90]],
+  ['2b7f8b10f8eddb95ff2a5fb8e8535cb2b6f8b895398c226b7660071bc26520cd', ['', 30]],
+  ['2bfc1c456415b1da19f0a39c55ff76e05b8f50ab8fd82309253c3c903bd47ec2', ['2026-11-17', 30]],
+  ['2c3031aa2f4a7a4329a477b883cc4edacd674ae6a301ed64782bb16ef2b61460', ['', 30]],
+  ['2dfd7ba25d338b80ba954ecc23885133bc93940c166a12d0a57ac56df19ad82a', ['', 30]],
+  ['2e53d001ba584bb10814bf012e96374680ca5d3f64cb2add44151ac552733c80', ['', 30]],
+  ['2edb9a7d2bd40043ce3aa5518930a652eaa6c6eaf2025069c01ab5a5cb385b48', ['', 90]],
+  ['2f1837f47335b1298df649048a7d80270577563e6d291c6c557f409f06eb5dd8', ['', 30]],
+  ['306981e7d9eb74d91a6eabcaee735d847281c0e2d22c18f7828242a12203466b', ['', 30]],
+  ['310b050e5c68d6c331ae58f1637b33d2c1b427cd37fc604bdb4c415d9660b24d', ['', 30]],
+  ['31154cb2daaa7a673c808c116df44ec9b65e230be03a98e91a55311232c0ee66', ['', 90]],
+  ['318c010263cab8a96ec44561a37b0c19a40e325b78b535c274968e6b4ed96624', ['', 30]],
+  ['31bf8f0d1b36db19e22afa12dd4db9fecfef23f0fe5ec1ad442a14968094e6fd', ['', 30]],
+  ['32492021de10ccb9b602d5ee1c8733798fa46930d5f4510e56f01b8b203de13a', ['', 30]],
+  ['3346725f56a8b1f829f9a3277c90eb4815bc7b9c95fc17561e3b95370159ee8e', ['', 30]],
+  ['350b31a50330f5b355012051099ed42c49a2cc2d26610b946ab2b6e62435c2a4', ['', 30]],
+  ['3528f165e066c2831eff7618792a38edd1f3f05ebace7fcb7c079dab414956b4', ['2026-11-17', 30]],
+  ['365feb0eb84d4266680bb1b2052321dd666de63ae8a3e8c6af386c2317673aba', ['', 30]],
+  ['37ac73099db48b49540ac3b1efea50a325560cf67599e10de47096762b83a8b2', ['', 90]],
+  ['37df5f129384d88680613073118c66b8b50f11d909e2a29624cf1a26e678dc3c', ['', 30]],
+  ['381371cdc6034fd39baaf327745e8cccdf2a2cff4203424670ede4f1d85743e2', ['', 30]],
+  ['38cca56c6a4706b2b0c2f69509cc191cffcc27fb8b1c8e2da3ec4ab8fadac103', ['', 90]],
+  ['393423336f58eae8888038691deb7fb64f15568f828f01fea9997db49ac3da5a', ['', 30]],
+  ['3941d1bbb6725708af086d990ac9d1c2d77ee1b5d5f377a3f2125723cf8d15b5', ['', 30]],
+  ['3a40cf2240d4b04f7ad84598a054ea528a79fb6f3e0fbdc0a26936d1e82ad125', ['', 30]],
+  ['3bae13efa8849b4add2e5061f27677b512be2e1de664cb710a285aaebfe41f8e', ['', 30]],
+  ['3bd002a87112c634452f0f76ed646f93e802c2901faeece85c3529c4f655da6e', ['', 90]],
+  ['3c5d80167b04115e8ba94b105504e30375481f76ac5e2d527745bb02a68e42bd', ['', 30]],
+  ['3cc6af73af5b9986c6f0babcb5e63a5b914c5ecd8546f019aa164e66419329ae', ['', 30]],
+  ['3cd16e57f038c253f5c987e4cb419819f972800ac3d24ec71f21f145d50e74e9', ['', 30]],
+  ['3cd31a46789282d7d5a8454e6bf55a64223bd2f0afbcd6b763d43195282c31c0', ['', 30]],
+  ['3d9c815fbdddb882f69100013252d6085b9a3767f4f85300da292163ab0f9f65', ['2026-11-17', 30]],
+  ['3e21dae74b6465173f9c0cf33686349aa7996b7706fe44bed4c0280a98dd6332', ['', 30]],
+  ['3e72e3a28ce5eacc7a3769f9dab43ab52b2c9875a94ed93fb723dde05a9e9ad0', ['', 30]],
+  ['3fbc838490fea53119416aa1bf3d926d5fe1a03deb7ee8db1cee42f642c56070', ['', 30]],
+  ['3ff03f676c39bbac0d60d5a4be35ff484713095d95a8c6501da33ffa44e1c77c', ['', 30]],
+  ['409fa0dbebc43841b8d678edf66db95cfa55a3d93d26689978171bb48150d1a0', ['2026-11-17', 30]],
+  ['40a0dfd832e97d2a6e17b36aba626d565d6f7b025a92686431abeff6207ce397', ['', 30]],
+  ['40f445d92912665c5bb134f88787d688c7c542aa6a3977978ac88cc1e8001e05', ['', 30]],
+  ['41620c4dd174c3e2b4969084c94db3cade3c31b2000803fa20b892f4cd79f77b', ['', 30]],
+  ['42373872f6d9c2e079d120668ec5ed85f40ab01590cd2b1bbc865f9ffb273034', ['', 30]],
+  ['4266b4ee18ffb9fd85a8bf4d07582b0988fbaffff10183147cd5ef704d824754', ['', 0]],
+  ['42d8a3cf4ea5b570a2efb628e9638e4614acc10303dc0ba37236d5cbab2f8671', ['', 30]],
+  ['43df1af8a1ca0b0258ebbfe7f11117e09bc2c9fee525af0073482b4beaff7954', ['2026-11-17', 30]],
+  ['4604e0ad09b59b9d1c688a72f631a63882d61cde102c8ed1d0f2f99b5a330ad9', ['', 30]],
+  ['468c1961082ebce48b52ca4c48db69292a525b06d799dbbf33d918bb7089cc3a', ['', 30]],
+  ['470994d9e12fbeeb2c846728172e8cbf5d36c6209a54f90e34e9379851fed23d', ['', 90]],
+  ['472e1513084015b8185e9f81ad1b2eb93c860af0381fd19487a20df8dd7916f9', ['', 30]],
+  ['476bb5a1a212491280e99a80120c17c34aa24e347f1fe14003e7ca2155a39cec', ['', 90]],
+  ['48401929e5bd438e9e80629c978949a0b01c0ea035098addaba3c41d8dd0b082', ['', 90]],
+  ['486efb60627b5b99449a1f937d5bc2a53a93cce594862705ca5c7c45586cd141', ['', 90]],
+  ['49f4e2418b8849b48c3b4ce59b2a4ff77044e1731d0c6a1f8a121ad3ca315fae', ['', 30]],
+  ['49f9b3a28901418aec798dbaac4e6e4630164ef1632c6022101dcecbb49411ee', ['', 90]],
+  ['4a00683b5298f096d0ceb1d82d6a5db9ec1992e000bc99d19ad3c8286cb1d663', ['', 30]],
+  ['4a21ceb8d67a74d323eeae3b5bd6c1f21b2e5e4448f5f889781e52d87f378d5b', ['', 30]],
+  ['4af22775df5a7af99681929f0d5115e37caf66cbbb9fdae392eea7deecd57ebb', ['', 30]],
+  ['4b3dbec8665e042ef5f9a58c948c52cd942b5aec3bc127e6d546276c401be424', ['', 30]],
+  ['4b7a2000bb8cd3e39c897e5f9f5296d259611bc8841c3722b3b2000ef5b7dfb4', ['', 90]],
+  ['4b84f35d7c860dd8982e31dd3f3fe4f31e56de072b4e684f3191a35456f763f2', ['', 30]],
+  ['4bc144fef9a3208ca9b1ddb0c1efeef3f85d2f4d62001609f811ceba9bd9537f', ['', 90]],
+  ['4c3d9c045ed4a6e03ed43cffc14b5cd576160b75f7dc734ec94e1d1b88a101e7', ['', 30]],
+  ['4cc9dab4af0daedea5e461e91e1f914143f90535f3e15c0786f95981caefe9a4', ['', 30]],
+  ['4d145d4d94184759527b822428775ebf317e8a5ff94ea0f03305982f7c49d975', ['', 30]],
+  ['4d23a25350050ba76841ef30894ef9eaa18d907b6ef66830047f994a1b3d4c9b', ['', 30]],
+  ['4d5b847372fc86591fa4b0a9204ab261fb45da933d87b2faf34e9fd199170488', ['', 30]],
+  ['4ecc84287837545e2c3b22dec264169dfe3954d8072542401b07baa401d1b97c', ['', 30]],
+  ['4f599c5736f9b4f20bd7466cb5887dae88f8662b8dbb96221368b49c448bca2e', ['', 30]],
+  ['50242075e48405136d6dba26e88eea13725eaaff0c73485d3b579016d7f84739', ['', 90]],
+  ['5036efd53c9fcc21ade8d1f3165b695f2e8815b6d54776fd41e319cece3c9c8f', ['', 30]],
+  ['504ae176665f915d58fc15ee976560a553ee6d7d0ee78405ef8dc186ec921528', ['', 90]],
+  ['50d08ccdfe22f482437d431317441d299433a4feeac5e81e19a6dab17519b178', ['', 30]],
+  ['50d9623111f4c0d6b6602f0682274cbbd80610eca0be18f470781bb2fff67f3c', ['', 30]],
+  ['50fa98f389ea298b8bbba7673807670590e0dd4c2de1f7b6c06d3324c20d1410', ['', 30]],
+  ['524ec19ddc3ad840e936cdf194396bcc96cff12ada95f732432077dc2744eb66', ['', 30]],
+  ['53506226b4334a59bc58b60c2ad71cf7893d75448a0248bb842d9ea6b66a3152', ['', 30]],
+  ['541707600d08bd438ac630aa7217ba3919612240e05c720844fd19654d3ea4cf', ['', 90]],
+  ['5477836e15e5127906afa3bfedb22518b7d9120a14df7c425085e9edcf654dc4', ['', 30]],
+  ['54b2b494dae002f904586cf3d86aa83f164254d4bdcda874aac0d8deb278b84a', ['', 30]],
+  ['55b4715f3c939ad2af4a0193b7b00fbf2db06f30f1abb9dc80c937d069434d67', ['', 30]],
+  ['584e335daa95b480ea640c77fbc16faea02d4ab90326f1bcd23e2be5e0548952', ['', 30]],
+  ['596a53c05b74be3b199cf80f942778959a9cf9a38e0503d7cd8a78900d74abc3', ['', 90]],
+  ['5a678248336cd5c263c8d719002ac68e79ac2e4fb30aff8751f6d52de92643a2', ['2026-11-17', 30]],
+  ['5a7a6d47802c583bad70e145867532eb04d8a1d7d72d5cc00058798ced29a835', ['', 90]],
+  ['5addfca52d6180878c64865d4ae1aa95c0c65cc5122382b2e713a9fafb798850', ['', 90]],
+  ['5bb85e0788fcbc808c0dcda11b3cd9590cf0df0b14bdc1f62e455c435289877d', ['', 30]],
+  ['5ce4252b0a90d240329628ebe7015876db1d7b677e55e2d30d03bd1943b0953b', ['', 30]],
+  ['5ce82765dec8d0486d7f7bd77d6979c0ec9fb117a3085df19894c9e1c935fdea', ['', 30]],
+  ['5deddc7eb089c621f1f0a872e624d894d970083b3791b97785a97db9684d7ba5', ['', 30]],
+  ['5f07540254539f7f3df62cc026d146d01dd7d58ffae8ccbb40a93f41e2303a4e', ['', 30]],
+  ['6074af225d5e00e7f1c00d9b651002f94cb6953ee709ef449cb97cc5b4df1c0b', ['', 30]],
+  ['611db0e2fccb7696017229ac6fdd4a274276c6b6ec5971ba9b321fc58cae16c2', ['', 30]],
+  ['62b16c10e117c51665a3e6e77852c3151901c5c2b33cbe6c3180efbd3a7d58a3', ['', 30]],
+  ['6409a94120acba7ce9b09ab660c9f2b2bd574378cb242c72104faa88ea835721', ['', 30]],
+  ['64801358b9f05688e0e0aa3fbde0afa656b2e7cc37121aff6f0dc33397295938', ['', 30]],
+  ['64def2be3924a7a6a5c3bbb4e0a5d125ec1f3e87d1f1f3409e8d87be7b4639c3', ['', 30]],
+  ['6636bedefcce69cc72bd3c95af5f580ccdd28c61dc734a90faedbbde1e4515ab', ['2026-11-17', 30]],
+  ['667c95400150a017777da5cbe97bc56bc7c8c1e840550f1e2b81c36e535533b0', ['', 30]],
+  ['66a646a87e62a93ec5f8f17d4a4a4465da9271cac1abca59dde6e50224fd51d9', ['', 30]],
+  ['66e08d0312243cf6d1e6511a1eddfb83b95ee7fb8d8656484dfd35e8a644b69d', ['', 30]],
+  ['679442fe8cf000bee8e07000d21ee23dc43e9cf427e4f81ade714c1fc9facf4d', ['', 90]],
+  ['67abbb943e14aa1145611da1a3fee3eb8b006049fe84048f334d3c9dc7978b4d', ['', 30]],
+  ['67b65e8b0b18e800a13918061e98b2965bbf5efce6774cafdfe1ec498437ef37', ['', 30]],
+  ['693014a4c9af27f73bb0cbef3e377b87a57fa1073953880107743c34c3ebe4b9', ['', 90]],
+  ['6983b54cc529dc2acd77e41eddd64175ee6afe935fa6ba898f6ca428b1b743a0', ['', 90]],
+  ['698769c0188bf3395a884f81d650471c1fa9f1288ec04bda7d8fa972172e8afa', ['', 30]],
+  ['69ffeaea9d5c444086f8453dab04a0d5b0ea16265a53ec9d98cf373142b69652', ['', 30]],
+  ['6a43bd877f207af19a648ba9764c548cc440f7d16e13d3e9fe00b299ac815a7c', ['', 90]],
+  ['6a7f5bb50f43fa44abe3e22bf325135671870af2fd25f13489729c5eaf3d1dc6', ['', 30]],
+  ['6b09c50d82b9e0980ace5af082cf36ced23e14b74cc125e0d371a1a5655f2c0b', ['', 30]],
+  ['6b2771fec35ef0c6469179b291e48531a252c93520ada3b58013b2e5657bfb7e', ['', 30]],
+  ['6b60bc3793a4854fe568b23db097372d9aeef330cd0880d1516ccb93dd20141d', ['', 30]],
+  ['6b7bb86e6a631234884f787acba62b515349b110f2e5b6e6465e3c35e0fae743', ['2026-11-17', 30]],
+  ['6dd86a48c646818febd44f6c6872c22528e7eeeb6959d3ba01c41a74e4f5a258', ['2026-11-17', 30]],
+  ['6e0d77e9620da77c038cdbc44e969c64271ebc700ecc3381d00f0eb7d0150f70', ['', 30]],
+  ['6ec0987aba9edba23df051108acb085a408b7ea4de77857b001107f7ddeaaf9d', ['', 30]],
+  ['6ed6e2a83b7f64837fa099bed4427139395c15bb87cb7d015e23d8bb0b5cac60', ['', 30]],
+  ['6ffd038e08c2cb9b7204696bb20bcdbe6e0eb46bd6e0d8187e229e6e8cc8ce65', ['', 90]],
+  ['704af381b87977fbd5ce430266c0eae319e0b716454b9a07c508eefde505b7a3', ['', 30]],
+  ['706f13550d8d8ad1ccd2c53d0acf1c15846929ffc3a81234273607b4daa9923c', ['', 30]],
+  ['709977a940655315c2abdde24290b91a8df73dd20f744daaab9a7cefd77e4d97', ['', 30]],
+  ['71defb1affb2cbd0a6f98e9c68f79707bc13e62518a9b02acd2ccd259b009389', ['', 30]],
+  ['7207a486b6f827e81018421dba4cf66b247483fb1744ca41f61b0864891981db', ['', 30]],
+  ['736533dce47a57327da5009f91a306dc01a186605b7535a602f07dcf56375e20', ['', 30]],
+  ['73a62b6e46c4ab7dcf01cf0f2c384d4646166444b6be6e602eaccd17e0db72d5', ['', 90]],
+  ['7465c911c9486b9e5e01360e5e45ae00aca2ae0f52c6df01cb098da2f81c40fb', ['', 30]],
+  ['749412dd95ed69de10b523067979de2986974fc3fad3bc8770cee80e9980d9f6', ['2026-11-17', 30]],
+  ['751983cc521a2cf8dd8caa14cbcfb58c709fbb5f6c2bb483988985fd02bdab1b', ['', 30]],
+  ['754d467aec112855012883c215121375352867952a0bed6c6448a50a81cf14d3', ['', 30]],
+  ['759a0229656b3dece627160843a751c59ca8b46d95ada4da9f559c4056b1253d', ['', 30]],
+  ['75a1d35783f06be1f930c392e8ee3bb6220807e2db7f8c69bf1f17f69aae8fe1', ['', 30]],
+  ['766b435af56d935381bf7ed283f4edd32a6cc719da7abbf8cf48557ffa78b3ff', ['', 30]],
+  ['7697f3996e4172df23defab35978c33984e0f504182f5354ccc8b946bcb1c3e9', ['', 30]],
+  ['77905cf753f520ba82288eec088ea5e009f1fd3c9c6ac002a03edc4632c0824a', ['2026-11-17', 30]],
+  ['781bcef574e20373c334529d4487c7b65077930bddbdf0cb2fb389d05e5610ca', ['', 30]],
+  ['781da2e3b9a7348f7bf3e881abc56a3497fabf0f098fd76ee652c8c6cc9d4c81', ['', 30]],
+  ['7830c030c66d71f397255e2bb4703aaea2707b6f23f7184883d0113745438e00', ['', 30]],
+  ['785e6340f9694e38cb4e8cb216be41decb1bd628a4a68c93ff41aba300ecbc50', ['', 30]],
+  ['786e46b90b1aa4dd69ac6e72320c46bc51917fa5f18d51ef4c6c720e53204ccd', ['2026-11-17', 30]],
+  ['7a9488ba05bbb2e485567847abd61a73421adefe5b2c3aa0265ca7dd48e67f40', ['', 30]],
+  ['7ac8e95307f3b62f9ad08a2635f3caa125bbd190c67e2eb9e53ecf112fe4591f', ['', 30]],
+  ['7ade984a58fc636cb94e6c098173d49386e89f7a7969b3314f40ed148d1be797', ['', 30]],
+  ['7adebd32fa3aa104867cea2d9b9ca96484980d11c40dd12bb648448a70b8c598', ['', 90]],
+  ['7bb87ba3a20b7828b35171d315ce812f2c13c8ec53902eccc318463cc2bb5f28', ['', 90]],
+  ['7c33dfe9e9f99e5ddea8bd691e585c8f5b75d1eda6a903972601c02ee668d6d1', ['', 30]],
+  ['7c6028bc9b94e647f6afcd26e1c45c492507206b08beec7e25fd07a8daf5a2f4', ['', 30]],
+  ['7c94d4a09ae92c268770e35e766b3a00b7af928bf73ad763b9412c6fa0616a69', ['', 30]],
+  ['7cbc3c4a19470360ace89ba3cf928d6792b9e2dd5d4cfd61de5fc5d19ea7b51f', ['', 30]],
+  ['7ce8dc7fd56e2727ee461568ecac1700f0c7a6787a22a1251da2bc90ef36dd24', ['', 30]],
+  ['7d4b178e0415af3fa189932da3b397f064cab4e65e6ad5e5d170568b8e00e577', ['', 90]],
+  ['7d7361717afc75e52ebbf006e0ea3a3cf56452301f0b8762596aecdc6d04313c', ['', 90]],
+  ['7de5acf4d921bd706012a062c1b29fbb4fa7c4107eaf02ade0e3dd9284dbff53', ['', 30]],
+  ['7e5448ff01d1e090bbee2fc95a57756cc778d463d386b8affb22f089ebe91ddc', ['', 30]],
+  ['7e7dd24769d5f7f2be05bf04a406be6c184d199c91c7df83ca8344716087a4df', ['2026-11-17', 30]],
+  ['7f03abf161cbab288a6edbb171f86833918f5b97a31ed5c02a23ca59582ba728', ['', 90]],
+  ['7f041c75694b9b279e1fa8704994674460c12650f9b6a432f8789949e58e071e', ['', 30]],
+  ['7ff67af52beb57be83dcf0bec01a74d87afa479d29a89804a80705fd39a05cb2', ['', 30]],
+  ['804c81c4bd97d137e29085dd82db7c4275912afc07602792a67110c2656f75a2', ['', 90]],
+  ['81b71ab4b173417a3006dc9e30ef9fa0a4535241c6fe0b8f7812637eaeda1fb1', ['', 30]],
+  ['820f84e86a5ff407d9649a90a46c74ba732a6c7c4f846616962f9f58db4ae8d2', ['', 30]],
+  ['82d162798268f54e2b0bbbe60931e1249c28c682e3a414586fef4640036cba9c', ['', 30]],
+  ['8330b2838cd3a35cb99fc55f41b0ceeed93ca17ecc2754692d9f2f6afdcbed1c', ['', 30]],
+  ['834d70b200848100dbf33867f3b1d87ce7eca8358cf1122c518348c3bf6afac4', ['', 90]],
+  ['86d1a75b65bcc6fb6cf8daa542bf0ea1d47d46b5806427eef9afeca005e6da4e', ['2026-11-17', 30]],
+  ['88293e76f2e6832e3fa6c6f5bc77df7569f7d22e22a230e242ca0ef3a7778eef', ['', 30]],
+  ['88456eb1fcf91a452fc9be30ba86cf6fba9fc740a2d765b6e0e644f8f2a5a6f5', ['', 30]],
+  ['889a551243b481bfc8d6310a360ec5341d62a5f60fc2317627103f582f75c6db', ['', 30]],
+  ['890aa46dbd2dbcc8e5626a1731a96eefb7a1a5d1901e04f2c14817653f59c6a0', ['2026-11-17', 30]],
+  ['894360737a619601e56e065f2c05ed96035a5ca3ea6dda8bc1c971c30d78ec18', ['', 30]],
+  ['898becbfad8cecd8d8bdbbc078240aee24a3753d2466404ec19c86fff64b0994', ['2026-11-17', 30]],
+  ['8af6b8de118e736a5a7ca058b159eaf29d8904fa97755505115c3126803af033', ['', 30]],
+  ['8b034865ffcd2a3d479a499c40a568f642fbddf8729fc6f502079e8af478f195', ['', 30]],
+  ['8b13931bbdc19e3bcac9566e624f3bdd71087beadd1981ac504ce540c8a219e2', ['', 30]],
+  ['8b530d2c17887988cf1b8b2e45efb360b139e5b29958ca109c4c0fce1c4181db', ['', 30]],
+  ['8ba34729c090858650decab3add3228bc22ad0882984cf5526f1da1362e6d014', ['', 30]],
+  ['8d3085d20d5c9db4b8d93de97eace13090e67f5010f67a2a11c7e5e2f993e081', ['', 30]],
+  ['8d30e38c2bb2c7c779b594159abbd6627dec899ab1dad51d0f159a2b4f8d0e0e', ['', 90]],
+  ['8d330e669d541150bc0e4c151cd5942d208135ca0f499ee8cf968e721fb9c8b0', ['', 90]],
+  ['8f09a6b3a043d10eede143a7065acb613860f0c10cd33468bc3eeecddd991ab3', ['', 30]],
+  ['8f4abeec75c864bbbc86922aabfaa97cf6c77c95a83c86a19c0b8e3f9e382d6b', ['', 30]],
+  ['8fd3fbf7ed3a407de02c0eacab0591ea54aaa7620ae3c5a57f6c3d6ef75c3898', ['', 30]],
+  ['9144943b9d43785afc7046a202246ee0786cf18f96460366dbb0d8d6bb41e048', ['2026-11-17', 30]],
+  ['916d3e78ad355af53f656cac13c20ad3721376e4dfb85b2957d50a7c45a3d125', ['', 30]],
+  ['91a953ce5ee0c60ee0158d2c41be29eceb09a1d2b12a47a37c1bad0bc7870a95', ['', 30]],
+  ['91bd9fdc9c615ee4f71b38d1a00ef16c7913bfe6819aaeda89d787d8e5e014fd', ['2026-11-17', 30]],
+  ['943a4e8aa4228ff4e5d253ea1b58599775d1998d7f09790ed3dd13d238eb5f28', ['', 30]],
+  ['945dfad3a7f2533eca50e03e2df02744d001a45992d8ac26e287f44b0423bbd7', ['', 30]],
+  ['94c2c78bf49cbf52ca51f0885be2f4eae1bf5ce8d79ba1aeb551ed27295c334b', ['', 30]],
+  ['9554eb4433e2a81744860fe9c29c2993c2edccda6fc93dbdbfcd0bedca8d241f', ['', 90]],
+  ['95a20a3ef2e1faf4deb38fff60f2cc5ad03195ea1d523718156d17c4a3e15a95', ['', 30]],
+  ['95d0dde94486cf4102257a9385a30b198dfc86527ca0917c02d6fddbcf8676ab', ['', 30]],
+  ['9614a6f02fb276f016fa6dffff6d2b3a5238591a06fb56ef745e405046bbd757', ['', 30]],
+  ['9622e6892fbdef588936754124ba840bd858985954c0824dfd5667fb33306760', ['', 30]],
+  ['962bb851b99ae88037d9a20428d861cac9b985e9efa6f0e15c421eaa60d2d673', ['', 30]],
+  ['963b1d6a4cd66989a50b98c40cb9edf27c9ac6a147d81726ceef5f1d33891529', ['', 30]],
+  ['968e9141f5f9c3fbff0f4f90e9fb3d31b4a8946f4c209f7a90673069749e5ef1', ['', 30]],
+  ['974a688bed27acce2fe09431735c28f0127d82a0a8e4626bc0624218a1d6eea6', ['', 30]],
+  ['978d04566ad7e5661a9bdca98fc6cd93b06d9739974c5ed6a22cc1f478ee53f4', ['2026-11-17', 30]],
+  ['98b90967f6da3539312f2896c9670d0515187cbfecbc1a9bab05e5c858858327', ['2026-11-17', 30]],
+  ['98dd3444a2d23c6733e40652be46684f5467e370f7f1acee76e6cbbbe68a1901', ['', 30]],
+  ['98f9b42d43851d5c9c223a3ed65b230eb939d1024fc337a0e1086e06fcaf8673', ['', 30]],
+  ['9941b52a6c0d7f57260bc90728635c62bcfd6beaea4bf326b9d87cf902965d3b', ['', 30]],
+  ['99634505343712f8a554cad977d530d05d4e02100e85ee4735fe5bb9e2d3714e', ['', 30]],
+  ['999487b26940970140a74ea4a2d9c510e8b2034f11636c530cf712b6743ae27a', ['', 30]],
+  ['99e3e253df2c524852f1821be9fd5009393257f51a610b7a3ccab13a831d229f', ['', 30]],
+  ['9c17623a76d969533ebdb65a7fd511824eb3626566ea597f170b58fbfeba8f71', ['', 30]],
+  ['9c674c16f6833267451395ed91aed226071506c7bddbc4db8cd84681d42b6171', ['2026-11-17', 30]],
+  ['9d111535db3172736974ee2554aac9018e61039b5649b9393f3a19a75739d816', ['', 30]],
+  ['9d7c483b619806ace8f7707409d1cc5ff13212c21df963b18d268e6c9df7e3de', ['', 30]],
+  ['9d800f7db92c6c764260181e7a09ab9c5bf3b169359f7e7a547ae618e82132c9', ['', 30]],
+  ['9d83a1b134e7e22cf8d7a094bc723ce931d3384b728512a770dd48e6b63d18f5', ['', 90]],
+  ['9d952cd7d5d89a2c02eae27467ac7c3e2ee3d2bb9053edeb98204f491932cdaa', ['', 30]],
+  ['9da93b3787334e66400f41a17558fdaa8c2fff9e0244875062fe66c4a31579b5', ['', 30]],
+  ['9dbe36a0e3775aa278a2c83645bf7cedad277dd74bf22568455f8e0175f38273', ['', 30]],
+  ['9e9395ab33ee04417c3d75b2d41e82f032008539ac98c39b42fa7d27e876c4a0', ['', 90]],
+  ['9fe2fe871268a1d44c986c456c123f8f710b4a77ee77ff5d9aef6d9c1cbbfdaf', ['', 30]],
+  ['a0029ab535e7f634fcfe7039afd9687d4aed44bb44120269545f2162abbe9e3e', ['', 30]],
+  ['a00ec5e899018841d019d14dbfbf800052672ed04716f3d8649245e709e4a2fa', ['2026-11-17', 30]],
+  ['a060795779b8f7716fe8043e64c2e776257436d6469fe76d905a04acba3b7022', ['', 30]],
+  ['a068a126d82498e2d3cb322b1cc52dc7c990b8296cbd5d0f987be8618989b9a3', ['', 30]],
+  ['a06cbdce68edbc34c0c71ae16704c19dbce405cfbc528060ee11e0e743e9561a', ['', 30]],
+  ['a1f0d5412f5d12b8e64b43987241341eabe4f72ea303d5c97f821fe047b8b7a7', ['', 30]],
+  ['a4f4cd963d09e50f7edc350de94bfc0f4f7f5ae52c0c058bd54f11e13b478129', ['', 30]],
+  ['a5047c8553c65b935827499a0ecb35fe6df651e103879cd6c04e26e59ade171a', ['2026-11-17', 30]],
+  ['a61b81c50945ac346af8d8688f186eb2ac458591affa4422e29c3ed7f07add49', ['', 30]],
+  ['a645b06d1549d4cbc74a89a6eb0ddbec30796a8cad1b70d30051b38681dedbcd', ['', 90]],
+  ['a79f18389a3774e5e4319328017cb29cb3fa2e885de2f433909247574c774a4c', ['', 30]],
+  ['a7bc3c284d217514405cf54cf64a948b3a14524d7cbdf5ae13aff8aadcfb6dd7', ['', 90]],
+  ['a7cbf71947ed09b8ddd075fd26ca60da65788c0392a14db602c02ab7dfa02d80', ['', 30]],
+  ['a8bd782d8c06dc4674230aaccc0dc45f19d9daba1efbbe4d3832074cc6877bd6', ['', 30]],
+  ['a96e60dc3653f313c3cb4e3e832cba68a98ede1334c2b0f2042c59baf09669cc', ['', 30]],
+  ['a99687713a0772b74b69114119e0c7ec65abc94190d4c22ae76ebec9207522d4', ['2026-11-17', 30]],
+  ['a9cfa988c56c9d0f67284453974139be90b914189ea44e29c48e2ab897d1dcda', ['', 30]],
+  ['aac7adc520a7070d0375ea8a673a9afc4c4cbfa032411d64d87e5bf0444c269b', ['', 30]],
+  ['aaf2aaad70fdc9d996dd611066fda49a3cb49ff4787c11ee31ef4d73ac76eb3d', ['', 90]],
+  ['ab29d59ffe46d5da365447531ec462395fed2e824bbe135db25ddf89bd30372f', ['', 90]],
+  ['ab66aae23e9792320affc16999f551fae70373c6aa37f200b1932671059e39e9', ['', 30]],
+  ['abb68522b7df8f941dc72d00bc6830f39109e61bde434382d70c4e4bab36922e', ['', 90]],
+  ['abe1efbe667ff95d68befc8a34059392f8a5ed11abb739c49fe906b29676e64a', ['', 30]],
+  ['ac499c92879d726616450a899b6af7680ba186845e8ee3ece3ee14e049b98722', ['', 30]],
+  ['ac70af082c35803127621e5742fa77b54fcf49edfa8f6cab6be9b81db5e36f5b', ['', 30]],
+  ['aed85ba4d89bc65bf0a38a4d868e6e65c57f219646fe52cb5ad9da23bdbc50f2', ['', 90]],
+  ['af1f9cf542f3abaaffa3db055048aa84e4d28392d49e12128ee5e45040023bed', ['', 30]],
+  ['af27ddb9d18efc900811f52ee78e1dbe6a45a835b6ac04876ccbf0ffa39618ca', ['', 30]],
+  ['afc500f9fcd14cd3e70efaa5db2c0ae33844e40266c0525d84df8e905acd5ab1', ['2026-11-17', 30]],
+  ['b01a8e52dc89a8fe547381c3e20e6be9068fffdc6e2e1687e000fa927fb3355e', ['', 90]],
+  ['b02230c3cefea48ea90b687a0946ca35d207142b02bb18a6a56f3daf12661511', ['', 30]],
+  ['b05262a744e5f64667bda273d3cd77cc1f60cef733687eb0a785a14d0de71faf', ['', 90]],
+  ['b2214e088dc3014c4d22e19c0149356a11492828f516d666c34115ac8a56088b', ['', 30]],
+  ['b2ab545ec85cf35ad020d5aaf43f0cdcc45d5daf491b93dc26e0b6d334e147e4', ['', 30]],
+  ['b353ca15fde6b1cca04054471a7c2457ddd5217b560ec3a3da7de87be55e0557', ['', 30]],
+  ['b3ce36021dba83f385767082dffaa37ea12b7ca460701b013a9b40e9461234a4', ['', 30]],
+  ['b4362c889a58c7b81de0cd2c6571a624b7ea9da905b223eb1e0d308c5d9bbd91', ['', 30]],
+  ['b5533a2444a1a69c424d5b133eaa87a977ee03cb12d801eb601eb01806198916', ['2026-11-17', 30]],
+  ['b5797e7fce4d6e6c6c57e0e4310a1c3be17150bd6dd3b2b93d08f536577b7e3c', ['', 30]],
+  ['b58d686bda3dcb1910a4e15b68cd1ad73aadf019cde4ebdefc21b3cf9bec353c', ['', 30]],
+  ['b5a4f0b97ec71a0966fcca4bcfddadb35a550353bdcdb7f8531435cf54911516', ['', 30]],
+  ['b649ac4bc830e49b3ae24e9c6ae50683e82b22f4371f5b807c6d2e578229cf92', ['', 30]],
+  ['b7916585aa434bed1e780e4422adf524bf02b2a64d17b388b795e013d77fa25a', ['', 30]],
+  ['b8959d644f219fb82ee3955bad9934872c08e5bf3f7187c369a4223c7fcbeb54', ['', 30]],
+  ['b8ad732ddf898f93e0733b838906ff1579a88b3bb8412ed0d484ab2c19761a63', ['', 30]],
+  ['b91c5da4b20eb7ea3153246816a92921614b014bf2495013db1ae0b124c2613f', ['', 30]],
+  ['b9878552ba48008b5a59af30ccaba7abd4643a8ba26c2a311bb3a7b300e8405f', ['2026-11-17', 30]],
+  ['b9d8d3071107dfe1e8771cff490c0eed8a6a5ab9a7afaa43841cafc7f2e3a4b4', ['', 30]],
+  ['ba4f2584390261b9d19d5783914df4827f286bf09d89078841d5f2b8ef704e1e', ['', 90]],
+  ['ba8ddd136dd61445b10069081ec5dac031665bae51882325c5cea2a3a8299188', ['', 30]],
+  ['ba926494e76820c7842c993e6103954253f949b97a36e90810c6958f2bc741f5', ['', 30]],
+  ['bb7c98d768410632e5736510d2b984e06e245a4f15f8b5ba22fa1ca378c6404b', ['', 30]],
+  ['bbd38b170caee080e927ec6053a77dc67a1d47807756a51ce80c29d30498b8ab', ['', 90]],
+  ['bd9e9136524f9750b91aa5b08e6e6b936c67e3bf6acb35fd611c40f8b7e69778', ['', 90]],
+  ['bdafe55f8e7e93ae268011268d1ff2843816325f3da1ddb38b78caf674104312', ['', 30]],
+  ['bdcd7bdd30b250a0e1cdccb32099809c40d2efbc38bf1f2ee4bef4f4aaf581f5', ['2026-11-17', 30]],
+  ['be36d0b1135b733036ab257aafda92f3bea3dd6e18c7e73b050b2514e9b7d01d', ['', 30]],
+  ['bfcca2f9185932ed6f06a4f0d90e6fb2525b98eceaea0109234237b3c3b41068', ['', 30]],
+  ['c15c52cb3bc5f7b41566a6aeaa656d6d1c2ea0fad4b8d1665725a19c8523f9fd', ['', 90]],
+  ['c192e5eb90751a95c66425d7e886f9846183fa4671cf6b58681a1b63ac08c7da', ['', 90]],
+  ['c292d7032e2a8243e8b35de832a05fbb2a71dda66f6ee288496b0fe9dcafdcd7', ['', 90]],
+  ['c3a9853af8cf6111d9b152ec8bb17c18917b396d164f867f50cf1535b457dd39', ['', 30]],
+  ['c4ca694bb1e2cadf7447b9d5059f37275107f5789f392079353c3a44e5250216', ['', 30]],
+  ['c4d30e3de499538baacd6165a037b82294695bdd4e9c7b8dc073f431098f4658', ['', 30]],
+  ['c5d10a6460a6046faaee3df3c9bd50f51f035daebb9c71a3d52046d08fedc6c0', ['', 30]],
+  ['c6337c0f5319848fd611a252e88efc097a485858905e7984cb83d0060c1d3af8', ['', 30]],
+  ['c67dd4924ff99ad64298e04376fffee0ee5d77ee1a00b0be7735d7749f19f0a9', ['', 30]],
+  ['c6c2741503146454b1663a384fc37eb8da35a8ee091163d9d1fa66e2b426944e', ['', 30]],
+  ['c6d3a16f6dae789626ed2bbdd6286202cc9fb8a31e1d58997f246a7af30014a0', ['', 30]],
+  ['c7591d198fc92b122f3764f802436c405fc8e98574b6a8da2621d2ad017e4071', ['', 30]],
+  ['c77036be53b86fada3e6904cb554387123bc7eb537d40bfe5d00eabd9a64b997', ['', 30]],
+  ['c7be61c262a0e9ca1ab9cec6f6a3114ae62fed2b287ffb1fe6f271f3a137ff68', ['2026-11-17', 30]],
+  ['c81b151e45aec8e0b87c41169e7ba1b96b2ca3804230369a7efeb282b984dfe5', ['', 30]],
+  ['c8c8aa8dd41fe1cd730b80601ab468f2392c27f6ba7f00d1ec8534a2ce56831d', ['', 30]],
+  ['c8fe72c341305298ebe5346b3a83db7dfb14bd3bd6073e47ac9fb532cfcd8903', ['', 90]],
+  ['c90d38780ce3367dda2039977f0ed00deaa783f241ac10395b976023d7910093', ['', 90]],
+  ['c932b002c8ec0d0f9e07e1d55bbbc307b11c49b632bfbece262f90235f460aab', ['', 90]],
+  ['c9cfa73e54c969d4100314db7f86f90ec714e384fba88ebbce766ccfe9c1b2cb', ['2026-11-17', 30]],
+  ['c9e86f769a70578a548977f62162924fb2defad65aea0cbf383822dddc1f31e8', ['', 30]],
+  ['ca7e3bdeb52be8a0a655b9bec1d14e5c90252115f4f863a43389ad8bb7009560', ['', 30]],
+  ['caa671cde21771e28e663b3e6073f74231a426dc496e719f378704d1f3ec637d', ['', 30]],
+  ['cb56faa9898f9ccfedc33e570ec47a37292bf7bb6e6a589f705780852dfa658c', ['', 30]],
+  ['cc18e9cc284ce8912e6875d14ef6c38720f559e35cd89305d5c2bda7d27d0e99', ['', 30]],
+  ['cc3c4d0570a480416a08343bc2af65759871fd38adcd44878dec65490c6a968e', ['', 30]],
+  ['cc52da85e58bdfa44b41de4032671801417500747363fc3718186610308fdc52', ['', 30]],
+  ['cc78ca3862c6191f8f8f1a9f0b695a7f86a3ad09ca7a2a0f49ac5a527f5bc7b0', ['2026-11-17', 30]],
+  ['cd2b223d876a68f2dc6bf59cd4e5b7f596209be9f1aef77c4b8234563d702944', ['', 90]],
+  ['cd49735ca011fd87d520348ac6d3d931ad1849a2c544789ab094cbbf743df4bc', ['', 30]],
+  ['cd60c166df0dd3d2f08c62517c4486b06f1dd799eef125cd6bd71f19ba0614a5', ['', 30]],
+  ['cdd398b2f7b5a840ceb2dffbf836a0ca8505b7b7b0ddf46b379fdb9404d9eaf0', ['', 30]],
+  ['ce5f00601bc08c6bb77877c14ca93ecf64c1f1f1be2ce31222e06706fa056775', ['', 30]],
+  ['cf073fd7a8611f6571568bf30bf915d9e67121f1d50587b31f7150f13258f633', ['2026-11-17', 30]],
+  ['d03dda56a2f7f88ad265f6f191016aadcd29f5391258c52d709ca549ee6f9da0', ['2026-11-17', 30]],
+  ['d05b4939ef351f22247a35060d1c7b484101ecb09aed3386f1b56571709812ba', ['', 30]],
+  ['d0615bd48ce644b756535448cf7d5bb409a360299c4aa632ef0dc8603f1acf92', ['', 30]],
+  ['d0c66ffc7f3e51377da9bd6e2f5a3869c508fd431ab5be826c269e3ce3cb1e83', ['', 90]],
+  ['d0f592916a16de420a4997fa9bd769cb6658a9eb7f20a2aae64dc6beea7c85cd', ['2026-11-17', 30]],
+  ['d14c8de2b0b684d294a1e06e88bd464bf8bfd65b391e21338dd0212d65c8f704', ['', 30]],
+  ['d1db0205c3b8abe3d9335428ebeb4596a7a3959bcd7d5df7fc52ebe77c32ae59', ['', 90]],
+  ['d292a4e09e608fd57b9df9f84ca79451cc9c2f516efac9e1b8c3a323eec41523', ['', 30]],
+  ['d2950f85307597a5cbf55d528d26ea7f4284a40cff8ba42b0690ba88bfefca65', ['', 90]],
+  ['d2c876ec3bad78e57e7ad85d054f9cf0bf7051680147d93688190cb9ca28b7b6', ['', 90]],
+  ['d390f06bc56d92634ea7ff27eae1c3fe2eff770941352fb96876079c13f0ebd4', ['', 30]],
+  ['d39f0c6fe0faff5c75d4910c43243b16d9114fe3cab8bbe2c611f3de87bdae01', ['', 30]],
+  ['d5300c2c36340f5e14cd475020740757803de941b013042ff4f83f397f6af391', ['', 30]],
+  ['d5c6368a3dd4fa3b232c891d410087acf27b5ab6aaadba882fb4c3588b718937', ['2026-11-17', 30]],
+  ['d6d11952356eef78debe753d56829df894fd480f374dd7bc2edff20150561106', ['2026-11-17', 30]],
+  ['d72c2b40aa1b4512b3dd7fd1001e21d687991459c8b580c8017fe4660691ef99', ['', 30]],
+  ['d898bb61a18c3a4ec9779f8efad685356905461d9d2c97e55f5d92f283ef5eba', ['', 30]],
+  ['d8fe2f881d51b115700a9edef0222791c93b6ae4fe93776a7e1ad1262e2b4e6e', ['', 90]],
+  ['d960ba2c3405eeb1eb76af6f414a1dabcc88fb07b89b8d66d444168ee47ee440', ['', 90]],
+  ['d9b022dfb4d6f856de524dc50c71c3229048d39d8abe8fbd28dce36c4c105ac0', ['', 30]],
+  ['da44191636a65c3a70840403dc5a0324d31393024056c7e18b1b36c9bac95774', ['', 30]],
+  ['da4c262fe518e299deb8dad4c107f8309bcd7ba8564f0d183d2e40f39a50c34a', ['', 30]],
+  ['da798174310c01597972ec1e4cb4d05d0505d0e9df52a99eacad9af06241cede', ['', 90]],
+  ['da960573f665718d470df50db7722bc4ed3f82854124dc589ff31f34baa28628', ['', 30]],
+  ['db31cade78d5527f7e624c2b8ffc856c72028674717a1f01e9ccdf233596aacb', ['', 30]],
+  ['db531484822d72792233d7d7adfd91a9d30b61fc031afed73e45444036e0c7a3', ['', 30]],
+  ['db8939d2526159d9224492072b9634b0c892d79a53453fd0f39bb15a80381846', ['', 30]],
+  ['dbc0eb5d458f1e4064d9c7b636d5f70f0eb210e54322a871b813caff9ebf5063', ['', 30]],
+  ['dcb93bb32f2fdf8a73b70494d02df3c95d4c080a4cf1ab3586ed71f2ccee0660', ['', 30]],
+  ['dcd221a6711489fee54212710ff24d969fc25b5b2f145233ff7619066cc72c74', ['', 30]],
+  ['dcd7790acd7ac111391f3570305de6d5b7c53b9893c5a10a2c3c9bc5c5fa9668', ['', 30]],
+  ['dd0830b1f6c3f6e7440161685ad050fadc00b5b3bd459ba0e0a71ba35a2532de', ['', 30]],
+  ['dd29d706e3d832eaa8bc1da53d0435b71aa65ec949cc1f087b562712298b7c19', ['', 30]],
+  ['dd79363984068bd8d60b0b20c87fd8155768277a515141c3990438579b190cfc', ['', 30]],
+  ['dd8a9701744161ba0d1b5a92add9a363046fc6cae6a5a69f48538ae3361f6dc5', ['', 30]],
+  ['dd9b9e166cc6cc853338a619b9f449810a839efa550e1fe7d35a4ec5961b4d02', ['', 30]],
+  ['de0041f4b5354aa7a4789b541aa607022b9a7ff111de024d6c32facdd0a8691c', ['', 30]],
+  ['de216784069784b7e55f2efb67bbf73a8464dba86468461e1f87b3f7114a71ed', ['2026-11-17', 30]],
+  ['de2335a0809ddb918c7b03f87bf2cb0b55bb84be0586fc7f2a46b8fb4613b13a', ['', 30]],
+  ['de5b9944ae48b965e305fec79a3523f3ab2599e89a6cc142cf1e39e0c6c03f54', ['', 30]],
+  ['deef19323e93a8eea378383fb39939fe5c3eadf1a5a5a6d4bf8307f890414578', ['', 90]],
+  ['defa34a42b1fbf2de95922b2672df3a98890368367605509b2d055da3920531a', ['', 90]],
+  ['df2d0e0fe0aca9837d5ca0a99882940909171ef33056d755a5befb9e7ed4e654', ['', 30]],
+  ['dfbaeb9748c62bd01e99cffd5aedfc866e993fcaf82b841859a961d1c7be0c60', ['', 30]],
+  ['dffa96c6d78d912f050d06ccd74654a50cfa62ae40db4cfbc4a7c8d0cf873f27', ['', 30]],
+  ['e005c4c181885686074832fbbcc94fb44eff8964c8d06e56c8a47f9a40e7bb83', ['2026-11-17', 30]],
+  ['e0a7762a97f27b4eaa96ab835b816018982a7263001042a0dafe9f54bf69b280', ['', 30]],
+  ['e0abd74e27954fdfccc7da80b36c62e90c9e6c5485fbce73e12e11609bd02f14', ['2026-11-17', 30]],
+  ['e17da070e0053c0a70f5b22b4d839a77ce1b40cb86fd80aa3cbc73b5437d5c86', ['', 90]],
+  ['e199cb741f7a56af58f85c1bf44086ef599093d064368154f308800f0e957aa3', ['', 90]],
+  ['e1a8b4a7cf6fa73fbc2f2d23dbdd5484233201b95fd5204101ae5e98dd71a313', ['', 90]],
+  ['e1c10122e65ff0718d4e88e84d518dd527306bcbcb1530c287b0a7288649fa16', ['', 30]],
+  ['e1e77b9c049f59e18ab13977a8dcf3f4216da8b075de8787e4655d19900f132d', ['', 90]],
+  ['e1eaf897feee09d590a0e3947258b311d286afe555f004a2e199419fd7ab810d', ['2026-11-17', 30]],
+  ['e261bbcb2771ba188777443b17b0f589badd37bea5d3eea63a359a7d703e4f54', ['', 30]],
+  ['e3a6a64ad18b64d296eab0c3bdfde80cc77695f28a79fa2215fc128f556dce18', ['', 90]],
+  ['e3ac898a098e315a645ec5c6c99d09cd082419f8dade63615de63a19168ff0da', ['', 30]],
+  ['e3fcb9af925d05901bd348e9accaad7a74133649c5a3bb53bad9197a08154f08', ['', 30]],
+  ['e49c430953055c586f315e8619d3aafdf2d4d8dc7fa080fc769ac1388f2ee378', ['', 30]],
+  ['e595189d853b1640f688e09e29649d5d3c1e647fd61011cd6cfd69e538c12625', ['', 30]],
+  ['e61cc5dc9f77e58a40b69997edcd7e9c4d7ae616397aba4b56e29c0544026e10', ['', 30]],
+  ['e64fc9e9a6523dacda0c4f018cebb6ee2d34f6dbe116d2290280d8d5c7833654', ['', 30]],
+  ['e69d86a7db3f5925b45188ded6dc8829930cedc9f8f390af77de9abb15bcd8a1', ['', 30]],
+  ['e6a54f78ba92c4e64e0cab22be29ee20aee7cfcba16dd1757be5fc1281d80449', ['', 30]],
+  ['e7222b6bd681f05b0bb1cd2c38bab1e3943c91b5f2b064de07c8fe1ae04f2920', ['', 90]],
+  ['e7a306c195dcb8c188dd3127bd3c9099e9a0fcebedbe7143e6233a33efc4e5ea', ['', 90]],
+  ['e7c522062b08f2f6b09d7676b6aab581911e2a72d4a23c662456928e9426d343', ['', 0]],
+  ['e8c56842a272718427c24a6e6c4468d9ef22b5828e50a31a2ee667367dd6b143', ['', 30]],
+  ['e95897a3a3a2fb7f8dbbdfa366e587ca10a17fc49bfc3133ac7bfc40ba734d1d', ['', 30]],
+  ['ea550ce6a24bbfca0752256e80362dc8912915e1fab13455c1ef5b679a237a6e', ['', 30]],
+  ['ea85e916ec746af646b32e1b0a3170e5d7d80a284fd1c6de2fc22bd65fc46929', ['', 30]],
+  ['eb3de9d340cff50719dc64228ad5a9053be7736206dccaf5d5d6043c0f7f6a8f', ['', 30]],
+  ['ebfa3883b85ae310a5ed34c1157ee054adfc8b101ec4b9448e6c5d941c9af990', ['', 90]],
+  ['ebfd6289de41b7cabaf9016b96d0508063129b2a21e183ae3589c64e1253d0f0', ['', 30]],
+  ['ef0bd4c08b3e44ba979c6d3920460437b02fd5d8471ac0badad0a5972b94b3fd', ['', 30]],
+  ['efafd1f022a80d9557e0e064329c0296d5eab4898478a88f565955f0b7825b8f', ['', 30]],
+  ['efb9b665474f7b20baf7c6cc1029f2a696783652de8e9c1f701e3b96030e2efb', ['', 30]],
+  ['f019bc2c60264c74fa1ca4200550b3cb2817347865f5584f9dc4bf5affd6b2d2', ['2026-11-17', 30]],
+  ['f02c3f47bf7394beebd1486a597737f294dbd9976da160218fb05927bccb038c', ['', 90]],
+  ['f0bbd18eb9fbdc3d4933c7806cf888f3354d360cb82597ddbf1935d2f4716286', ['', 30]],
+  ['f10a2c0655e702574bedde835a6c322e22917959ea83b8f7e55db70adf3438e8', ['', 30]],
+  ['f12aa48ef1a70ba3ac42e486d7ad7ca7e1056888ade71f9fe7ffc82e360d7661', ['', 90]],
+  ['f1472076bf69cb0b8e3dac4f44723ffb7d7746a216630901d9a2db34d9bae267', ['2026-11-17', 30]],
+  ['f2fbba6fc84f3d909651371970da8a08d70c58df36aebf7dde2fc43d1fcde5e6', ['', 30]],
+  ['f3120f55b2d801a197b51019e1f3aeb387197f9f3edc20b5c40f64206e415c29', ['', 30]],
+  ['f3e83d7d10d11baaf4d07107bb0b49f8c3a99e3f534504105fb44b353a8f9878', ['', 90]],
+  ['f480cc7f52aead934799f47b67b44234e636d5331d6f11270e2898c6bdc85519', ['', 30]],
+  ['f61fb9f237ecd9cc4a8c3468dd209b7e43f295c920e4379f1201f2d700718e95', ['', 30]],
+  ['f6e20dbd7e2352e9e1f3c704ae1a23c2d5a905c24881fbfda0aa623ddfb18b84', ['', 30]],
+  ['f75b239bbd557eff848772179c81784f9f4628e674f5c290e457437569663981', ['', 30]],
+  ['f7b48fb9e2c8243985989cbce48053feb1cf1e7385b67dcfd22eae80768f9d76', ['', 30]],
+  ['f84c213b06691d757370754fe432e508d405cac6baaf8fa56b6747ff0f92e731', ['', 90]],
+  ['f90561f9e7319313cd8e9aa65afa98b321c018eebe76e9c5671d86bfcc4990cc', ['', 30]],
+  ['f973715495e9e8be4bc4aaa22f5e1fc7d67fa9e1b94095e1cfc1669446d476b2', ['', 90]],
+  ['f98e447468783a846f4e554821a9e429c0a9cca722b64c67c54ae1afea3ab88f', ['', 30]],
+  ['f9a7dbf85a83d7a73f025890adb93e88de3f6a3967c3267f6699508c9762f179', ['', 30]],
+  ['fa185f0225e171a2c2dce1de954055e9351b48c49be3c9324d5f9c9473e09caf', ['2026-11-17', 30]],
+  ['fa3cf17dd3aac1a5691bd880d0ec78561a6e0e2df3aff3f4fb68f253dda67c1d', ['', 30]],
+  ['fa79d5b6a5eb1d19f9720a3a04edaba999e72241099146a852b7c43183090bb1', ['', 30]],
+  ['fa7a22fce9245b001c9dab7424e204bb6e1d1106c4f22140ce7c31ab939312bb', ['', 30]],
+  ['fbfab28cfd4ddb3a4f1ca5e0a7ce04a6cc262713000d019b1c18bdc5f4d215cb', ['', 90]],
+  ['fcfb5c4bcbfc0688a003af888334f5f987b38060781ffa54ca7eacf1e832a5d2', ['2026-11-17', 30]],
+  ['fcfce1a617113bcf003d4b936c2b19858710a38cf8d253c708ec528d0b10ff94', ['', 90]],
+  ['fd21bbbb45bf016c97a9b3e770a5983e04cfceecb358ce458bee5a6163eccdc3', ['', 90]],
+  ['fd9d9e86c315a33b64717eabd03a537afac44be36198ca37d065f5ecfbfa01b6', ['', 90]],
+  ['feb716dba80ed2aca48dea01012d0ee0428e889233250080c9bbbb5e2f323151', ['2026-11-17', 30]],
+  ['fec1fbe563bffb44d7e97660a70c76c7c2411fa72bf37e8b783e8b71f9d4f6e1', ['', 90]],
+  ['ff26c1dee09b54449e8a1675badb15eeca7bf1b7b753702daa8514b6d08378b3', ['2026-11-17', 30]],
+  ['ff86a0970ca3909064efff50e70e88b04001c9af5b9a79d831b50b23d36ffb80', ['2026-11-17', 30]],
+  ['ffa9a40a683742b6c365ec32d527ee8290a71f8e8ff6ea04b57bf23ea7cc233f', ['', 30]],
+]);
+// ACCESS_HASHES_END
+const ACCESS_SALT = 'yts-mrysdiy:';
+async function accessHash(code) {
+  const norm = code.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(ACCESS_SALT + norm));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+const unlock = () => document.querySelector('main').classList.remove('locked');
+// Each entry: hash -> [last valid day 'yyyy-mm-dd' or '' , days valid]. With no date in the list,
+// the days are counted from the first time the code is entered in this browser.
+const isoDay = t => { const d = new Date(t); return new Date(d.getTime() - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); };
+const thaiDate = iso => { const [y, m, d] = iso.split('-').map(Number); return `${d}/${m}/${y + 543}`; };
+function accessExpiry(h) {
+  const [listed, days] = ACCESS_HASHES.get(h);
+  if (days === 0) return '9999-12-31';  // lifetime (owner) code
+  if (listed) return listed;
+  let first = Number(store.get('ytsFirst:' + h));
+  if (!first) { first = Date.now(); store.set('ytsFirst:' + h, String(first)); }
+  return isoDay(first + (days - 1) * 864e5);
+}
+const accessState = h => !ACCESS_HASHES.has(h) ? 'invalid' : (accessExpiry(h) < isoDay(Date.now()) ? 'expired' : 'ok');
+const expiredMsg = h => `รหัสนี้หมดอายุแล้ว (ใช้ได้ ${ACCESS_HASHES.get(h)[1]} วัน) ติดต่อทีมเพื่อต่ออายุ`;
+function showAccessNote(h) {
+  if (ACCESS_HASHES.get(h)[1] === 0) {
+    $('accessNote').textContent = 'รหัส Owner ใช้ได้ตลอดชีพ';
+    $('accessNote').classList.remove('soon');
+    $('accessNote').hidden = false;
+    return;
+  }
+  const exp = accessExpiry(h), left = Math.round((new Date(exp) - new Date(isoDay(Date.now()))) / 864e5) + 1;
+  const note = $('accessNote');
+  note.textContent = `รหัสของคุณใช้ได้ถึง ${thaiDate(exp)} (เหลือ ${left} วัน)`;
+  note.classList.toggle('soon', left <= 7);
+  note.hidden = false;
+}
+{
+  const saved = store.get('ytsAccess');
+  const state = saved ? accessState(saved) : 'invalid';
+  if (state === 'ok') { unlock(); showAccessNote(saved); }
+  else {
+    if (state === 'expired') { $('gateStatus').className = 'status err'; $('gateStatus').textContent = expiredMsg(saved); }
+    store.set('ytsAccess', null);  // revoked, expired or never set
+  }
+}
+$('gateForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const status = $('gateStatus'), code = $('gateCode').value.trim();
+  status.className = 'status err';
+  if (!code) { status.textContent = 'กรุณาใส่รหัส'; return; }
+  if (!crypto?.subtle) { status.textContent = 'เบราว์เซอร์นี้ตรวจรหัสไม่ได้ ลองเปิดด้วย Chrome หรือ Edge'; return; }
+  const h = await accessHash(code);
+  const state = accessState(h);
+  if (state === 'invalid') { status.textContent = 'รหัสไม่ถูกต้อง หรือถูกยกเลิกแล้ว ติดต่อทีมเพื่อขอรหัส'; return; }
+  if (state === 'expired') { status.textContent = expiredMsg(h); return; }
+  store.set('ytsAccess', h);
+  status.className = 'status'; status.textContent = '';
+  unlock();
+  showAccessNote(h);
+});
+
+// Tabs
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x => x.setAttribute('aria-selected', x === t));
+  document.querySelectorAll('[role=tabpanel]').forEach(p => p.hidden = p.id !== t.dataset.tab);
+  store.set('tab', t.dataset.tab);
+}));
+const savedTab = store.get('tab');
+if (savedTab) document.querySelector(`.tab[data-tab="${savedTab}"]`)?.click();
+
+// ═════════════ Trim (port of trim_11labs_silence.py) ═════════════
+const SILENCE_MIN_DUR = 0.03;
+const SAMPLE_RATE = 44100;
+
+// Same idea as ffmpeg silencedetect: silent while every channel is below the threshold
+// for at least SILENCE_MIN_DUR seconds.
+function detectSilences(buf, thresholdDb) {
+  const thr = Math.pow(10, thresholdDb / 20);
+  const sr = buf.sampleRate, n = buf.length, minLen = Math.round(SILENCE_MIN_DUR * sr);
+  const chans = [...Array(buf.numberOfChannels)].map((_, c) => buf.getChannelData(c));
+  const silences = [];
+  let runStart = -1;
+  for (let i = 0; i < n; i++) {
+    let quiet = true;
+    for (const ch of chans) if (Math.abs(ch[i]) >= thr) { quiet = false; break; }
+    if (quiet) { if (runStart < 0) runStart = i; }
+    else if (runStart >= 0) {
+      if (i - runStart >= minLen) silences.push({ start: runStart / sr, end: i / sr });
+      runStart = -1;
+    }
+  }
+  if (runStart >= 0 && n - runStart >= minLen) silences.push({ start: runStart / sr, end: n / sr });
+  return silences;
+}
+
+function buildKeeplist(silences, totalDur, compress, maxPause) {
+  if (!silences.length) return [[0, totalDur]];
+  const keep = [];
+  let prevEnd = 0;
+  for (const { start, end } of silences) {
+    const isLeading = start < 0.1, isTrailing = end >= totalDur - 0.1;
+    if (start > prevEnd + 0.01) keep.push([prevEnd, start]);
+    if (!isLeading && !isTrailing && compress) keep.push([start, start + Math.min(maxPause, end - start)]);
+    prevEnd = end;
+  }
+  if (prevEnd < totalDur - 0.01) keep.push([prevEnd, totalDur]);
+  return keep;
+}
+
+async function encodeMp3(buf, keeps, onProgress) {
+  const sr = buf.sampleRate, nch = Math.min(2, buf.numberOfChannels);
+  const chans = [...Array(nch)].map((_, c) => buf.getChannelData(c));
+  const total = keeps.reduce((a, [s, e]) => a + Math.round(e * sr) - Math.round(s * sr), 0);
+  const pcm = chans.map(() => new Int16Array(total));
+  let off = 0;
+  for (const [s, e] of keeps) {
+    const a = Math.round(s * sr), b = Math.min(buf.length, Math.round(e * sr));
+    for (let c = 0; c < nch; c++) {
+      const src = chans[c], dst = pcm[c];
+      for (let i = a; i < b; i++) {
+        const v = Math.max(-1, Math.min(1, src[i]));
+        dst[off + i - a] = v < 0 ? v * 0x8000 : v * 0x7fff;
+      }
+    }
+    off += b - a;
+  }
+  const enc = new lamejs.Mp3Encoder(nch, sr, 320);
+  const out = [];
+  const block = 1152 * 20;
+  for (let i = 0; i < off; i += block) {
+    const l = pcm[0].subarray(i, Math.min(off, i + block));
+    const chunk = nch === 2 ? enc.encodeBuffer(l, pcm[1].subarray(i, Math.min(off, i + block))) : enc.encodeBuffer(l);
+    if (chunk.length) out.push(new Uint8Array(chunk));
+    if ((i / block) % 10 === 0) { onProgress(i / off); await tick(); }
+  }
+  const end = enc.flush();
+  if (end.length) out.push(new Uint8Array(end));
+  return new Blob(out, { type: 'audio/mpeg' });
+}
+
+async function trimFile(file, opts, onStatus) {
+  const ctx = new OfflineAudioContext(1, 1, SAMPLE_RATE);
+  const buf = await ctx.decodeAudioData(await file.arrayBuffer());
+  const totalDur = buf.duration;
+  onStatus('กำลังหาช่วงเงียบ...');
+  await tick();
+  const silences = detectSilences(buf, opts.threshold);
+  if (!silences.length) throw new Error('ไม่เจอช่วงเงียบ ลองลด "ระดับเสียงเงียบ" เป็น -35');
+  const keeps = buildKeeplist(silences, totalDur, opts.compress, opts.maxPause);
+  const newDur = keeps.reduce((a, [s, e]) => a + e - s, 0);
+  const blob = await encodeMp3(buf, keeps, p => onStatus(`กำลังเข้ารหัส MP3 320kbps... ${Math.round(p * 100)}%`));
+  const log = [
+    `ความยาวเดิม   : ${totalDur.toFixed(3)} วินาที`,
+    `ช่วงเงียบที่เจอ : ${silences.length}`,
+    `ความยาวใหม่   : ${newDur.toFixed(3)} วินาที (ลดไป ${(totalDur - newDur).toFixed(3)} วินาที)`,
+  ].join('\n');
+  return { blob, log };
+}
+
+let files = [];
+const drop = $('drop'), fileInput = $('fileInput');
+function setFiles(list) {
+  files = [...list].filter(f => /\.mp3$/i.test(f.name));
+  $('fileList').innerHTML = files.map(f => `<li>${esc(f.name)} (${(f.size / 1048576).toFixed(1)} MB)</li>`).join('');
+  $('trimBtn').disabled = !files.length;
+  $('trimStatus').textContent = list.length && !files.length ? 'รองรับเฉพาะไฟล์ .mp3' : '';
+}
+drop.addEventListener('click', () => fileInput.click());
+drop.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } });
+fileInput.addEventListener('change', () => setFiles(fileInput.files));
+['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => setFiles(e.dataTransfer.files));
+
+$('trimBtn').addEventListener('click', async () => {
+  const btn = $('trimBtn'), status = $('trimStatus'), result = $('trimResult');
+  status.className = 'status';
+  if (typeof lamejs === 'undefined') {
+    status.className = 'status err';
+    status.textContent = 'โหลดตัวเข้ารหัส MP3 ไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วรีเฟรชหน้านี้';
+    return;
+  }
+  const opts = {
+    threshold: parseFloat($('threshold').value) || -25,
+    maxPause: Math.max(0, parseFloat($('maxPause').value) || 0),
+    compress: $('compress').checked,
+  };
+  btn.disabled = true; result.hidden = false; result.innerHTML = '';
+  for (const [i, f] of files.entries()) {
+    const prefix = `(${i + 1}/${files.length}) ${f.name}: `;
+    status.textContent = prefix + 'กำลังอ่านไฟล์...';
+    const item = document.createElement('div');
+    item.className = 'result-item';
+    result.appendChild(item);
+    try {
+      const { blob, log } = await trimFile(f, opts, msg => status.textContent = prefix + msg);
+      const url = URL.createObjectURL(blob);
+      const outName = f.name.replace(/\.mp3$/i, '') + '_trimmed.mp3';
+      item.innerHTML = `<strong>✓ ${esc(outName)}</strong>
+        <audio controls src="${url}"></audio>
+        <a class="dl" href="${url}" download="${esc(outName)}">ดาวน์โหลด</a>
+        <pre class="log">${esc(log)}</pre>`;
+    } catch (e) {
+      item.innerHTML = `<strong>✗ ${esc(f.name)}</strong><pre class="log" style="color:var(--err)">${esc(e.message || e)}</pre>`;
+    }
+  }
+  status.textContent = 'เสร็จแล้ว';
+  btn.disabled = false;
+});
+
+// ═════════════ Comments (port of comments-dl.py) ═════════════
+const API = 'https://www.googleapis.com/youtube/v3/';
+
+function extractVideoId(s) {
+  for (const re of [/youtube\.com\/shorts\/([A-Za-z0-9_-]{11})/, /youtube\.com\/watch\?(?:.*&)?v=([A-Za-z0-9_-]{11})/, /youtu\.be\/([A-Za-z0-9_-]{11})/]) {
+    const m = s.match(re);
+    if (m) return m[1];
+  }
+  if (/^[A-Za-z0-9_-]{11}$/.test(s)) return s;
+  throw new Error('อ่านลิงก์วิดีโอไม่ได้: ' + s);
+}
+
+function slugify(text, maxLen = 40) {
+  return text.trim()
+    .replace(/[\\/*?:"<>|]/g, '')
+    .replace(/[\s\-–—]+/g, '_')
+    .replace(/[^\p{L}\p{M}\p{N}_]/gu, '')
+    .slice(0, maxLen);
+}
+
+async function api(path, params, key) {
+  const q = new URLSearchParams({ ...params, key });
+  for (const [k, v] of [...q]) if (v === '' || v === 'undefined') q.delete(k);
+  const res = await fetch(API + path + '?' + q);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const reason = data.error?.errors?.[0]?.reason || '';
+    let msg = data.error?.message || res.statusText;
+    if (/API key not valid/i.test(msg)) msg = 'API key ไม่ถูกต้อง';
+    else if (reason === 'commentsDisabled') msg = 'วิดีโอนี้ปิดคอมเมนต์ไว้';
+    else if (reason === 'quotaExceeded') msg = 'ใช้โควตา API ของวันนี้หมดแล้ว ลองใหม่พรุ่งนี้';
+    else if (reason === 'videoNotFound') msg = 'ไม่พบวิดีโอนี้';
+    const err = new Error(`${msg} (${res.status})`);
+    err.reason = reason;
+    throw err;
+  }
+  return data;
+}
+
+async function fetchReplies(parentId, key) {
+  const replies = [];
+  let pageToken = '';
+  do {
+    const r = await api('comments', { part: 'snippet', parentId, maxResults: 100, pageToken, textFormat: 'plainText' }, key);
+    for (const item of r.items || []) {
+      const s = item.snippet;
+      replies.push({
+        type: 'reply', comment_id: item.id, parent_id: parentId,
+        author: s.authorDisplayName, author_channel_id: s.authorChannelId?.value || '',
+        text: s.textDisplay, likes: s.likeCount, published_at: s.publishedAt, updated_at: s.updatedAt,
+      });
+    }
+    pageToken = r.nextPageToken || '';
+  } while (pageToken);
+  return replies;
+}
+
+async function fetchAllComments(videoId, key, onProgress) {
+  const all = [];
+  let pageToken = '', replyTotal = 0;
+  do {
+    const r = await api('commentThreads', {
+      part: 'snippet,replies', videoId, maxResults: 100, pageToken, textFormat: 'plainText', order: 'time',
+    }, key);
+    for (const item of r.items || []) {
+      const top = item.snippet.topLevelComment, s = top.snippet, replyCount = item.snippet.totalReplyCount;
+      const c = {
+        type: 'comment', comment_id: top.id, parent_id: null,
+        author: s.authorDisplayName, author_channel_id: s.authorChannelId?.value || '',
+        text: s.textDisplay, likes: s.likeCount, reply_count: replyCount,
+        published_at: s.publishedAt, updated_at: s.updatedAt, replies: [],
+      };
+      if (replyCount > 0) c.replies = await fetchReplies(top.id, key);
+      replyTotal += c.replies.length;
+      all.push(c);
+    }
+    onProgress(all.length, replyTotal);
+    pageToken = r.nextPageToken || '';
+  } while (pageToken);
+  return all;
+}
+
+function localIso(d = new Date()) {
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
+
+// ═════════════ Comment analysis prompt ═════════════
+const ANALYZE_PROMPT = `คุณคือผู้เชี่ยวชาญระดับสูงด้านการวิเคราะห์ข้อมูลข้อความจำนวนมหาศาล การสร้างแบบจำลองทางภาษา และการแสดงผลข้อมูลด้วยภาพ คุณจะได้รับไฟล์ที่มีคอมเมนต์ "ทั้งหมด" ของวิดีโอหนึ่งคลิป
+
+ภารกิจของคุณคือประมวลผลคอมเมนต์ที่ได้รับให้ครบ 100% โดยไม่จำกัดอยู่แค่คอมเมนต์ยอดนิยม และไม่หยุดหลังจากอ่านไปเพียงไม่กี่รายการแรก คุณต้องสแกนข้อมูลทั้งหมดเพื่อสร้างแผนที่ความคิดเห็นอย่างครบถ้วน และสร้างกราฟแสดงผลโดยตรงเพื่ออธิบายผลลัพธ์
+
+ผ่าวิเคราะห์ข้อมูลทั้งหมดตามโครงสร้างต่อไปนี้อย่างเคร่งครัด:
+
+1. ส่วนแสดงผลและกราฟ (แสดงผลโดยตรง)
+สร้างกราฟสรุปในรูปแบบคอมโพเนนต์หรือแดชบอร์ดแบบอินเทอร์แอกทีฟ เพื่อสรุปข้อมูลทั้งหมด โดยต้องมี:
+- กราฟสัดส่วนความรู้สึกโดยรวม (เช่น Pie chart หรือ Donut chart จากคอมเมนต์ 100%)
+- กราฟแท่งแนวนอนแสดงความถี่ของธีมหลักหรือแนวคิดสำคัญที่ปรากฏซ้ำ
+กราฟต้องสะอาดตา อ่านง่าย และนำไปใช้ได้ทันที
+
+2. การวิเคราะห์เชิงปริมาณและการกระจายของความรู้สึก (จากคอมเมนต์ 100%)
+- จัดหมวดหมู่ความรู้สึกทั้งหมดที่ปรากฏในคอมเมนต์อย่างครบถ้วน (เช่น เห็นด้วยเต็มที่, สงสัยในเชิงเทคนิค, ประชดประชัน, ผิดหวัง, ไม่เข้าใจ ฯลฯ)
+- สำหรับแต่ละความรู้สึก ให้ประเมินสัดส่วนในคอมเมนต์ทั้งหมด และอธิบายอย่างแม่นยำว่าอะไรเป็นตัวกระตุ้นให้ผู้ชมรู้สึกเช่นนั้น
+- ระบุพลวัตโดยรวม: ความรู้สึกเปลี่ยนไปอย่างไรเมื่อเปรียบเทียบคอมเมนต์ที่ได้ไลก์มากที่สุด กับคอมเมนต์ที่อยู่ลึกหรือต่ำลงไปในรายการ
+
+3. แผนที่ความเห็นด้วยและการปฏิเสธอย่างครบถ้วน (ถ่วงน้ำหนัก)
+- วิเคราะห์ฟีดแบ็กเชิงบวกทั้งหมด (ทั้งที่ได้ไลก์มากและที่อยู่โดดๆ): มีแง่มุม ไอเดีย หรือองค์ประกอบใดบ้างที่ทำให้เกิดความพึงพอใจหรือการยอมรับ
+- วิเคราะห์ฟีดแบ็กเชิงลบ เชิงวิจารณ์ หรือที่แสดงความสงสัยทั้งหมด: ทำรายการจุดที่ขัดใจ คำตำหนิ ข้อสงสัย หรือเหตุผลในการปฏิเสธทั้งหมดที่ผู้ชมยกขึ้นมา โดยไม่มีข้อยกเว้น
+
+4. การผ่าวิเคราะห์เชิงความหมายทั้งหมด (คำ สำนวน และคำพูดจริง)
+- คำที่เกิดซ้ำ: ระบุคีย์เวิร์ด แนวคิด และศัพท์เฉพาะทั้งหมดที่ปรากฏซ้ำทั่วทั้งไฟล์
+- ภาษาของชุมชน: ระบุสำนวนที่ใช้ตรงตัว คำติดปาก คำสแลง หรือรูปประโยคเฉพาะที่ผู้ชมหยิบมาใช้ในคอมเมนต์
+- โทนหลักและความแปรผัน: วิเคราะห์ว่าผู้คนแสดงออกอย่างไร (ตรงๆ แรงๆ, เชิงวิเคราะห์, ล้อเลียน, ตื่นเต้นสุดๆ) ตลอดทั้งข้อความ
+
+5. รายการไอเดียและการถกเถียงย่อยอย่างครบถ้วน
+- ทำแผนที่ไอเดีย ทฤษฎี หรือความเห็นที่แตกต่างทั้งหมดที่ผู้ชมเสนอเข้ามา
+- หาทุกจุดที่มีการถกเถียง: หัวข้อใดบ้างที่ทำให้คนเถียงหรือคุยกันในเธรดตอบกลับ และมีมุมมองใดบ้างที่ปะทะกัน
+
+6. รายการคำขอและความต้องการของผู้ชม (แบบดิบ)
+- ดึงคำถามทั้งหมดที่ผู้ชมถาม คำขอให้อธิบายเพิ่ม ข้อเสนอหัวข้อ การขอแหล่งอ้างอิง หรือความคาดหวังต่อคลิปถัดไป จากข้อมูลทั้งหมดอย่างครบถ้วน
+
+ข้อกำหนดด้านความเข้มงวด: ห้ามสุ่มตัวอย่าง หรือยกมาเฉพาะคอมเมนต์ที่เห็นชัดที่สุด การวิเคราะห์ต้องสะท้อนข้อมูลข้อความทั้งหมดที่ได้รับ ห้ามละหรือตัดทอนส่วนใด
+
+จากนั้นสร้างไฟล์ JSON ที่รวบรวมผลการวิเคราะห์ทั้งหมดของคุณ`;
+
+// Only the fields the analysis needs, minified, so long threads fit in the chat.
+function buildAnalysisText(d) {
+  const compact = {
+    video: { title: d.title, channel: d.channel, url: d.video_url, published_at: d.video_published_at },
+    stats: { total_top_comments: d.stats.total_top_comments, total_replies: d.stats.total_replies },
+    comments: d.comments.map(c => {
+      const o = { author: c.author, likes: c.likes, date: (c.published_at || '').slice(0, 10), text: c.text };
+      if (c.replies.length) o.replies = c.replies.map(r => ({ author: r.author, likes: r.likes, text: r.text }));
+      return o;
+    }),
+  };
+  return `${ANALYZE_PROMPT}\n\n--- ข้อมูลคอมเมนต์ทั้งหมด (JSON) ---\n${JSON.stringify(compact)}`;
+}
+
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); return true; } catch {}
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch {}
+  ta.remove();
+  return ok;
+}
+
+function setupAnalyze(data, baseName) {
+  const text = buildAnalysisText(data);
+  const url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
+  const big = text.length > 400000;
+  $('analyzeBtn').addEventListener('click', async () => {
+    const ok = await copyText(text);
+    const panel = $('analyzePanel');
+    panel.hidden = false;
+    panel.innerHTML = `
+      <p><strong>${ok ? 'คัดลอกพรอมต์พร้อมคอมเมนต์ทั้งหมดแล้ว' : 'คัดลอกอัตโนมัติไม่ได้ ใช้ปุ่มดาวน์โหลดด้านล่างแทน'}</strong></p>
+      <p>${ok ? 'เปิด Claude, ChatGPT หรือ Gemini แล้วกด Ctrl+V วางในช่องแชท แล้วกดส่ง' : 'ดาวน์โหลดไฟล์แล้วแนบเข้าไปในแชทของ Claude, ChatGPT หรือ Gemini'}</p>
+      ${big ? '<p>คอมเมนต์เยอะมาก ถ้าวางแล้วยาวเกิน ให้ดาวน์โหลดไฟล์แล้วแนบแทน</p>' : ''}
+      <div class="actions">
+        <a class="dl" href="https://claude.ai/new" target="_blank" rel="noopener">เปิด Claude</a>
+        <a class="ghost" href="https://chatgpt.com/" target="_blank" rel="noopener">เปิด ChatGPT</a>
+        <a class="ghost" href="https://gemini.google.com/app" target="_blank" rel="noopener">เปิด Gemini</a>
+        <a class="ghost" href="${url}" download="${esc(baseName)}_วิเคราะห์.txt">ดาวน์โหลดเป็นไฟล์ .txt</a>
+      </div>
+      <details><summary>ดูพรอมต์ที่ใช้</summary><pre class="prompt">${esc(ANALYZE_PROMPT)}</pre></details>`;
+  });
+}
+
+// ═════════════ ElevenLabs voice design prompt ═════════════
+const VOICE_PROMPT = niche => `Act as an expert Voice Designer and YouTube Shorts Audience Retention Strategist. I have created a YouTube Shorts channel focused entirely on the following niche: ${niche}.
+
+Your task is to design the absolute perfect AI voice to maximize viewer watch-time, engagement, and algorithmic appeal for this specific type of content.
+
+Please execute the following steps precisely:
+
+1. **Demographic Analysis**: Briefly identify the primary target demographic (estimated age bracket, gender split, and psychological profile) that binges this specific niche on YouTube Shorts.
+
+2. **Vocal Preference Psychology**: Explain what kind of voice (energy level, tone, pacing, and authority) this specific demographic instinctively connects with and refuses to scroll past.
+
+3. **The 1,000-Character ElevenLabs Voice Design Prompt**: Craft a masterfully detailed ElevenLabs text prompt. You must strictly adhere to the following official documentation guardrails:
+   - **The Strict Formula Structure**: Start exactly with: Native USA English. [Gender], [Age range]. [Quality level]. Persona: [2–5 words]. Emotion: [2–3 adjectives]. [Deep details about timbre, pacing, and delivery].
+   - **Accent Constraint**: The voice must ALWAYS have a USA accent. If a regional US accent is better for the niche (e.g., a thick New York accent for street stories, or a Southern drawl for country living), specify it, using the word "thick" instead of "strong." Otherwise, use a crisp, neutral American accent.
+   - **Fidelity**: Explicitly include the phrase Studio quality or Broadcast quality to lock in high audio fidelity.
+   - **Strict Pitfall Bans**: Do NOT use FX words (e.g., microphone, phone, reverb, echo). Do NOT use the word "accent" when you actually mean "intonation" or "emphasis."
+
+4. **Text Preview Script**: Generate a high-hook, punchy YouTube Shorts script paragraph tailored exactly to this voice for the "Text to Preview" box. Ensure it matches the persona perfectly and is long enough to stabilize the AI model.`;
+
+const VOICE_THAI_NOTE = `
+
+Write your explanations for steps 1 and 2 in Thai. Keep the ElevenLabs Voice Design Prompt (step 3) and the Text Preview Script (step 4) in English, each in its own code block so they can be copied straight into ElevenLabs.`;
+
+$('voiceBtn').addEventListener('click', async () => {
+  const niche = $('niche').value.trim(), status = $('voiceStatus'), panel = $('voicePanel');
+  status.className = 'status'; status.textContent = '';
+  if (!niche) { status.className = 'status err'; status.textContent = 'กรุณาใส่นีชของช่อง'; panel.hidden = true; return; }
+  store.set('niche', niche);
+  const text = VOICE_PROMPT(niche) + ($('voiceThai').checked ? VOICE_THAI_NOTE : '');
+  await showPromptPanel(panel, text, 'voice-prompt_' + slugify(niche, 50) + '.txt',
+    'เปิด Gemini, Claude หรือ ChatGPT แล้วกด Ctrl+V วางในช่องแชท แล้วกดส่ง จากนั้นนำพรอมต์เสียงไปวางที่ ElevenLabs › Voices › Voice Design',
+    '<a class="ghost" href="https://elevenlabs.io/app/voice-lab" target="_blank" rel="noopener">เปิด ElevenLabs</a>');
+});
+
+// Shared result box for prompt tools: auto-copy, copy again, .txt download, AI links, preview.
+async function showPromptPanel(panel, text, fileName, howTo, extraLinks = '') {
+  const ok = await copyText(text);
+  const fileUrl = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
+  panel.hidden = false;
+  panel.innerHTML = `
+    <p><strong>${ok ? 'คัดลอกพรอมต์แล้ว' : 'คัดลอกอัตโนมัติไม่ได้ กดปุ่ม "คัดลอกพรอมต์" หรือดาวน์โหลดเป็นไฟล์'}</strong></p>
+    <div class="actions" style="margin:0 0 12px">
+      <button type="button" class="ghost copy-again">คัดลอกพรอมต์</button>
+      <a class="ghost" href="${fileUrl}" download="${esc(fileName)}">ดาวน์โหลดเป็นไฟล์ .txt</a>
+    </div>
+    <p>${howTo}</p>
+    <div class="actions">
+      <a class="dl" href="https://gemini.google.com/app" target="_blank" rel="noopener">เปิด Gemini</a>
+      <a class="ghost" href="https://claude.ai/new" target="_blank" rel="noopener">เปิด Claude</a>
+      <a class="ghost" href="https://chatgpt.com/" target="_blank" rel="noopener">เปิด ChatGPT</a>
+      ${extraLinks}
+    </div>
+    <pre class="prompt">${esc(text)}</pre>`;
+  panel.querySelector('.copy-again').addEventListener('click', async e => {
+    const b = e.currentTarget;
+    b.textContent = (await copyText(text)) ? 'คัดลอกแล้ว ✓' : 'คัดลอกไม่ได้';
+    setTimeout(() => b.textContent = 'คัดลอกพรอมต์', 1800);
+  });
+}
+
+// ═════════════ Keyword research prompt ═════════════
+const KEYWORD_PROMPT = (niche, audience) => `คุณคือผู้เชี่ยวชาญ YouTube Shorts SEO และนักวิเคราะห์ trend
+นีชของฉันคือ: ${niche}
+กลุ่มเป้าหมาย: ${audience}
+
+ช่วยหาคีย์เวิร์ดที่เหมาะกับนีชนี้มากที่สุด โดยคิดแบบที่คนดูพิมพ์ค้นหาจริงใน YouTube แบ่งเป็นหมวดตามนี้
+
+1. Core keywords (10 คำ) คือคำหลักที่บอกว่านีชนี้คืออะไร
+2. Long-tail keywords (20 คำ) คือคำค้นยาว 3–6 คำ ที่เจาะจงและคู่แข่งน้อย
+3. Curiosity/Hook keywords (15 คำ) คือคำที่ทำให้คนอยากกดดู เช่น "why", "secret", "nobody tells you", "weird", "before vs after"
+4. Problem/Question keywords (15 คำ) คือคำถามหรือปัญหาที่คนในนีชนี้ค้นหาบ่อย
+5. Trending/Seasonal keywords (10 คำ) คือคำที่เกี่ยวกับเทรนด์หรือฤดูกาลช่วงนี้
+6. Outlier topic ideas (10 ไอเดีย) คือหัวข้อคลิปที่มีโอกาสเป็นไวรัล โดยอิงจากคีย์เวิร์ดข้างบน
+
+สำหรับคีย์เวิร์ดแต่ละคำ ให้ระบุ:
+- ความต้องการค้นหาโดยประมาณ (สูง/กลาง/ต่ำ)
+- ความยากในการแข่ง (สูง/กลาง/ต่ำ)
+- เหตุผลสั้นๆ ว่าทำไมเหมาะกับนีชนี้
+
+กฎ:
+- ห้ามใช้คำกว้างเกินไปที่ไม่เกี่ยวกับนีชโดยตรง
+- เน้นคำที่เหมาะกับ Shorts (ดูจบใน 60 วินาที)
+- ใช้ภาษาตามกลุ่มเป้าหมาย
+- ตอนท้าย สรุปคีย์เวิร์ดที่ดีที่สุด 5 คำที่ควรเริ่มก่อน พร้อมตัวอย่างชื่อคลิป 1 ชื่อต่อคำ`;
+
+// ═════════════ Clip finder (X / IG) ═════════════
+const CLIP_PROMPT = (niche, count) => {
+  const tag = niche.trim().replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '_');
+  return `หาคลิปแนว ${niche} จาก X และ IG มา ${count} คลิป
+- คนดูหลักคืออเมริกา เอาคลิปจริงที่มีจังหวะพีคชัด ยาวไม่เกิน 90 วินาที
+- เลือกโพสต์ที่วิวหรือไลก์สูง และเป็นคลิปช่วงหลังๆ
+- เน้นคลิปที่ engagement ดี คือคอมเมนต์และแชร์เยอะเมื่อเทียบกับยอดวิว คนถกเถียงหรือแท็กเพื่อนกันในคอมเมนต์
+- ต้องเป็นคลิปที่ทำ commentary ได้ คือมีเรื่องราวชัด มีจังหวะให้หยุดอธิบาย ตั้งคำถาม หรือแสดงความเห็น ไม่ใช่คลิปที่ดูจบในตัวโดยไม่มีอะไรให้พูดต่อ
+- เช็คแต่ละคลิปตามกฎ YouTube สำหรับ commentary (Community Guidelines, ลิขสิทธิ์และ fair use, นโยบาย reused content) ข้ามคลิปที่เสี่ยงสูงหรือผิดกฎ และในรายการให้ใส่คำเตือนทุกคลิป: ระดับความเสี่ยง (ต่ำ / กลาง) ข้อหาที่เสี่ยง (เช่น ละเมิดลิขสิทธิ์, Content ID เคลมเพลง, reused content, ความรุนแรง, ความเป็นส่วนตัว) และสิ่งที่ต้องแก้ก่อนลง
+- ใช้ https://cobalt.tools ในการโหลด (วางลิงก์โพสต์ เลือกคุณภาพสูงสุด)
+- โหลดเป็น MP4 ตั้งชื่อไฟล์ว่า 01_${tag}_[คำอธิบายสั้นๆ].mp4
+- เซฟไว้ในโฟลเดอร์ Desktop\\Clips\\${tag} บนเครื่อง Windows ของฉัน
+- ส่งรายการคลิปมาด้วย ทั้งชื่อไฟล์ ลิงก์โพสต์ต้นฉบับ ชื่อเจ้าของคลิป ความยาว ยอดวิว ยอดคอมเมนต์/แชร์ และมุมที่ใช้พากย์ commentary ได้ 1 ประโยค
+- เสนอชื่อคลิปกับข้อความบนจอแบบ SoUnseen ให้คลิปละ 1 อัน`;
+};
+const CLIP_NICHES = [
+  'Dashcam', 'Road Rage', 'Close Calls', 'Instant Karma', 'Caught on Camera',
+  'Doorbell Cam', 'Police Bodycam', 'Public Freakouts', 'Restaurant Drama', 'Airport Chaos',
+  'Wholesome Moments', 'Rescue Moments', 'Kids Being Kids', 'Funny Animals', 'Pets Being Pets',
+  'Wildlife Encounters', 'Ocean & Sharks', 'Extreme Weather', 'Sports Moments', 'Football Soccer', 'Gym Fails',
+  'Fails', 'Construction Fails', 'Crazy Skills', 'Parkour & Stunts', 'Satisfying',
+  'Street Food', 'Cooking Hacks', 'Car Culture', 'Fishing Catches', 'Unexpected Endings',
+];
+
+// ═════════════ YouTube policy check (commentary) ═════════════
+const POLICY_PROMPT = ({ link, desc, plan, used, total, clipLine = '' }) => `คุณคือผู้เชี่ยวชาญนโยบาย YouTube และลิขสิทธิ์ สำหรับช่อง Shorts แนว commentary ที่นำคลิปของคนอื่นมาพากย์ เล่า หรือวิจารณ์
+ช่วยตรวจว่าคลิปด้านล่างเสี่ยงผิดกฎ YouTube หรือไม่ ถ้าเปิดดูลิงก์หรือค้นนโยบายล่าสุดของ YouTube ได้ ให้อิงข้อมูลล่าสุด
+
+ข้อมูลคลิป${clipLine}
+- ลิงก์ต้นฉบับ: ${link || 'ไม่มี'}
+- ในคลิปมีอะไรเกิดขึ้น: ${desc || 'ดูจากลิงก์'}
+- แผน commentary ของฉัน: ${plan || 'ยังไม่ได้วางแผน'}
+- ใช้คลิปต้นฉบับ ${used || '?'} วินาที จาก Short ที่ยาวทั้งหมด ${total || '?'} วินาที
+
+เริ่มคำตอบด้วยคำเตือน 2 บรรทัดนี้ก่อนเสมอ
+⚠️ ระดับความเสี่ยงรวม: ต่ำ / กลาง / สูง / ผิดกฎ (เลือกหนึ่ง)
+⚠️ เสี่ยงข้อหา: ชื่อนโยบายที่เสี่ยงผิด เช่น ละเมิดลิขสิทธิ์, Content ID เคลมเพลง, เนื้อหาที่นำมาใช้ซ้ำ (reused content), Shorts ไม่เป็นต้นฉบับ (unoriginal Shorts), Short ยาวเกิน 1 นาทีที่โดนเคลมจนถูกบล็อก, ความรุนแรงและภาพน่ากลัว, การคุกคาม, ละเมิดความเป็นส่วนตัว, ไม่เหมาะกับโฆษณา พร้อมผลที่อาจโดน เช่น copyright strike, โดนเคลมรายได้, ไม่ผ่านหรือถูกระงับการสร้างรายได้, จำกัดอายุผู้ชม, จำกัดโฆษณา, ลบคลิป, community guidelines strike (ถ้าไม่มีความเสี่ยง ให้เขียนว่า ไม่พบ)
+
+จากนั้นตรวจทีละหมวด ให้ระดับความเสี่ยง (ต่ำ / กลาง / สูง / ผิดกฎ) ชื่อข้อหาที่เสี่ยง และเหตุผลสั้นๆ
+1. Community Guidelines: ความรุนแรงและภาพน่ากลัว, กิจกรรมอันตราย, การคุกคามและกลั่นแกล้ง, ความปลอดภัยของเด็ก (มีเด็กในคลิปไหม), เนื้อหาทางเพศ, ข้อมูลเท็จ, ข้อมูลส่วนตัวของคนในคลิป (หน้า ทะเบียนรถ บ้านเลขที่)
+2. ลิขสิทธิ์และ fair use: วิเคราะห์ 4 ปัจจัย (วัตถุประสงค์และการดัดแปลง, ลักษณะของงานต้นฉบับ, ปริมาณที่นำมาใช้, ผลกระทบต่อต้นฉบับ), โอกาสโดน Content ID หรือ copyright strike, เพลงที่ติดมาในคลิป
+3. นโยบายสร้างรายได้ (YPP): เนื้อหาที่นำมาใช้ซ้ำ (reused content) ต้องเพิ่มคุณค่าต้นฉบับอย่างชัดเจน และเนื้อหาที่ไม่เป็นต้นฉบับหรือผลิตซ้ำจำนวนมาก (inauthentic content) ประเมินว่า commentary ตามแผนของฉันพอให้ถือว่าเปลี่ยนแปลงเนื้อหาหรือไม่
+4. ความเหมาะกับโฆษณา (advertiser-friendly): โอกาสโดนจำกัดโฆษณา (ไอคอนเหลือง) เพราะอะไร
+5. กฎเฉพาะ YouTube Shorts Commentary (เช็คกับนโยบายล่าสุด):
+   - ความยาวไม่เกินที่ Shorts รองรับ และถ้า Short ยาวเกิน 1 นาทีแล้วโดน Content ID เคลม คลิปอาจถูกบล็อก
+   - นโยบายสร้างรายได้ของ Shorts: คลิปที่อัปโหลดซ้ำ ตัดมาจากหนัง ซีรีส์ หรือคลิปคนอื่นโดยไม่เพิ่มเนื้อหาต้นฉบับ (unoriginal Shorts) และคลิปรวมที่ไม่มี commentary ไม่มีสิทธิ์สร้างรายได้
+   - commentary ต้องเป็นสาระหลักของคลิป (เสียงพากย์ ข้อความบนจอ การหยุดภาพอธิบาย) ไม่ใช่แค่ใส่เพลงหรือข้อความสั้นๆ ทับคลิปต้นฉบับ
+   - ลายน้ำหรือโลโก้จากแพลตฟอร์มอื่น (TikTok, IG, X) ที่ติดมา อาจทำให้ YouTube แนะนำคลิปน้อยลง
+   - เพลงในคลิป: ใช้เพลงจากคลังเพลงของ Shorts หรือเพลงที่ติดมากับคลิปต้นฉบับ (เสี่ยงโดนเคลม)
+   - การระบุเนื้อหาที่ตัดต่อหรือสร้างด้วย AI ให้ดูสมจริง (ถ้าเกี่ยวข้อง)
+
+สรุปตอนท้าย
+- คำตัดสินรวม: ใช้ได้ / ใช้ได้ถ้าแก้ / ไม่ควรใช้
+- สิ่งที่ต้องแก้ เรียงจากสำคัญที่สุด เช่น เพิ่ม commentary, ตัดส่วนที่ใช้ให้สั้นลง, เบลอหน้าหรือทะเบียนรถ, ตัดเพลงออก, ใส่เครดิตเจ้าของคลิป
+- ข้อความเครดิตเจ้าของคลิปที่แนะนำให้ใส่ในคำอธิบายคลิป
+- ย้ำว่าเป็นการประเมินความเสี่ยง ไม่ใช่คำปรึกษาทางกฎหมาย`;
+
+// The finished clip: read locally for its length and a strip of frames.
+let polClip = null; // { name, duration, frames: [{ t, blob }] }
+const POL_FRAMES = 8;
+
+async function grabFrames(file, count) {
+  const url = URL.createObjectURL(file);
+  const v = document.createElement('video');
+  v.muted = true; v.playsInline = true; v.preload = 'auto'; v.src = url;
+  const once = (ev) => new Promise((ok, bad) => {
+    v.addEventListener(ev, ok, { once: true });
+    v.addEventListener('error', () => bad(new Error('เปิดไฟล์วิดีโอนี้ไม่ได้ ลองแปลงเป็น MP4 ก่อน')), { once: true });
+  });
+  await once('loadedmetadata');
+  const duration = v.duration;
+  const scale = Math.min(1, 1024 / Math.max(v.videoWidth, v.videoHeight));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(v.videoWidth * scale); canvas.height = Math.round(v.videoHeight * scale);
+  const frames = [];
+  for (let i = 0; i < count; i++) {
+    const t = duration * (i + 0.5) / count;
+    v.currentTime = t;
+    await once('seeked');
+    canvas.getContext('2d').drawImage(v, 0, 0, canvas.width, canvas.height);
+    frames.push({ t, blob: await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.8)) });
+  }
+  URL.revokeObjectURL(url);
+  return { duration, frames };
+}
+
+async function setPolClip(file) {
+  const status = $('polStatus');
+  if (!file || !file.type.startsWith('video/')) { status.className = 'status err'; status.textContent = 'รองรับเฉพาะไฟล์วิดีโอ'; return; }
+  status.className = 'status'; status.textContent = 'กำลังอ่านคลิป...';
+  try {
+    const { duration, frames } = await grabFrames(file, POL_FRAMES);
+    polClip = { name: file.name, duration, frames };
+    $('polTotal').value = Math.round(duration);
+    $('polFrames').innerHTML = '';
+    for (const f of frames) {
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(f.blob); img.alt = `เฟรมวินาทีที่ ${f.t.toFixed(1)}`;
+      $('polFrames').appendChild(img);
+    }
+    $('polDrop').querySelector('strong').textContent = `✓ ${file.name} (${Math.round(duration)} วินาที)`;
+    status.textContent = '';
+  } catch (e) {
+    polClip = null;
+    status.className = 'status err'; status.textContent = e.message || 'อ่านคลิปไม่ได้';
+  }
+}
+{
+  const drop = $('polDrop'), input = $('polFile');
+  drop.addEventListener('click', () => input.click());
+  drop.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); } });
+  input.addEventListener('change', () => setPolClip(input.files[0]));
+  ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', e => setPolClip(e.dataTransfer.files[0]));
+}
+
+function policyFields() {
+  return { link: $('polLink').value.trim(), desc: $('polDesc').value.trim(), plan: $('polPlan').value.trim(),
+           used: $('polUsed').value.trim(), total: $('polTotal').value.trim() };
+}
+function policyMissing(f) {
+  if (polClip || f.link || f.desc) return false;
+  const status = $('polStatus');
+  status.className = 'status err';
+  status.textContent = 'กรุณาใส่คลิปที่ตัดเสร็จ ลิงก์คลิป หรือเล่าว่าในคลิปมีอะไรเกิดขึ้น';
+  return true;
+}
+
+$('polBtn').addEventListener('click', async () => {
+  const f = policyFields(), panel = $('polPanel');
+  $('polStatus').className = 'status'; $('polStatus').textContent = '';
+  if (policyMissing(f)) { panel.hidden = true; return; }
+  if (polClip) f.clipLine = `\n- คลิปที่ตัดเสร็จแล้ว: ไฟล์ ${polClip.name} ยาว ${Math.round(polClip.duration)} วินาที แนบมาในแชทนี้ ดูและฟังทั้งคลิปก่อนตอบ`;
+  await showPromptPanel(panel, POLICY_PROMPT(f), 'policy-check_' + slugify(f.desc || polClip?.name || f.link, 40) + '.txt',
+    polClip
+      ? 'เปิด Gemini แล้วแนบไฟล์คลิปที่ตัดเสร็จ (ปุ่ม + แล้วเลือกไฟล์) จากนั้นกด Ctrl+V วางพรอมต์แล้วกดส่ง Gemini ดูและฟังคลิปได้ทั้งคลิป'
+      : 'เปิด Gemini, Claude หรือ ChatGPT แล้วกด Ctrl+V วางในช่องแชท แล้วกดส่ง ถ้า AI เปิดลิงก์คลิปไม่ได้ ให้แนบไฟล์วิดีโอเข้าไปด้วย');
+});
+
+// Warning box: Claude ends its answer with a small JSON block the page turns into a colored summary.
+const WARN_LEVELS = { 'ต่ำ': 'lv-low', 'กลาง': 'lv-mid', 'สูง': 'lv-high', 'ผิดกฎ': 'lv-bad' };
+const WARN_JSON_ASK = `
+
+ท้ายสุดของคำตอบ ใส่โค้ดบล็อก json หนึ่งอันในรูปแบบนี้ (ใช้ระดับ ต่ำ / กลาง / สูง / ผิดกฎ เท่านั้น ถ้าไม่มีความเสี่ยงให้ risks เป็น [])
+\`\`\`json
+{"level": "สูง", "risks": [{"charge": "ละเมิดลิขสิทธิ์", "reason": "มีเพลงติดมาในคลิป", "consequence": "อาจโดน Content ID เคลมรายได้", "level": "สูง"}]}
+\`\`\``;
+const withoutWarnJson = text => { const i = text.lastIndexOf('```json'); return (i >= 0 ? text.slice(0, i) : text).trimEnd(); };
+function parseWarn(text) {
+  const m = text.match(/```json\s*([\s\S]*?)```/g);
+  if (!m) return null;
+  try { return JSON.parse(m[m.length - 1].replace(/```json|```/g, '')); } catch { return null; }
+}
+function renderWarn(w) {
+  const box = $('polWarn');
+  if (!w || !WARN_LEVELS[w.level]) { box.hidden = true; return; }
+  const risks = Array.isArray(w.risks) ? w.risks : [];
+  box.className = 'warn ' + WARN_LEVELS[w.level];
+  box.innerHTML = `<span class="lv-title">⚠️ ระดับความเสี่ยง</span><span class="lv">${esc(w.level)}</span>
+    ${risks.length
+      ? `<ul>${risks.map(r => `<li class="${WARN_LEVELS[r.level] || ''}"><b>เสี่ยงข้อหา: ${esc(r.charge || '')}</b>${WARN_LEVELS[r.level] ? `<span class="tag">${esc(r.level)}</span>` : ''}
+          ${r.reason ? `<br>${esc(r.reason)}` : ''}${r.consequence ? `<br>ผลที่อาจโดน: ${esc(r.consequence)}` : ''}</li>`).join('')}</ul>`
+      : '<p class="none">ไม่พบความเสี่ยงชัดเจน แต่ยังควรเช็คเรื่องเสียงและเพลงเอง</p>'}`;
+  box.hidden = false;
+}
+
+// In-page check with Claude (only where the page runs inside claude.ai and may send images).
+const sampleReady = window.claude?.use ? window.claude.use('sample') : Promise.resolve(null);
+sampleReady.then(async sample => {
+  if (!sample) return;
+  const lim = await sample.limits().catch(() => null);
+  if (!lim?.images) return;
+  const maxImages = Math.min(POL_FRAMES, lim.images.maxCount);
+  const btn = $('polAiBtn'), box = $('polAi'), out = $('polAiText'), stop = $('polAiStop');
+  // Inside claude.ai the check runs right here, so the copy-a-prompt step is not needed.
+  btn.hidden = false;
+  $('polBtn').hidden = true;
+  let ctl = null;
+  stop.addEventListener('click', () => ctl?.abort());
+  btn.addEventListener('click', async () => {
+    const f = policyFields(), status = $('polStatus');
+    status.className = 'status'; status.textContent = '';
+    if (policyMissing(f)) return;
+    const frames = polClip ? polClip.frames.slice(0, maxImages) : [];
+    if (polClip) f.clipLine = `\n- คลิปที่ตัดเสร็จแล้ว: ไฟล์ ${polClip.name} ยาว ${Math.round(polClip.duration)} วินาที
+- ภาพที่แนบมา ${frames.length} ภาพ คือเฟรมจากคลิปนี้เรียงตามเวลา (วินาทีที่ ${frames.map(x => x.t.toFixed(1)).join(', ')})
+- คุณไม่ได้ยินเสียงในคลิป ให้ประเมินเรื่องเพลงและเสียงจากที่ฉันเล่าเท่านั้น และบอกว่าส่วนไหนต้องเช็คเพิ่มเอง`;
+    const prompt = POLICY_PROMPT(f) + '\n\nตอบเป็นภาษาไทย กระชับ แยกหัวข้อตามหมวดด้านบน' + WARN_JSON_ASK;
+    ctl = new AbortController();
+    btn.disabled = true; box.hidden = false; stop.hidden = false; $('polWarn').hidden = true;
+    out.textContent = 'Claude กำลังดูคลิป...';
+    try {
+      const { text, truncated } = await sample(prompt, {
+        images: frames.map(x => x.blob), signal: ctl.signal,
+        onText: ({ text }) => { out.textContent = withoutWarnJson(text); },
+      });
+      out.textContent = withoutWarnJson(text);
+      renderWarn(parseWarn(text));
+      if (truncated) status.textContent = 'คำตอบถูกตัดกลาง ลองกดเช็คอีกครั้ง';
+    } catch (e) {
+      out.textContent = e.text || '';
+      if (!e.text) box.hidden = true;
+      status.className = 'status err';
+      status.textContent = {
+        cancelled: 'หยุดแล้ว',
+        not_granted: 'หน้านี้ยังไม่ได้รับอนุญาตให้ใช้ Claude ใช้ปุ่ม "สร้างพรอมต์เช็คกฎ" แทนได้',
+        sampling_disabled: 'บัญชีนี้ใช้ Claude จากหน้านี้ไม่ได้ ใช้ปุ่ม "สร้างพรอมต์เช็คกฎ" แทนได้',
+        rate_limited: 'ใช้ Claude ถี่เกินไปหรือถึงขีดจำกัดการใช้งาน รอสักครู่แล้วลองใหม่',
+        image_rejected: 'ส่งภาพจากคลิปนี้ไม่ได้ ลองไฟล์อื่น หรือใช้ปุ่ม "สร้างพรอมต์เช็คกฎ"',
+        refused: 'Claude ไม่ตอบคำขอนี้ ลองเล่ารายละเอียดคลิปเพิ่ม หรือใช้ปุ่ม "สร้างพรอมต์เช็คกฎ"',
+        session_expired: 'ต้องล็อกอิน claude.ai ใหม่ก่อน',
+      }[e.code] || 'เช็คไม่สำเร็จ ลองกดอีกครั้ง';
+      if (e.code === 'cancelled') status.className = 'status';
+    } finally {
+      btn.disabled = false; stop.hidden = true;
+    }
+  });
+});
+
+// ═════════════ Editing storyboard (Shorts Commentary Editing Prompt) ═════════════
+const STORY_PROMPT = ({ topic, vibe, ref, len, script, broll, fx, fxApp, loop }) => {
+  const extras = [
+    broll && '- ช่วยเขียน Midjourney / AI Image Prompt ภาษาอังกฤษสำหรับฉาก B-Roll แต่ละช่วงให้ด้วย',
+    fx && `- ขอชื่อเอฟเฟกต์ใน ${fxApp} ที่ตรงกับแนวทางนี้ในแต่ละช่วง`,
+    loop && '- ออกแบบประโยคสุดท้ายให้เชื่อมโยงกลับไปที่ประโยคเปิด Hook เพื่อทำ Seamless Loop วนลูปคลิป',
+  ].filter(Boolean);
+  return `คุณคือ Creative Video Editor และ Content Strategist สำหรับ Short-form Video (YouTube Shorts / TikTok / Reels) เชี่ยวชาญการทำวิดีโอสไตล์ Commentary / Storytelling จังหวะกระชับ น่าติดตาม ดึงดูด Retention สูง
+
+หน้าที่ของคุณ: ช่วยแปลง "สคริปต์วิดีโอ" ที่ฉันระบุ ให้กลายเป็น "ตารางแนวทางการตัดต่ออย่างละเอียด (Visual & Editing Storyboard)" โดยแบ่งตามช่วงเวลา (Timestamp) หรือประโยคต่อประโยค เพื่อให้เห็นภาพชัดเจนที่สุด
+
+ข้อมูลอ้างอิงสำหรับการตัดต่อ:
+- หัวข้อ / ประเด็น: ${topic || 'ดูจากสคริปต์'}
+- โทนอารมณ์ (Vibe): ${vibe || 'เลือกให้เหมาะกับสคริปต์'}
+- สไตล์ช่องอ้างอิง (Reference Style): ${ref || 'ไม่ระบุ เลือกสไตล์ที่เหมาะกับหัวข้อเอง'}
+- ความยาววิดีโอเป้าหมาย: ${len || '30–45 วินาที'}
+
+โปรดจัดทำเป็นตารางที่มีคอลัมน์ดังนี้:
+1. Timestamp / จังหวะเสียงพูด (Voiceover Line): ท่อนเสียงพูดที่เกิดขึ้น
+2. Visual / Footage Direction: ภาพที่ปรากฏบนจอ (A-Roll หน้าคนพูด, B-Roll ฟุตเทจข่าว / มีม, Motion Graphics, เอกสาร) ตามสไตล์ช่องอ้างอิง
+3. Camera / Motion: มุมกล้องและแอนิเมชัน (เช่น Punch-in 1.2x, Slow push-in, Whip pan, Paper cutout)
+4. On-Screen Text & Subtitles: ข้อความบนจอ สี และคีย์เวิร์ดที่ต้องไฮไลต์
+5. Sound Design (SFX & Music): เอฟเฟกต์เสียง (Whoosh, Boom, Vinyl scratch) และจังหวะดนตรี (บีทหยุด, บีทกระแทก)
+
+ข้อกำหนดด้านเทคนิค:
+- 0–3 วินาทีแรก: ต้องมี Visual Hook และ Audio Hook ทันที
+- สลับภาพทุกๆ 1.5–3 วินาที เพื่อรักษาระดับ Visual Retention
+- สลับหน้าคนพูด (A-Roll) กับกราฟิก / ฟุตเทจ (B-Roll) อย่างสมดุล
+- จุดหักมุมหรือมุกตลก: ระบุจังหวะ Hard Cut, Zoom-in หรือ Beat Drop ให้ชัดเจน
+${extras.length ? '\nขอเพิ่มเติม:\n' + extras.join('\n') + '\n' : ''}
+สคริปต์เสียงบรรยาย:
+"""
+${script}
+"""`;
+};
+
+const setupSbQuick = () => {
+  setupQuick('sbVibeQuick', 'sbVibe', ['ตลกเสียดสี', 'ลึกลับชวนคิด', 'จริงจังกระชับสไตล์ข่าวสืบสวน', 'ตื่นเต้นเร้าใจ', 'อบอุ่นซึ้ง']
+    .map(v => ({ label: v, value: v })));
+  setupQuick('sbRefQuick', 'sbRef', [
+    ['Vox', 'Vox (แผนที่และ Motion Graphic อธิบายลึกซึ้ง)'],
+    ['SunnyV2', 'SunnyV2 (สืบสวนดราม่า ซาวด์ระทึก ไล่ไทม์ไลน์)'],
+    ['MagnatesMedia', 'MagnatesMedia (สารคดีภาพยนตร์ เล่าเรื่องทรงพลัง)'],
+    ['Johnny Harris', 'Johnny Harris'], ['Ali Abdaal', 'Ali Abdaal'],
+  ].map(([label, value]) => ({ label, value })));
+  setupQuick('sbLenQuick', 'sbLen', ['15–30 วินาที', '30–45 วินาที', '50–60 วินาที'].map(v => ({ label: v, value: v })));
+};
+setupSbQuick();
+
+function storyFields() {
+  return {
+    topic: $('sbTopic').value.trim(), vibe: $('sbVibe').value.trim(), ref: $('sbRef').value.trim(),
+    len: $('sbLen').value.trim(), script: $('sbScript').value.trim(),
+    broll: $('sbBroll').checked, fx: $('sbFx').checked, fxApp: $('sbFxApp').value, loop: $('sbLoop').checked,
+  };
+}
+function storyMissing(f) {
+  if (f.script) return false;
+  $('sbStatus').className = 'status err';
+  $('sbStatus').textContent = 'กรุณาวางสคริปต์เสียงบรรยาย';
+  return true;
+}
+
+$('sbBtn').addEventListener('click', async () => {
+  const f = storyFields();
+  $('sbStatus').className = 'status'; $('sbStatus').textContent = '';
+  if (storyMissing(f)) { $('sbPanel').hidden = true; return; }
+  await showPromptPanel($('sbPanel'), STORY_PROMPT(f), 'storyboard_' + slugify(f.topic || f.script.slice(0, 30), 40) + '.txt',
+    'เปิด Gemini, Claude หรือ ChatGPT แล้วกด Ctrl+V วางในช่องแชท แล้วกดส่ง จะได้ตาราง Storyboard ตัดต่อทีละช่วงเวลา');
+});
+
+// Small Markdown view for Claude's answer: tables become real tables, the rest stays as text.
+function renderMd(text) {
+  const inline = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  const lines = text.split('\n'), html = [];
+  for (let i = 0; i < lines.length;) {
+    if (/^\s*\|/.test(lines[i])) {
+      const rows = [];
+      while (i < lines.length && /^\s*\|/.test(lines[i])) rows.push(lines[i++]);
+      const cells = r => r.trim().replace(/^\||\|$/g, '').split('|').map(c => c.trim());
+      const body = rows.filter(r => !/^\s*\|[\s:|-]+\|\s*$/.test(r)).map(cells);
+      const [head, ...rest] = body;
+      html.push(`<div class="tbl"><table><thead><tr>${(head || []).map(c => `<th>${inline(c)}</th>`).join('')}</tr></thead>
+        <tbody>${rest.map(r => `<tr>${r.map(c => `<td>${inline(c).replace(/&lt;br\s*\/?&gt;/gi, '<br>')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`);
+    } else {
+      const para = [];
+      while (i < lines.length && !/^\s*\|/.test(lines[i])) para.push(lines[i++]);
+      const t = para.join('\n').replace(/^#{1,6}\s*/gm, '').trim();
+      if (t) html.push(`<p>${inline(t)}</p>`);
+    }
+  }
+  return html.join('');
+}
+
+sampleReady.then(sample => {
+  if (!sample) return;
+  const btn = $('sbAiBtn'), box = $('sbAi'), out = $('sbAiOut'), stop = $('sbAiStop'), copy = $('sbAiCopy');
+  btn.hidden = false;
+  $('sbBtn').hidden = true;
+  let ctl = null, last = '';
+  stop.addEventListener('click', () => ctl?.abort());
+  copy.addEventListener('click', async () => { copy.textContent = (await copyText(last)) ? 'คัดลอกแล้ว ✓' : 'คัดลอกไม่ได้'; setTimeout(() => copy.textContent = 'คัดลอกผลลัพธ์', 1800); });
+  btn.addEventListener('click', async () => {
+    const f = storyFields(), status = $('sbStatus');
+    status.className = 'status'; status.textContent = '';
+    if (storyMissing(f)) return;
+    ctl = new AbortController();
+    btn.disabled = true; box.hidden = false; stop.hidden = false; copy.hidden = true;
+    out.textContent = 'Claude กำลังวาง Storyboard...';
+    try {
+      const { text, truncated } = await sample(STORY_PROMPT(f) + '\n\nตอบเป็นภาษาไทย ใช้ตาราง Markdown สำหรับ Storyboard', {
+        signal: ctl.signal, onText: ({ text }) => { out.innerHTML = renderMd(text); },
+      });
+      last = text; out.innerHTML = renderMd(text); copy.hidden = false;
+      if (truncated) status.textContent = 'คำตอบถูกตัดกลาง ลองย่อสคริปต์แล้วกดอีกครั้ง';
+    } catch (e) {
+      if (e.text) { last = e.text; out.innerHTML = renderMd(e.text); copy.hidden = false; } else box.hidden = true;
+      status.className = e.code === 'cancelled' ? 'status' : 'status err';
+      status.textContent = {
+        cancelled: 'หยุดแล้ว',
+        not_granted: 'หน้านี้ยังไม่ได้รับอนุญาตให้ใช้ Claude',
+        sampling_disabled: 'บัญชีนี้ใช้ Claude จากหน้านี้ไม่ได้',
+        rate_limited: 'ใช้ Claude ถี่เกินไปหรือถึงขีดจำกัดการใช้งาน รอสักครู่แล้วลองใหม่',
+        prompt_too_large: 'สคริปต์ยาวเกินไป ลองแบ่งเป็นช่วงๆ',
+        session_expired: 'ต้องล็อกอิน claude.ai ใหม่ก่อน',
+      }[e.code] || 'สร้างไม่สำเร็จ ลองกดอีกครั้ง';
+    } finally {
+      btn.disabled = false; stop.hidden = true;
+    }
+  });
+});
+
+const AUDIENCES = ['คนดูภาษาอังกฤษ US', 'คนดูภาษาอังกฤษทั่วโลก', 'คนดูภาษาไทย', 'คนดูภาษาสเปน', 'คนดูภาษาญี่ปุ่น'];
+
+// Quick-pick chips that fill an input and highlight the matching chip.
+function setupQuick(boxId, inputId, items) {
+  const box = $(boxId), input = $(inputId);
+  box.innerHTML = items.map((it, i) => `<button type="button" data-i="${i}" title="${esc(it.value)}">${esc(it.label)}</button>`).join('');
+  const mark = () => box.querySelectorAll('button').forEach(b => b.classList.toggle('picked', items[b.dataset.i].value === input.value.trim()));
+  box.addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    input.value = items[b.dataset.i].value;
+    mark();
+  });
+  input.addEventListener('input', mark);
+  return mark;
+}
+
+$('kwBtn').addEventListener('click', async () => {
+  const niche = $('kwNiche').value.trim(), audience = $('kwAudience').value.trim();
+  const status = $('kwStatus'), panel = $('kwPanel');
+  status.className = 'status'; status.textContent = '';
+  if (!niche || !audience) {
+    status.className = 'status err';
+    status.textContent = !niche ? 'กรุณาใส่นีชของช่อง' : 'กรุณาใส่กลุ่มเป้าหมาย';
+    panel.hidden = true;
+    return;
+  }
+  store.set('kwNiche', niche); store.set('kwAudience', audience);
+  await showPromptPanel(panel, KEYWORD_PROMPT(niche, audience), 'keyword-prompt_' + slugify(niche, 50) + '.txt',
+    'เปิด Gemini, Claude หรือ ChatGPT แล้วกด Ctrl+V วางในช่องแชท แล้วกดส่ง');
+});
+// Example niches + channels (from Shorts Niche Vault). Channel: [handle, note?, warn?]
+const NICHES = [
+  { th: 'มีมแบ่งหน้าจอบน-ล่าง', en: 'Top/Bottom Split-Screen Memes',
+    desc: 'ด้านบนเป็นคลิปมีมตลก ด้านล่างเป็นเกมเพลย์หรือวิดีโอผ่อนคลาย',
+    niche: 'Top/bottom split-screen memes (funny meme clip on top, satisfying or gameplay footage below)',
+    groups: [{ chans: [['crazymeme13'], ['SnapCuriousMeme'], ['VazhYT'], ['memespaz26'], ['MemeDoggyZ'], ['zdak']] }] },
+  { th: 'มีมวิดีโอเต็มหน้าจอ', en: 'Full-Screen Video Memes',
+    desc: 'มีมเต็มจอ อัปโหลดถี่มาก เน้นธีมเฉพาะ',
+    niche: 'Full-screen video memes with hyper-frequent uploads (e.g. cats & dogs, one famous character)',
+    groups: [{ chans: [['TizzyUS', 'แมวและหมา โพสต์ถี่มาก'], ['OnlyShrek', 'เน้นตัวละครเดียว']] }] },
+  { th: 'อ่านมีม / คอมมิก / เรื่องเล่า Reddit', en: 'Reading Memes / Comics / Reddit Stories',
+    desc: 'เสียงพากย์อ่านกระทู้ Reddit คอมมิกสั้น หรือมีมตลก',
+    niche: 'Voiceover reading viral Reddit stories, relatable web comics and funny memes',
+    groups: [{ chans: [['Zuace'], ['ReigharStories369'], ['NotReighar'], ['OopsReighar']] }] },
+  { th: 'รูปแบบเกม Minecraft', en: 'Minecraft Formats',
+    desc: 'ฉาก Minecraft parkour เป็นพื้นหลัง ประกอบคอมมิก คอมเมนต์ หรือเสียง brainrot',
+    niche: 'Minecraft parkour background with comic strips, commentary or brainrot audio',
+    groups: [
+      { th: 'คอมมิกบนฉาก Parkour', chans: [['KaineYT1'], ['DrBurger-h1w']] },
+      { th: 'พากย์ / วิจารณ์', chans: [['Smartieleng'], ['WhityeMC']] },
+      { th: 'สไตล์ Brainrot', chans: [['PannyWanny'], ['Cubix-Tube']] },
+    ] },
+  { th: 'แอนิเมชัน 3 มิติ', en: '3D Animation',
+    desc: 'แอนิเมชัน 3D อธิบายเรื่องแปลก สถานการณ์สมมติ หรือเรื่องตามธีม',
+    niche: '3D animated shorts explaining bizarre facts, hypothetical scenarios and themed stories',
+    groups: [
+      { th: 'ผู้นำเทรนด์', chans: [['zackdfilms', 'ผู้บุกเบิก 3D Shorts'], ['hisytstory'], ['HerYTStory']] },
+      { th: 'กลุ่มย่อย', chans: [['RealChess360', 'หมากรุก'], ['The_Daily_Downshift', 'เรื่องรถยนต์']] },
+    ] },
+  { th: 'เรื่องเล่าแอนิเมชัน 2 มิติ', en: '2D Animation Stories',
+    desc: 'แอนิเมชัน 2D เล่าเรื่องชีวิตประจำวันหรือเหตุการณ์ตลก',
+    niche: '2D animated storytime shorts with a stylized avatar telling viral or funny real-life stories',
+    groups: [{ chans: [['HoodieGuyStories'], ['BigDanBabys'], ['Soonrok_95'], ['talesoflaws'], ['nyrostory'], ['mesigugu']] }] },
+  { th: 'เรื่องเล่าแอนิเมชัน Roblox', en: 'Roblox Animation Stories',
+    desc: 'ละครสั้น ตลก ดราม่า โรแมนติก ที่ทำในเกม Roblox',
+    niche: 'Dramatic, romantic and comedic short stories animated inside Roblox',
+    groups: [{ chans: [['capybluh'], ['Roblox.Man99'], ['JimStoriez'], ['Mashles27'], ['DylanStoriesYT'], ['onca_yt'], ['Xenost-j3i'], ['ImCrellar'], ['Gneef'], ['SailorBloxStory'], ['Noobifiedd'], ['Zeeflay'], ['Ashyyy-']] }] },
+  { th: 'รูปแบบเน้นข้อความ', en: 'Text-Based Formats',
+    desc: 'แชตปลอม คลิปกล้องหน้ารถ/อาชญากรรมพร้อมข้อความ หรือพากย์ด้วยตัวอักษร',
+    niche: 'Text-based shorts: fake text message stories, crime and dashcam footage with text overlays',
+    groups: [
+      { th: 'แชตข้อความปลอม', chans: [['aerotxt', 'ตอบกลับเจ็บๆ แชร์เยอะ'], ['Dozzektext']] },
+      { th: 'อาชญากรรม & กล้องหน้ารถ', chans: [['CrimeCatchersYT'], ['Unhingedroads'], ['EYE_Crime'], ['PrimeDashCam'], ['HomeownerCams'], ['NexaCams']] },
+      { th: 'ข้อความพากย์บนคลิป', chans: [['RealizeFood', 'สายอาหาร'], ['ViralVIPs']] },
+      { th: 'เรื่องอบอุ่นหัวใจ', chans: [['OnCameraMotion', 'แหล่งตัดคลิปดี']] },
+    ] },
+  { th: 'ตัดต่อคลิป & ไฮไลต์', en: 'Edits & Clipping',
+    desc: 'ไฮไลต์จากสตรีมเมอร์ ครีเอเตอร์ดัง หนัง ซีรีส์ หรือหมากรุก',
+    niche: 'Fast-paced highlight edits from streamers, movies, TV shows and chess',
+    groups: [
+      { th: 'ตัดต่อสตรีมเมอร์', chans: [['NexxoRecaps'], ['NotSnickerly'], ['DaPlug.'], ['Zylok.clipss'], ['AppelJuiceRoblox'], ['projsxl'], ['ranj-j3h']] },
+      { th: 'ตัดต่อเน้นครีเอเตอร์ (DrDonut)', chans: [['clipsdonut'], ['yellowdonutt', 'ศึกษาภาพปก'], ['DrDonutTwo']] },
+      { th: 'หนัง / ซีรีส์ & หมากรุก', chans: [['SonaDarus'], ['IndecisiveShowYT'], ['GothamMoments', 'RPM สูง']] },
+    ] },
+  { th: 'พากย์เสียงบรรยาย', en: 'Spoken Commentary',
+    desc: 'พากย์สรุปหนัง วิเคราะห์เกม กีฬา หรือประเด็นไวรัล',
+    niche: 'Voiceover commentary: movie recaps, gaming breakdowns and sports commentary',
+    groups: [
+      { th: 'สรุปหนัง', chans: [['AMclipsYT'], ['SpecularNove'], ['KuzaMoves']] },
+      { th: 'พากย์เกม', chans: [['PatchedOut'], ['RealSlip', 'Among Us'], ['GreylinYT'], ['YukioGaming28'], ['cliprotter', 'สไตล์ดั้งเดิม']] },
+      { th: 'พากย์กีฬา', chans: [['SurgingSports']] },
+    ] },
+  { th: 'คอนเซปต์เฉพาะทาง', en: 'Specific / Concept Niches',
+    desc: 'อธิบาย/สปีดรัน Shorts, ทำทุกวันวันที่ X, สัตว์เลี้ยง AI, แรงบันดาลใจ',
+    niche: 'Concept shorts: explaining YouTube Shorts, "Day X of..." daily series, AI animal friends, motivation and wholesome stories',
+    groups: [
+      { th: 'อธิบาย / สปีดรัน Shorts', chans: [['NovaExplainsShorts', 'คู่แข่งน้อย'], ['joe_caine']] },
+      { th: 'อัปเดตทุกวัน', chans: [['TheDailyProject-YT', "'วันที่ X'"]] },
+      { th: 'สัตว์ AI / แรงบันดาลใจ / อบอุ่น', chans: [['timandjeffy', 'สัตว์ AI วิวสูง'], ['peakzmotivation'], ['InsanityInteractions', 'กีฬา'], ['KindOtter'], ['PetsAreAngelz'], ['GJShortz']] },
+      { th: 'ตลาดอิ่มตัว ควรเลี่ยง', chans: [['itswonderplanet', 'สถานที่แปลกบนโลก', true]] },
+    ] },
+  { th: 'โมเดลบริหารหลายช่อง', en: 'Multi-Channel Operator',
+    desc: 'ไม่ใช่นีช แต่เป็นวิธีขยายนีชเดียวไปหลายช่อง เพื่อครองผลค้นหา',
+    groups: [{ th: 'เครือข่าย Chief Brioso', chans: [['chiefbrioso', 'ช่องหลัก'], ['BriosoGoat'], ['BriosoWs'], ['MoreBrioso']] }] },
+];
+
+function renderNiches() {
+  $('nicheGrid').innerHTML = NICHES.map((n, i) => `
+    <div class="niche" data-i="${i}">
+      <div><b>${esc(n.th)}</b><div class="en">${esc(n.en)}</div></div>
+      <p>${esc(n.desc)}</p>
+      ${n.groups.map(g => `
+        ${g.th ? `<div class="sub">${esc(g.th)}</div>` : ''}
+        <div class="chans">${g.chans.map(([h, note, warn]) =>
+          `<a href="https://www.youtube.com/@${encodeURIComponent(h)}" target="_blank" rel="noopener"${warn ? ' class="warn"' : ''}${note ? ` title="${esc(note)}"` : ''}>@${esc(h)}${note ? ` · ${esc(note)}` : ''}</a>`).join('')}</div>`).join('')}
+      ${n.niche ? '<button class="use" type="button">ใช้นีชนี้</button>' : ''}
+    </div>`).join('');
+}
+renderNiches();
+$('nicheQuick').innerHTML = NICHES.map((n, i) => n.niche
+  ? `<button type="button" data-i="${i}" title="${esc(n.en)}">${esc(n.th)}</button>` : '').join('');
+
+function markPicked() {
+  const v = $('niche').value.trim();
+  document.querySelectorAll('.niche, #nicheQuick button').forEach(el => el.classList.toggle('picked', NICHES[el.dataset.i].niche === v));
+}
+function pickNiche(i) {
+  $('niche').value = NICHES[i].niche;
+  markPicked();
+  $('voicePanel').hidden = true;
+}
+$('nicheQuick').addEventListener('click', e => {
+  const btn = e.target.closest('button');
+  if (btn) pickNiche(btn.dataset.i);
+});
+$('nicheGrid').addEventListener('click', e => {
+  const btn = e.target.closest('.use');
+  if (!btn) return;
+  pickNiche(btn.closest('.niche').dataset.i);
+  $('niche').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  $('niche').focus({ preventScroll: true });
+});
+$('niche').addEventListener('input', markPicked);
+
+const savedNiche = store.get('niche');
+if (savedNiche) { $('niche').value = savedNiche; markPicked(); }
+
+// 20 of the most-made Shorts niches (2026). Label in Thai, value is the search-friendly English niche.
+const KW_NICHES = [
+  ['เรื่องสยองขวัญ', 'Scary stories and creepy true encounters'],
+  ['การเงินส่วนบุคคล', 'Personal finance and money tips'],
+  ['AI และเทคโนโลยี', 'AI tools and tech tips'],
+  ['ข้อเท็จจริงน่ารู้', 'Did you know facts'],
+  ['แรงบันดาลใจ', 'Motivation and self-improvement'],
+  ['คลิปฟิน ผ่อนคลาย', 'Oddly satisfying videos'],
+  ['สัตว์ตลก น่ารัก', 'Funny and cute animals'],
+  ['สูตรอาหารสั้นๆ', 'Quick recipes and food hacks'],
+  ['ไลฟ์แฮ็ก', 'Life hacks'],
+  ['เกม', 'Gaming clips and highlights'],
+  ['ฟุตบอล / กีฬา', 'Football (soccer) highlights and stats'],
+  ['เรื่องเล่า Reddit', 'Reddit stories with voiceover'],
+  ['คดีดัง / ปริศนา', 'True crime and unsolved mysteries'],
+  ['ประวัติศาสตร์', 'History facts and stories'],
+  ['อวกาศ / วิทยาศาสตร์', 'Space and science explained'],
+  ['ฟิตเนส / สุขภาพ', 'Fitness and health tips'],
+  ['DIY / งานก่อสร้าง', 'DIY and construction'],
+  ['มีม / คอมเมดี้', 'Memes and comedy skits'],
+  ['Commentary คลิปไวรัล', 'Viral video commentary (dashcam, caught on camera)'],
+  ['สรุปหนัง / ซีรีส์', 'Movie and TV recaps'],
+];
+const markKwNiche = setupQuick('kwNicheQuick', 'kwNiche', KW_NICHES.map(([label, value]) => ({ label, value })));
+const markKwAudience = setupQuick('kwAudienceQuick', 'kwAudience', AUDIENCES.map(a => ({ label: a, value: a })));
+$('kwNiche').value = store.get('kwNiche') || '';
+$('kwAudience').value = store.get('kwAudience') || '';
+markKwNiche(); markKwAudience();
+
+const markClipNiche = setupQuick('clipNicheQuick', 'clipNiche', CLIP_NICHES.map(n => ({ label: n, value: n })));
+const markClipCount = setupQuick('clipCountQuick', 'clipCount', ['5', '10', '20', '30'].map(n => ({ label: n + ' คลิป', value: n })));
+$('clipNiche').value = store.get('clipNiche') || '';
+$('clipCount').value = store.get('clipCount') || '10';
+markClipNiche(); markClipCount();
+$('clipBtn').addEventListener('click', async () => {
+  const niche = $('clipNiche').value.trim(), count = parseInt($('clipCount').value, 10);
+  const status = $('clipStatus'), panel = $('clipPanel');
+  status.className = 'status'; status.textContent = '';
+  if (!niche || !(count > 0)) {
+    status.className = 'status err';
+    status.textContent = !niche ? 'กรุณาใส่นีชของคลิป' : 'กรุณาใส่จำนวนคลิป';
+    panel.hidden = true;
+    return;
+  }
+  store.set('clipNiche', niche); store.set('clipCount', String(count));
+  await showPromptPanel(panel, CLIP_PROMPT(niche, count), 'clip-prompt_' + slugify(niche, 50) + '.txt',
+    'เปิด Claude Code หรือ Claude Desktop (แท็บ Code) แล้วกด Ctrl+V วางคำสั่ง AI จะหาคลิปและโหลดผ่าน cobalt.tools ลงเครื่องให้ ถ้าใช้ Gemini หรือ ChatGPT จะได้แค่รายการลิงก์ เอาลิงก์ไปวางโหลดเองที่ cobalt.tools ได้',
+    '<a class="ghost" href="https://cobalt.tools" target="_blank" rel="noopener">เปิดเว็บแมว</a>');
+});
+$('niche').addEventListener('keydown', e => { if (e.key === 'Enter') $('voiceBtn').click(); });
+
+const savedKey = store.get('ytKey');
+if (savedKey) $('apiKey').value = savedKey;
+
+$('commentsBtn').addEventListener('click', async () => {
+  const btn = $('commentsBtn'), status = $('commentsStatus'), result = $('commentsResult');
+  const video = $('video').value.trim(), key = $('apiKey').value.trim();
+  status.className = 'status'; result.hidden = true;
+  if (!video) { status.className = 'status err'; status.textContent = 'กรุณาใส่ลิงก์วิดีโอ'; return; }
+  if (!key) { status.className = 'status err'; status.textContent = 'กรุณาใส่ API key'; return; }
+  store.set('ytKey', $('rememberKey').checked ? key : null);
+  btn.disabled = true;
+  try {
+    const videoId = extractVideoId(video);
+    status.textContent = 'กำลังอ่านข้อมูลวิดีโอ...';
+    const v = (await api('videos', { part: 'snippet', id: videoId }, key)).items?.[0]?.snippet;
+    const meta = { title: v?.title || videoId, channel: v?.channelTitle || 'UnknownChannel', published_at: v?.publishedAt || '' };
+    const comments = await fetchAllComments(videoId, key,
+      (c, r) => status.textContent = `กำลังดึงคอมเมนต์... ${c.toLocaleString()} คอมเมนต์, ${r.toLocaleString()} คำตอบ`);
+    if (!comments.length) throw new Error('วิดีโอนี้ยังไม่มีคอมเมนต์');
+
+    const totalReplies = comments.reduce((a, c) => a + c.replies.length, 0);
+    const ml = comments.reduce((a, c) => (c.likes > a.likes ? c : a), comments[0]);
+    const data = {
+      source: 'YouTube', video_id: videoId, video_url: `https://www.youtube.com/shorts/${videoId}`,
+      channel: meta.channel, title: meta.title, video_published_at: meta.published_at, scraped_at: localIso(),
+      stats: {
+        total_top_comments: comments.length, total_replies: totalReplies, total_entries: comments.length + totalReplies,
+        most_liked_comment: { author: ml.author, likes: ml.likes, text: ml.text },
+      },
+      comments,
+    };
+    const d = new Date(), p = n => String(n).padStart(2, '0');
+    const filename = `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}_${slugify(meta.channel)}_${slugify(meta.title)}.json`;
+    const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+    const s = data.stats;
+    result.innerHTML = `
+      <strong>${esc(meta.title)}</strong><div class="hint" style="margin:0">${esc(meta.channel)}</div>
+      <div class="stats">
+        <div class="stat"><b>${s.total_top_comments.toLocaleString()}</b><span>คอมเมนต์</span></div>
+        <div class="stat"><b>${s.total_replies.toLocaleString()}</b><span>คำตอบ</span></div>
+        <div class="stat"><b>${s.total_entries.toLocaleString()}</b><span>ทั้งหมด</span></div>
+      </div>
+      <div class="quote">ไลก์มากสุด ${ml.likes.toLocaleString()} ไลก์ · ${esc(ml.author)}<br>${esc(ml.text.slice(0, 200))}</div>
+      <a class="dl" href="${url}" download="${esc(filename)}">ดาวน์โหลด ${esc(filename)}</a>
+      <div class="analyze">
+        <button class="primary" id="analyzeBtn">วิเคราะห์คอมเมนต์</button>
+        <div class="panel" id="analyzePanel" hidden></div>
+      </div>`;
+    setupAnalyze(data, filename.replace(/\.json$/, ''));
+    result.hidden = false;
+    status.textContent = '';
+  } catch (e) {
+    status.className = 'status err';
+    status.textContent = 'ผิดพลาด: ' + (e.message === 'Failed to fetch' ? 'เชื่อมต่อ YouTube ไม่ได้ ตรวจสอบอินเทอร์เน็ต' : e.message);
+  }
+  btn.disabled = false;
+});
+</script>
+</body>
+</html>
