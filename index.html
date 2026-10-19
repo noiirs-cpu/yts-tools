@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>YTS Tools for MR YSDIY by Noii &amp; Pierrick</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=Kanit:wght@500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
 <!--
   YTS Tools - ทำงานในเบราว์เซอร์ทั้งหมด ไม่ต้องติดตั้งอะไร
@@ -152,6 +152,177 @@
     white-space: pre-wrap; font: 13px/1.6 "IBM Plex Sans Thai", system-ui, sans-serif; color: var(--muted);
     max-height: 320px; overflow: auto; margin: 8px 0 0; background: var(--card); padding: 12px; border-radius: 10px;
   }
+
+  /* ═════════ Game UI theme (deep blue-violet, chunky 3D buttons, colored cards) ═════════
+     Layout: header across the top, a menu panel on the left, the active tool on the right. */
+  :root {
+    --bg: #1a1c78; --bg-hi: #5a3df0; --card: #23258f; --card-hi: #2c2fa8; --text: #ffffff; --muted: #c3c6ff;
+    --line: #3d41c7; --edge: #121466; --accent: #ffb51f; --accent-ink: #3a2100; --accent-edge: #c97a00;
+    --yellow: #ffd83d; --yellow-ink: #2a1c00; --soft: #2a2b9e; --err: #ff7a95; --field: #15175c;
+    --blue: #4d6bff; --blue-edge: #2a3ccc; --orange: #ff9f1c; --orange-edge: #c06a00;
+    --violet: #b33cf5; --violet-edge: #7a1fb3; --red: #ff3d5e;
+    --display: "Kanit", "IBM Plex Sans Thai", system-ui, sans-serif;
+    color-scheme: dark;
+  }
+  body {
+    border-top: 0; box-shadow: none;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 105%, rgba(140, 110, 255, .55), transparent 70%),
+      radial-gradient(ellipse 60% 50% at 0% 0%, rgba(40, 60, 200, .6), transparent 70%),
+      repeating-linear-gradient(135deg, rgba(255,255,255,.025) 0 2px, transparent 2px 14px),
+      linear-gradient(180deg, #181a6e 0%, #2b2499 60%, #4632c9 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+  main { max-width: 1140px; }
+  h1, h2, h3, .tab, .primary, a.dl, button.dl, .quick button, .use, a.ghost, button.ghost, .stat b, .lv, .gate h2 {
+    font-family: var(--display);
+  }
+  h1 { font-size: 34px; font-weight: 800; letter-spacing: .3px; text-shadow: 0 3px 0 var(--edge); }
+  h1 .brand { color: var(--yellow); }
+  h1 .by { display: inline-flex; gap: 6px; vertical-align: middle; font-size: 13px; font-weight: 600; }
+  h1 .by, h1 .by b { color: #fff; }
+  h1 .by { background: var(--edge); border: 2px solid var(--line); border-radius: 10px; padding: 2px 10px; text-shadow: none; }
+  .sub { color: var(--muted); }
+  h2 { font-size: 24px; font-weight: 700; text-shadow: 0 2px 0 var(--edge); }
+  h3 { font-weight: 700; }
+
+  /* Panels: thick rim, soft top light, deep shadow */
+  .card, .tabs {
+    background: linear-gradient(180deg, var(--card-hi), var(--card));
+    border: 3px solid var(--line); border-radius: 22px;
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.12), 0 8px 0 var(--edge), 0 18px 40px rgba(10, 8, 60, .45);
+  }
+  .card { padding: 26px; }
+
+  /* Menu (tabs): a list of big rows with icons, like a game menu */
+  .tabs { padding: 10px; gap: 6px; }
+  .tab {
+    display: flex; align-items: center; gap: 10px; text-align: left;
+    background: transparent; border: 2px solid transparent; border-radius: 14px;
+    color: var(--muted); font-size: 16px; font-weight: 600; padding: 10px 14px;
+  }
+  .tab::before {
+    flex: none; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font-size: 18px;
+    background: var(--edge); box-shadow: inset 0 -3px 0 rgba(0,0,0,.25);
+  }
+  /* icons as CSS escapes so they survive the ASCII-only link build */
+  .tab[data-tab=voice]::before { content: "\1F399\FE0F"; }
+  .tab[data-tab=keywords]::before { content: "\1F511"; }
+  .tab[data-tab=clips]::before { content: "\1F3AC"; }
+  .tab[data-tab=policy]::before { content: "\1F6E1\FE0F"; }
+  .tab[data-tab=story]::before { content: "\1F39E\FE0F"; }
+  .tab[data-tab=trim]::before { content: "\2702\FE0F"; }
+  .tab[data-tab=comments]::before { content: "\1F4AC"; }
+  .tab:hover { border-color: transparent; background: rgba(255,255,255,.06); color: #fff; }
+  .tab[aria-selected="true"] {
+    background: linear-gradient(180deg, #6d86ff, var(--blue)); color: #fff; border-color: #8ea0ff;
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.25), 0 4px 0 var(--blue-edge); font-weight: 700;
+  }
+  .tab[aria-selected="true"]::before { background: rgba(255,255,255,.2); }
+
+  /* Chunky 3D buttons */
+  .primary, a.dl, button.dl, a.ghost, button.ghost, .quick button, .use {
+    border: 2px solid transparent; transition: transform .08s, box-shadow .08s, filter .15s;
+  }
+  .primary {
+    margin-top: 24px; padding: 14px 18px; border-radius: 16px; font-size: 18px; font-weight: 700; letter-spacing: .3px;
+    background: linear-gradient(180deg, #ffd65a, var(--accent)); color: var(--accent-ink);
+    border-color: #ffe9a6; box-shadow: inset 0 2px 0 rgba(255,255,255,.5), 0 6px 0 var(--accent-edge), 0 10px 18px rgba(0,0,0,.3);
+  }
+  .primary:active:not(:disabled), a.dl:active, button.dl:active, a.ghost:active, button.ghost:active, .quick button:active, .use:active {
+    transform: translateY(4px); box-shadow: inset 0 2px 0 rgba(255,255,255,.3), 0 2px 0 var(--edge);
+  }
+  .primary:disabled { filter: grayscale(.7); opacity: .6; }
+  a.dl, button.dl {
+    background: linear-gradient(180deg, #6d86ff, var(--blue)); color: #fff; border-color: #8ea0ff; border-radius: 12px;
+    padding: 9px 16px; font-weight: 700; box-shadow: inset 0 2px 0 rgba(255,255,255,.25), 0 4px 0 var(--blue-edge);
+  }
+  a.ghost, button.ghost {
+    background: var(--field); color: #fff; border-color: var(--line); border-radius: 12px; font-weight: 600;
+    box-shadow: 0 4px 0 var(--edge);
+  }
+  a.ghost:hover, button.ghost:hover { border-color: #8ea0ff; }
+
+  /* Pills: quick picks */
+  .quick { gap: 8px; }
+  .quick button {
+    background: linear-gradient(180deg, #3a3fd0, #2c30b5); color: #fff; border-color: #5458e0; border-radius: 999px;
+    padding: 6px 14px; font-weight: 500; box-shadow: 0 3px 0 var(--edge);
+  }
+  .quick button:hover { border-color: #8ea0ff; }
+  .quick button.picked {
+    background: linear-gradient(180deg, #ffe46b, var(--yellow)); color: var(--yellow-ink); border-color: #fff3b0;
+    box-shadow: 0 3px 0 #b8920f, 0 0 0 3px rgba(255,216,61,.25); font-weight: 700;
+  }
+
+  /* Fields: dark navy wells */
+  input[type=text], input[type=password], input[type=number], textarea, select {
+    background: var(--field); border: 2px solid var(--line); border-radius: 14px; color: #fff;
+    box-shadow: inset 0 3px 0 rgba(0,0,0,.25);
+  }
+  input::placeholder, textarea::placeholder { color: #8a8ed8; }
+  input:focus, textarea:focus { border-color: var(--yellow); box-shadow: inset 0 3px 0 rgba(0,0,0,.25), 0 0 0 3px rgba(255,216,61,.25); }
+  label { font-family: var(--display); font-weight: 600; letter-spacing: .2px; }
+  .check { font-family: inherit; }
+  .drop { border: 3px dashed #5a5ee6; border-radius: 18px; background: rgba(20, 22, 92, .5); }
+  .drop.over, .drop:hover { border-color: var(--yellow); background: rgba(255,216,61,.08); }
+  .drop strong { font-family: var(--display); font-size: 20px; }
+
+  /* Result boxes and the prompt preview */
+  .panel {
+    background: linear-gradient(180deg, #2f32b8, #26289a); border: 3px solid var(--yellow); border-left-width: 3px;
+    border-radius: 18px; box-shadow: 0 6px 0 var(--edge);
+  }
+  pre.prompt { background: var(--field); border: 2px solid var(--line); border-radius: 12px; color: var(--muted); }
+  .result, .analyze, .niches { border-top-color: var(--line); }
+  .stat { background: var(--field); border: 2px solid var(--line); border-radius: 14px; box-shadow: 0 4px 0 var(--edge); }
+  .stat b { color: var(--yellow); font-size: 26px; }
+  .quote { border-left-color: var(--yellow); }
+  .md th { background: var(--edge); color: var(--yellow); }
+  .md th, .md td { border-color: var(--line); }
+
+  /* Niche cards cycle through the example's card colors */
+  .niche { border: 3px solid transparent; border-radius: 18px; color: #fff; box-shadow: inset 0 2px 0 rgba(255,255,255,.2), 0 5px 0 var(--edge-c); }
+  .niche:nth-child(3n+1) { --edge-c: var(--blue-edge); background: linear-gradient(180deg, #5f7bff, #3f58e8); }
+  .niche:nth-child(3n+2) { --edge-c: var(--orange-edge); background: linear-gradient(180deg, #ffb340, #f08a00); }
+  .niche:nth-child(3n) { --edge-c: var(--violet-edge); background: linear-gradient(180deg, #c85bff, #9a26e0); }
+  .niche .en, .niche p { color: rgba(255,255,255,.85); }
+  .niche .sub { color: #fff; }
+  .niche.picked { border-color: var(--yellow); background-blend-mode: normal; box-shadow: 0 0 0 3px rgba(255,216,61,.35), 0 5px 0 var(--edge-c); }
+  .chans a { background: rgba(0,0,0,.25); border: 0; color: #fff; }
+  .chans a:hover { background: rgba(0,0,0,.4); }
+  .use { background: var(--yellow); color: var(--yellow-ink); border-color: #fff3b0; border-radius: 10px; box-shadow: 0 3px 0 #b8920f; }
+  .niche.picked .use { background: #fff; color: var(--yellow-ink); }
+
+  /* Code gate and the expiry note */
+  .gate { border-color: var(--yellow); }
+  .gate h2 { font-size: 28px; }
+  #gateCode { font-family: var(--display); font-weight: 700; }
+  .access-note { display: inline-block; float: right; background: var(--edge); border: 2px solid var(--line); border-radius: 12px; padding: 4px 12px; color: #fff; font-family: var(--display); }
+  .access-note.soon { border-color: var(--yellow); color: var(--yellow); }
+
+  /* Wide screens: menu on the left, tool on the right */
+  @media (min-width: 900px) {
+    main:not(.locked) { display: grid; grid-template-columns: 270px minmax(0, 1fr); column-gap: 22px; align-items: start; }
+    main:not(.locked) > #accessNote { grid-column: 1 / -1; grid-row: 1; justify-self: end; float: none; }
+    main:not(.locked) > h1 { grid-column: 1 / -1; grid-row: 2; }
+    main:not(.locked) > .sub { grid-column: 1 / -1; grid-row: 3; }
+    main:not(.locked) > .tabs { grid-column: 1; grid-row: 4; flex-direction: column; flex-wrap: nowrap; position: sticky; top: 16px; margin: 0; }
+    main:not(.locked) > section.card { grid-column: 2; grid-row: 4; }
+  }
+  /* Narrow screens: menu as a 2-column grid of tiles */
+  @media (max-width: 899px) {
+    .tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .tab { font-size: 14px; padding: 8px 10px; gap: 8px; min-width: 0; }
+    .tab::before { width: 28px; height: 28px; font-size: 15px; }
+  }
+  @media (max-width: 600px) {
+    h1 { font-size: 26px; }
+    .card { padding: 18px; }
+    .access-note { float: none; display: block; width: fit-content; margin-left: auto; }
+  }
+  @media (prefers-reduced-motion: reduce) { .primary, .tab, .quick button { transition: none; } }
 </style>
 </head>
 <body>
