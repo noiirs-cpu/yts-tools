@@ -502,6 +502,19 @@
   }
   .primary:hover:not(:disabled), a.dl:hover, button.dl:hover { filter: brightness(1.06); }
   .niche.picked .use { background: var(--btn); color: var(--pick); border-color: var(--pick); }
+  /* Booking link (Calendly): the one call-to-action in the header */
+  .ctas { display: flex; flex-wrap: wrap; gap: 12px; margin: 0 0 20px; }
+  .book {
+    display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 12px 22px; border-radius: 999px;
+    background: var(--pick); color: var(--pick-text); border: 2px solid #ffe08a; text-decoration: none;
+    font-family: var(--display); font-weight: 700; font-size: 18px; box-shadow: 0 4px 0 var(--pick-edge), 0 0 18px rgba(255,198,26,.35);
+    transition: transform .08s, box-shadow .08s, filter .15s;
+  }
+  .book:hover { filter: brightness(1.06); }
+  .book:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--pick-edge); }
+  .book:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+  .book.alt { background: var(--btn); color: var(--pick); border-color: var(--pick); box-shadow: 0 4px 0 #000, 0 0 14px rgba(255,198,26,.2); }
+  .book.alt:active { box-shadow: 0 1px 0 #000; }
   .primary:active:not(:disabled), a.dl:active, button.dl:active, .use:active { box-shadow: 0 1px 0 var(--pick-edge); }
 
   /* Wide screens: menu on the left, tool on the right */
@@ -510,6 +523,7 @@
     main:not(.locked) > #accessNote { grid-column: 1 / -1; grid-row: 1; justify-self: end; float: none; }
     main:not(.locked) > h1 { grid-column: 1 / -1; grid-row: 2; }
     main:not(.locked) > .sub { grid-column: 1 / -1; grid-row: 3; }
+    main:not(.locked) > .ctas { grid-column: 1 / -1; grid-row: 2 / span 2; justify-self: end; align-self: center; margin: 0; }
     main:not(.locked) > .tabs { grid-column: 1; grid-row: 4; flex-direction: column; flex-wrap: nowrap; position: sticky; top: 16px; margin: 0; }
     main:not(.locked) > section.card { grid-column: 2; grid-row: 4; }
   }
@@ -542,7 +556,11 @@
   </section>
   <p class="access-note" id="accessNote" hidden></p>
   <h1>YTS Tools for <span class="brand">MR YSDIY</span> <span class="by">by <b>Noii &amp; Pierrick</b></span></h1>
-  <p class="sub">Don't Give Up, We are here to support YOU!</p>
+  <p class="sub">Don't Give Up, We are here to support YOU อย่ายอมแพ้ เรา2คนพร้อมซัพพอร์ทเสมอ สู้ๆ</p>
+  <div class="ctas">
+    <a class="book alt" href="https://calendly.com/d/dvzy-m4p-869/niche-selection-mr-ysdiy?month=2026-11" target="_blank" rel="noopener">📅 จองนีช (Niche)</a>
+    <a class="book alt" href="https://mr-ysdiy-1.carrd.co/" target="_blank" rel="noopener">🎓 เรียนออนไลน์</a>
+  </div>
 
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" aria-selected="true" data-tab="voice">สร้างเสียง 11Labs</button>
