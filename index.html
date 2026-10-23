@@ -742,7 +742,18 @@
     <div class="quick" id="sbLenQuick"></div>
     <label for="sbScript">สคริปต์เสียงบรรยาย</label>
     <textarea id="sbScript" rows="6" placeholder="วางสคริปต์คำพูดของคุณที่นี่"></textarea>
+    <label>เสียงพากย์ <span style="font-weight:400;color:var(--muted)">ไม่บังคับ ใส่แล้วได้ Timestamp ตรงตามเสียงจริง</span></label>
+    <div class="drop" id="sbDrop" tabindex="0" role="button">
+      <strong>ลากไฟล์เสียงพากย์มาวางที่นี่</strong>
+      <span>หรือคลิกเพื่อเลือกไฟล์ (MP3, WAV, M4A) ไฟล์ไม่ถูกอัปโหลดไปไหน</span>
+    </div>
+    <input type="file" id="sbAudio" accept="audio/*,.mp3,.wav,.m4a" hidden>
+    <div id="sbVoiceInfo" hidden>
+      <audio controls id="sbVoicePlayer" style="width:100%;margin-top:10px"></audio>
+      <p class="hint" id="sbVoiceText" style="margin:6px 0 0"></p>
+    </div>
     <label style="margin-top:20px">ขอเพิ่มเติม</label>
+    <label class="check" style="margin-top:4px"><input type="checkbox" id="sbIdeas" checked> เสนอไอเดียการตัดต่อเพิ่มเติม (Hook แบบอื่น จุดใส่ B-Roll ทรานซิชัน เพลง/SFX จุดที่ควรตัด)</label>
     <label class="check" style="margin-top:4px"><input type="checkbox" id="sbBroll"> เขียน AI Image Prompt (Midjourney) ภาษาอังกฤษสำหรับฉาก B-Roll แต่ละช่วง</label>
     <label class="check" style="margin-top:4px"><input type="checkbox" id="sbFx" checked> บอกชื่อเอฟเฟกต์ในโปรแกรม
       <select id="sbFxApp" style="margin-left:6px;padding:4px 8px;border-radius:8px;background:var(--field);color:var(--text);border:1px solid var(--line);font:inherit">
@@ -2051,12 +2062,20 @@ sampleReady.then(async sample => {
 });
 
 // ═════════════ Editing storyboard (Shorts Commentary Editing Prompt) ═════════════
-const STORY_PROMPT = ({ topic, vibe, ref, len, script, broll, fx, fxApp, loop }) => {
+const STORY_PROMPT = ({ topic, vibe, ref, len, script, broll, fx, fxApp, loop, ideas, voice }) => {
   const extras = [
     broll && '- ช่วยเขียน Midjourney / AI Image Prompt ภาษาอังกฤษสำหรับฉาก B-Roll แต่ละช่วงให้ด้วย',
     fx && `- ขอชื่อเอฟเฟกต์ใน ${fxApp} ที่ตรงกับแนวทางนี้ในแต่ละช่วง`,
     loop && '- ออกแบบประโยคสุดท้ายให้เชื่อมโยงกลับไปที่ประโยคเปิด Hook เพื่อทำ Seamless Loop วนลูปคลิป',
+    ideas && `- หลังตาราง เพิ่มหัวข้อ "ไอเดียการตัดต่อเพิ่มเติม" 6–8 ข้อ ที่ทำให้คลิปนี้น่าดูขึ้น เช่น Hook เปิดแบบอื่นอีก 2 แบบ, จุดใส่ B-Roll / มีม / ภาพประกอบที่ได้ผล, ทรานซิชันระหว่างช่วง, จังหวะซูมและข้อความเด้ง, เพลงและ SFX ที่เข้ากับโทน, จุดที่ควรตัดให้กระชับ, และ Pattern Interrupt กลางคลิปเพื่อกันคนเลื่อนผ่าน แต่ละข้อบอกว่าใช้ที่วินาทีไหน`,
   ].filter(Boolean);
+  const voiceBlock = voice ? `
+ข้อมูลจากไฟล์เสียงพากย์จริง (ใช้ Timestamp ตามนี้):
+- ไฟล์ ${voice.name} ยาว ${voice.duration.toFixed(1)} วินาที
+- ช่วงที่มีเสียงพูด เรียงตามเวลา: ${voice.segments.map(([s, e]) => `${fmtTime(s)}–${fmtTime(e)}`).join(', ')}
+- ช่องว่างระหว่างช่วงคือจังหวะหยุดหายใจ เหมาะวาง Hard Cut, SFX หรือเปลี่ยนภาพ
+- จับคู่ประโยคในสคริปต์กับช่วงเวลาเหล่านี้ตามลำดับ และใช้เวลาจริงในคอลัมน์ Timestamp${script ? '' : '\n- ไม่มีสคริปต์ ให้ฟังและถอดคำพูดจากไฟล์เสียงพากย์ที่แนบมาในแชทนี้'}
+` : '';
   return `คุณคือ Creative Video Editor และ Content Strategist สำหรับ Short-form Video (YouTube Shorts / TikTok / Reels) เชี่ยวชาญการทำวิดีโอสไตล์ Commentary / Storytelling จังหวะกระชับ น่าติดตาม ดึงดูด Retention สูง
 
 หน้าที่ของคุณ: ช่วยแปลง "สคริปต์วิดีโอ" ที่ฉันระบุ ให้กลายเป็น "ตารางแนวทางการตัดต่ออย่างละเอียด (Visual & Editing Storyboard)" โดยแบ่งตามช่วงเวลา (Timestamp) หรือประโยคต่อประโยค เพื่อให้เห็นภาพชัดเจนที่สุด
@@ -2079,12 +2098,66 @@ const STORY_PROMPT = ({ topic, vibe, ref, len, script, broll, fx, fxApp, loop })
 - สลับภาพทุกๆ 1.5–3 วินาที เพื่อรักษาระดับ Visual Retention
 - สลับหน้าคนพูด (A-Roll) กับกราฟิก / ฟุตเทจ (B-Roll) อย่างสมดุล
 - จุดหักมุมหรือมุกตลก: ระบุจังหวะ Hard Cut, Zoom-in หรือ Beat Drop ให้ชัดเจน
-${extras.length ? '\nขอเพิ่มเติม:\n' + extras.join('\n') + '\n' : ''}
+${voiceBlock}${extras.length ? '\nขอเพิ่มเติม:\n' + extras.join('\n') + '\n' : ''}
 สคริปต์เสียงบรรยาย:
 """
-${script}
+${script || '(ไม่มี ให้ถอดจากไฟล์เสียงพากย์ที่แนบ)'}
 """`;
 };
+const fmtTime = s => `${Math.floor(s / 60)}:${(s % 60).toFixed(1).padStart(4, '0')}`;
+
+// Voiceover: real length and the stretches where someone is speaking (pauses split the sentences).
+let sbVoice = null;
+function speechSegments(buf, thresholdDb = -38, minPause = 0.25) {
+  const sr = buf.sampleRate, win = Math.round(sr * 0.01), thr = Math.pow(10, thresholdDb / 20);
+  const chans = [...Array(buf.numberOfChannels)].map((_, c) => buf.getChannelData(c));
+  const loud = [];
+  for (let i = 0; i < buf.length; i += win) {
+    let peak = 0;
+    for (const ch of chans) for (let j = i; j < Math.min(i + win, buf.length); j++) { const a = Math.abs(ch[j]); if (a > peak) peak = a; }
+    loud.push(peak >= thr);
+  }
+  const segs = [];
+  let start = -1, quiet = 0;
+  const gap = Math.round(minPause / 0.01);
+  loud.forEach((on, k) => {
+    if (on) { if (start < 0) start = k; quiet = 0; }
+    else if (start >= 0 && ++quiet >= gap) { segs.push([start, k - quiet + 1]); start = -1; quiet = 0; }
+  });
+  if (start >= 0) segs.push([start, loud.length - quiet]);
+  return segs.map(([a, b]) => [a * 0.01, b * 0.01]).filter(([a, b]) => b - a >= 0.15);
+}
+async function setVoice(file) {
+  const status = $('sbStatus');
+  if (!file || !/^audio\/|\.(mp3|wav|m4a)$/i.test(file.type || file.name)) {
+    status.className = 'status err'; status.textContent = 'รองรับเฉพาะไฟล์เสียง (MP3, WAV, M4A)'; return;
+  }
+  status.className = 'status'; status.textContent = 'กำลังอ่านเสียงพากย์...';
+  try {
+    const buf = await new OfflineAudioContext(1, 1, SAMPLE_RATE).decodeAudioData(await file.arrayBuffer());
+    const segments = speechSegments(buf);
+    sbVoice = { name: file.name, duration: buf.duration, segments };
+    $('sbVoicePlayer').src = URL.createObjectURL(file);
+    $('sbVoiceText').textContent = `ยาว ${buf.duration.toFixed(1)} วินาที · แบ่งได้ ${segments.length} ช่วงพูด: ` +
+      segments.map(([s, e]) => `${fmtTime(s)}–${fmtTime(e)}`).join(', ');
+    $('sbVoiceInfo').hidden = false;
+    $('sbDrop').querySelector('strong').textContent = `✓ ${file.name}`;
+    $('sbLen').value = `${Math.round(buf.duration)} วินาที (ตามเสียงพากย์จริง)`;
+    status.textContent = '';
+  } catch {
+    sbVoice = null;
+    status.className = 'status err'; status.textContent = 'อ่านไฟล์เสียงนี้ไม่ได้ ลองแปลงเป็น MP3 ก่อน';
+  }
+}
+{
+  const drop = $('sbDrop'), input = $('sbAudio');
+  drop.addEventListener('click', () => input.click());
+  drop.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); } });
+  input.addEventListener('change', () => setVoice(input.files[0]));
+  ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', e => setVoice(e.dataTransfer.files[0]));
+}
 
 const setupSbQuick = () => {
   setupQuick('sbVibeQuick', 'sbVibe', ['ตลกเสียดสี', 'ลึกลับชวนคิด', 'จริงจังกระชับสไตล์ข่าวสืบสวน', 'ตื่นเต้นเร้าใจ', 'อบอุ่นซึ้ง']
@@ -2104,12 +2177,15 @@ function storyFields() {
     topic: $('sbTopic').value.trim(), vibe: $('sbVibe').value.trim(), ref: $('sbRef').value.trim(),
     len: $('sbLen').value.trim(), script: $('sbScript').value.trim(),
     broll: $('sbBroll').checked, fx: $('sbFx').checked, fxApp: $('sbFxApp').value, loop: $('sbLoop').checked,
+    ideas: $('sbIdeas').checked, voice: sbVoice,
   };
 }
-function storyMissing(f) {
-  if (f.script) return false;
+function storyMissing(f, needScript = false) {
+  if (f.script || (f.voice && !needScript)) return false;
   $('sbStatus').className = 'status err';
-  $('sbStatus').textContent = 'กรุณาวางสคริปต์เสียงบรรยาย';
+  $('sbStatus').textContent = needScript && f.voice
+    ? 'Claude ฟังเสียงไม่ได้ กรุณาวางสคริปต์ด้วย (เสียงพากย์ใช้กำหนดเวลาให้ตรง)'
+    : 'กรุณาวางสคริปต์เสียงบรรยาย หรือใส่ไฟล์เสียงพากย์';
   return true;
 }
 
@@ -2117,8 +2193,10 @@ $('sbBtn').addEventListener('click', async () => {
   const f = storyFields();
   $('sbStatus').className = 'status'; $('sbStatus').textContent = '';
   if (storyMissing(f)) { $('sbPanel').hidden = true; return; }
-  await showPromptPanel($('sbPanel'), STORY_PROMPT(f), 'storyboard_' + slugify(f.topic || f.script.slice(0, 30), 40) + '.txt',
-    'เปิด Gemini, Claude หรือ ChatGPT แล้วกด Ctrl+V วางในช่องแชท แล้วกดส่ง จะได้ตาราง Storyboard ตัดต่อทีละช่วงเวลา');
+  await showPromptPanel($('sbPanel'), STORY_PROMPT(f), 'storyboard_' + slugify(f.topic || f.script.slice(0, 30) || f.voice.name, 40) + '.txt',
+    f.voice
+      ? 'เปิด Gemini แล้วแนบไฟล์เสียงพากย์ (ปุ่ม +) จากนั้นกด Ctrl+V วางพรอมต์แล้วกดส่ง จะได้ตาราง Storyboard ตามเวลาจริงของเสียง พร้อมไอเดียการตัดต่อ'
+      : 'เปิด Gemini, Claude หรือ ChatGPT แล้วกด Ctrl+V วางในช่องแชท แล้วกดส่ง จะได้ตาราง Storyboard ตัดต่อทีละช่วงเวลา');
 });
 
 // Small Markdown view for Claude's answer: tables become real tables, the rest stays as text.
@@ -2155,7 +2233,7 @@ sampleReady.then(sample => {
   btn.addEventListener('click', async () => {
     const f = storyFields(), status = $('sbStatus');
     status.className = 'status'; status.textContent = '';
-    if (storyMissing(f)) return;
+    if (storyMissing(f, true)) return;
     ctl = new AbortController();
     btn.disabled = true; box.hidden = false; stop.hidden = false; copy.hidden = true;
     out.textContent = 'Claude กำลังวาง Storyboard...';
