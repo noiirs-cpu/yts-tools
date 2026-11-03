@@ -610,7 +610,7 @@
     <button class="tab" role="tab" aria-selected="true" data-tab="voice">สร้างเสียง 11Labs</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="keywords">หาคีย์เวิร์ด</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="clips">หาคลิป X / IG</button>
-    <button class="tab" role="tab" aria-selected="false" data-tab="summary">สรุปเรื่องจากลิงก์</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="summary">สรุปเรื่องจาก YouTube</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="policy">เช็คกฎ Shorts Commentary</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="story">Storyboard ตัดต่อ</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="style">แกะสไตล์ตัดต่อ</button>
@@ -922,17 +922,11 @@
     <div class="result" id="subResult" hidden></div>
   </section>
 
-  <!-- Story summary from a Facebook / X / YouTube clip: Gemini (viewer's own key) watches it in the page -->
+  <!-- Story summary from a YouTube link: Gemini (viewer's own key) watches it in the page -->
   <section class="card" id="summary" role="tabpanel" hidden>
-    <h2>สรุปเนื้อเรื่องจากลิงก์ Facebook | X | YouTube</h2>
-    <label for="sumLink">ลิงก์คลิป</label>
-    <input type="text" id="sumLink" placeholder="https://youtube.com/shorts/... หรือ https://www.facebook.com/... หรือ https://x.com/...">
-    <div class="status" id="sumPlatform"></div>
-    <div class="drop" id="sumDrop" tabindex="0" role="button" style="margin-top:10px">
-      <strong>คลิป Facebook / X: ลากไฟล์คลิปมาวางที่นี่</strong>
-      <span>โหลดคลิปจาก <a href="https://cobalt.tools" target="_blank" rel="noopener">เว็บแมว</a> ก่อน (YouTube ไม่ต้อง ใช้ลิงก์ได้เลย)</span>
-    </div>
-    <input type="file" id="sumFile" accept="video/*,.mp4,.mov,.webm" hidden>
+    <h2>สรุปเนื้อเรื่องจากลิงก์ YouTube</h2>
+    <label for="sumLink">ลิงก์คลิป YouTube</label>
+    <input type="text" id="sumLink" placeholder="https://youtube.com/shorts/... หรือ https://www.youtube.com/watch?v=...">
     <label for="sumNote">อยากรู้อะไรเพิ่ม <span style="font-weight:400;color:var(--muted)">ไม่บังคับ</span></label>
     <input type="text" id="sumNote" placeholder="เช่น คนในคลิปเป็นใคร, เกิดที่ประเทศไหน, มีข่าวต่อไหม">
     <div class="quick" id="sumNoteQuick"></div>
@@ -3280,21 +3274,14 @@ $('subBtn').addEventListener('click', async () => {
   btn.disabled = false;
 });
 
-// ═════════════ Story summary from a link (Facebook / X / YouTube) ═════════════
-// Gemini watches the clip with the viewer's own key: YouTube straight from the link, Facebook and X
-// from the downloaded file (uploaded to Gemini, deleted again after the answer).
+// ═════════════ Story summary from a YouTube link ═════════════
+// Gemini watches the YouTube clip straight from its link, with the viewer's own key.
 const GEMINI = 'https://generativelanguage.googleapis.com';
-let sumClip = null;
+const isYouTube = url => /(youtube\.com|youtu\.be)\//i.test(url);
 
-function linkPlatform(url) {
-  if (/(youtube\.com|youtu\.be)\//i.test(url)) return 'YouTube';
-  if (/(facebook\.com|fb\.watch|fb\.com)\//i.test(url)) return 'Facebook';
-  if (/(^|\/\/|\.)(x|twitter)\.com\//i.test(url)) return 'X';
-  return '';
-}
-
-const SUMMARY_PROMPT = ({ link, platform, note, file }) => `ช่วยดูคลิปนี้ทั้งคลิป (ทั้งภาพ เสียง และข้อความบนจอ) แล้วสรุปเนื้อเรื่องเป็นภาษาไทย
-${link ? `ลิงก์คลิป${platform ? ` (${platform})` : ''}: ${link}\n` : ''}${file ? `ไฟล์คลิปแนบมาแล้ว (${file}) ให้ดูจากไฟล์นี้\n` : 'ถ้าฉันแนบไฟล์คลิปมาด้วย ให้ดูจากไฟล์นั้น\n'}ถ้าดูคลิปไม่ได้ ให้บอกตรงๆ ห้ามเดาเนื้อเรื่อง ตอบเป็นข้อความธรรมดา ใช้ตัวหนาแทนหัวข้อ ไม่ต้องใช้เครื่องหมาย #
+const SUMMARY_PROMPT = ({ link, note }) => `ช่วยดูคลิป YouTube นี้ทั้งคลิป (ทั้งภาพ เสียง และข้อความบนจอ) แล้วสรุปเนื้อเรื่องเป็นภาษาไทย
+ลิงก์คลิป: ${link}
+ถ้าดูคลิปไม่ได้ ให้บอกตรงๆ ห้ามเดาเนื้อเรื่อง ตอบเป็นข้อความธรรมดา ใช้ตัวหนาแทนหัวข้อ ไม่ต้องใช้เครื่องหมาย #
 
 ตอบตามหัวข้อนี้
 1. สรุปสั้นใน 2 ประโยค: เกิดอะไรขึ้น
@@ -3315,80 +3302,37 @@ async function gemini(path, key, init = {}) {
     const msg = j.error?.message || res.statusText;
     if (/API key not valid|API_KEY_INVALID/i.test(msg) || res.status === 401 || res.status === 403) throw new Error('Gemini API key ไม่ถูกต้อง');
     if (res.status === 429) throw new Error('ใช้ Gemini ฟรีเกินโควต้าแล้ว รอสักครู่แล้วลองใหม่');
-    if (/fetch content/i.test(msg)) throw new Error('Gemini เปิดคลิปจากลิงก์นี้ไม่ได้ ลองโหลดคลิปจากเว็บแมวแล้วลากไฟล์มาวางแทน');
+    if (/fetch content/i.test(msg)) throw new Error('Gemini เปิดคลิปนี้ไม่ได้ (คลิปอาจเป็นส่วนตัว หรือถูกจำกัดอายุ)');
     throw new Error(msg);
   }
   return j;
 }
 
-// Upload the clip to Gemini and wait until it has been processed.
-async function geminiUpload(file, key, onStatus) {
-  const type = file.type || 'video/mp4';
-  const { file: f } = await gemini('/upload/v1beta/files', key, {
-    method: 'POST', headers: { 'X-Goog-Upload-Protocol': 'raw', 'Content-Type': type }, body: file });
-  for (let i = 0, g = f; ; i++) {
-    if (g.state === 'ACTIVE') return { uri: g.uri, name: g.name, type };
-    if (g.state === 'FAILED' || i > 90) throw new Error('Gemini อ่านคลิปนี้ไม่ได้ ลองแปลงเป็น MP4');
-    onStatus(`Gemini กำลังเตรียมคลิป... (${i * 2} วินาที)`);
-    await new Promise(r => setTimeout(r, 2000));
-    g = await gemini(`/v1beta/${f.name}`, key);
-  }
-}
-
 setupQuick('sumNoteQuick', 'sumNote', ['คนในคลิปเป็นใคร', 'เกิดที่ประเทศไหน', 'มีข่าวต่อไหม', 'คลิปจริงหรือจัดฉาก'].map(t => ({ label: t, value: t })));
-
-function showSumPlatform() {
-  const link = $('sumLink').value.trim(), pf = linkPlatform(link), el = $('sumPlatform');
-  el.className = 'status';
-  el.textContent = sumClip ? '' : !link ? '' : pf === 'YouTube' ? '✓ YouTube: กดสรุปเลยได้ทันที'
-    : pf ? `${pf}: โหลดคลิปจากเว็บแมว แล้วลากไฟล์มาวางในกล่องด้านล่าง` : 'ลิงก์นี้ไม่ใช่ Facebook, X หรือ YouTube ถ้ามีไฟล์คลิป ลากมาวางได้เลย';
-}
-function setSumClip(f) {
-  if (!f) return;
-  sumClip = f;
-  $('sumDrop').querySelector('strong').textContent = `✓ ${f.name} (${(f.size / 1048576).toFixed(1)} MB)`;
-  showSumPlatform();
-}
 {
-  const dz = $('sumDrop'), inp = $('sumFile');
-  dz.addEventListener('click', e => { if (!e.target.closest('a')) inp.click(); });
-  dz.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inp.click(); } });
-  inp.addEventListener('change', () => setSumClip(inp.files[0]));
-  ['dragenter', 'dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('over'); }));
-  ['dragleave', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('over'); }));
-  dz.addEventListener('drop', e => setSumClip(e.dataTransfer.files[0]));
   const k = store.get('gemKey');
   if (k) { $('gemKey').value = k; $('rememberGemKey').checked = true; }
 }
-$('sumLink').addEventListener('input', showSumPlatform);
 $('sumLink').addEventListener('keydown', e => { if (e.key === 'Enter') $('sumBtn').click(); });
 
 $('sumBtn').addEventListener('click', async () => {
   const btn = $('sumBtn'), status = $('sumStatus'), result = $('sumResult');
   const link = $('sumLink').value.trim(), note = $('sumNote').value.trim(), key = $('gemKey').value.trim();
-  const platform = linkPlatform(link);
   status.className = 'status'; status.textContent = '';
   const fail = msg => { status.className = 'status err'; status.textContent = msg; };
-  if (!sumClip && !link) return fail('กรุณาวางลิงก์คลิป หรือลากไฟล์คลิปมาวาง');
-  if (!sumClip && platform !== 'YouTube') return fail('Gemini เปิดคลิป Facebook หรือ X จากลิงก์ไม่ได้ ให้โหลดคลิปจากเว็บแมว แล้วลากไฟล์มาวางในกล่องด้านบน');
+  if (!link) return fail('กรุณาวางลิงก์คลิป YouTube');
+  if (!isYouTube(link)) return fail('ใช้ได้เฉพาะลิงก์ YouTube');
+  let videoId;
+  try { videoId = extractVideoId(link); } catch { return fail('อ่านลิงก์ YouTube นี้ไม่ได้ ลองคัดลอกลิงก์ใหม่'); }
   if (!key) return fail('กรุณาใส่ Gemini API key (ขอฟรีที่ Google AI Studio) หรือกด "คัดลอกพรอมต์" ด้านล่างไปวางเอง');
   store.set('gemKey', $('rememberGemKey').checked ? key : null);
   btn.disabled = true; result.hidden = true;
-  let uploaded = null;
   try {
-    let media;
-    if (sumClip) {
-      status.textContent = 'กำลังส่งคลิปให้ Gemini...';
-      uploaded = await geminiUpload(sumClip, key, t => status.textContent = t);
-      media = { file_data: { file_uri: uploaded.uri, mime_type: uploaded.type } };
-    } else {
-      media = { file_data: { file_uri: `https://www.youtube.com/watch?v=${extractVideoId(link)}` } };
-    }
     status.textContent = 'Gemini กำลังดูคลิปและสรุปเรื่อง... (ประมาณ 20-60 วินาที)';
-    const prompt = SUMMARY_PROMPT({ link, platform, note, file: sumClip?.name });
     const j = await gemini('/v1beta/models/gemini-flash-latest:generateContent', key, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [media, { text: prompt }] }] }) });
+      body: JSON.stringify({ contents: [{ parts: [
+        { file_data: { file_uri: `https://www.youtube.com/watch?v=${videoId}` } }, { text: SUMMARY_PROMPT({ link, note }) }] }] }) });
     const cand = j.candidates?.[0];
     const text = (cand?.content?.parts || []).filter(x => x.text && !x.thought).map(x => x.text).join('').trim();
     if (!text) throw new Error(cand?.finishReason === 'SAFETY' || j.promptFeedback?.blockReason ? 'Gemini ไม่ยอมสรุปคลิปนี้ (ติดเรื่องความปลอดภัยของเนื้อหา)' : 'Gemini ไม่ได้ตอบกลับมา ลองใหม่อีกครั้ง');
@@ -3404,18 +3348,14 @@ $('sumBtn').addEventListener('click', async () => {
   } catch (e) {
     fail('ผิดพลาด: ' + (e.message || e));
   }
-  if (uploaded) gemini(`/v1beta/${uploaded.name}`, key, { method: 'DELETE' }).catch(() => {});
   btn.disabled = false;
 });
 
 $('sumPromptLink').addEventListener('click', async e => {
   e.preventDefault();
-  const link = $('sumLink').value.trim(), platform = linkPlatform(link);
-  await showPromptPanel($('sumPanel'), SUMMARY_PROMPT({ link: link || '(แนบไฟล์คลิป)', platform, note: $('sumNote').value.trim() }),
-    'story-summary_' + slugify(platform || 'clip', 20) + '.txt',
-    platform === 'YouTube' ? 'เปิด Gemini แล้วกด Ctrl+V วางพรอมต์ แล้วกดส่ง Gemini ดูคลิป YouTube จากลิงก์ได้เลย'
-      : 'เปิด Gemini แนบไฟล์คลิปที่โหลดจากเว็บแมว (ปุ่ม +) แล้วกด Ctrl+V วางพรอมต์ แล้วกดส่ง',
-    '<a class="ghost" href="https://cobalt.tools" target="_blank" rel="noopener">เปิดเว็บแมว</a>');
+  const link = $('sumLink').value.trim();
+  await showPromptPanel($('sumPanel'), SUMMARY_PROMPT({ link: link || '(วางลิงก์ YouTube)', note: $('sumNote').value.trim() }),
+    'story-summary_youtube.txt', 'เปิด Gemini แล้วกด Ctrl+V วางพรอมต์ แล้วกดส่ง Gemini ดูคลิป YouTube จากลิงก์ได้เลย');
 });
 
 const savedKey = store.get('ytKey');
