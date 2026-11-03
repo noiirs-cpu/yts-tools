@@ -873,7 +873,7 @@
     </div>
   </section>
 
-  <!-- Thai word-by-word subtitles: burned into the video in the browser; times from the script + speech, or ElevenLabs -->
+  <!-- Thai word-by-word subtitles: burned into the video in the browser; times from the script + the speech in the clip -->
   <section class="card" id="subs" role="tabpanel" hidden>
     <h2>ใส่ซับทีละคำ ไทย | English</h2>
     <div class="drop" id="subDrop" tabindex="0" role="button">
@@ -882,7 +882,7 @@
     </div>
     <input type="file" id="subFile" accept="video/*,.mp4,.mov,.webm" hidden>
     <ul class="files" id="subFileName"></ul>
-    <label for="subScript">สคริปต์ <span style="font-weight:400;color:var(--muted)">วางสคริปต์ที่พากย์ แล้วกดสร้างซับได้เลย ไม่ต้องใช้ key</span></label>
+    <label for="subScript">สคริปต์ <span style="font-weight:400;color:var(--muted)">วางสคริปต์ที่พากย์ในคลิปนี้</span></label>
     <textarea id="subScript" rows="4" placeholder="วางสคริปต์ที่ใช้พากย์ในคลิปนี้"></textarea>
     <div class="grid">
       <div>
@@ -910,13 +910,6 @@
         <input type="color" id="subStroke" class="sub-color" value="#000000">
       </div>
     </div>
-    <details>
-      <summary>ไม่มีสคริปต์ หรืออยากได้เวลาตรงเป๊ะ: ใช้ ElevenLabs ถอดเสียง</summary>
-      <label for="elKey">ElevenLabs API key <span style="font-weight:400;color:var(--muted)">ต้องเปิดสิทธิ์ Speech to Text</span></label>
-      <input type="password" id="elKey" placeholder="sk_..." autocomplete="off">
-      <label class="check"><input type="checkbox" id="rememberElKey"> จำ key ไว้ในเบราว์เซอร์นี้ (ไม่ต้องติ๊ก ถ้าใช้เครื่องร่วมกับคนอื่น)</label>
-      <p class="hint" style="margin-top:4px">สร้าง key ที่ <a href="https://elevenlabs.io/app/settings/api-keys" target="_blank" rel="noopener">elevenlabs.io → API Keys</a> ใช้เครดิต 11Labs ตามความยาวเสียง</p>
-    </details>
     <button class="primary" id="subBtn" disabled>สร้างซับ</button>
     <div class="status" id="subStatus"></div>
     <div class="result" id="subResult" hidden></div>
@@ -2886,46 +2879,13 @@ $('clipBtn').addEventListener('click', async () => {
 });
 $('niche').addEventListener('keydown', e => { if (e.key === 'Enter') $('voiceBtn').click(); });
 
-// ═════════════ Thai word-by-word subtitles (script + speech timing, or ElevenLabs speech-to-text) ═════════════
-// Every character gets a time, either from ElevenLabs speech-to-text or spread over the stretches
-// where someone speaks in the clip; the Thai text is cut into words in the browser and each word
+// ═════════════ Thai word-by-word subtitles (script + speech timing) ═════════════
+// Every character of the script gets a time, spread over the stretches where someone speaks in the clip; the Thai text is cut into words in the browser and each word
 // takes the time of its first and last character. The video is played through a canvas that draws
 // the current word, and recorded to a new file. Words and times can be fixed in the page.
 let subMedia = null, subCues = null;
 
-async function transcribe(file, key, lang) {
-  const fd = new FormData();
-  fd.append('model_id', 'scribe_v1');
-  fd.append('file', file);
-  fd.append('timestamps_granularity', 'character');
-  fd.append('tag_audio_events', 'false');
-  fd.append('language_code', lang);
-  let res;
-  try {
-    res = await fetch('https://api.elevenlabs.io/v1/speech-to-text', { method: 'POST', headers: { 'xi-api-key': key }, body: fd });
-  } catch { throw new Error('เชื่อมต่อ ElevenLabs ไม่ได้ ตรวจสอบอินเทอร์เน็ต'); }
-  const j = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    const d = j.detail || {}, msg = d.message || (typeof d === 'string' ? d : '') || res.statusText;
-    if (res.status === 401) throw new Error(/permission/i.test(msg) ? 'key นี้ยังไม่ได้เปิดสิทธิ์ Speech to Text' : 'API key ไม่ถูกต้อง');
-    if (res.status === 402 || /quota|credit/i.test(msg)) throw new Error('เครดิต ElevenLabs ไม่พอ');
-    throw new Error(msg);
-  }
-  return j;
-}
-
-// [{c, s, e}]: one entry per character, spaces included.
-function sttChars(j) {
-  const out = [];
-  for (const w of j.words || []) {
-    if (w.type === 'audio_event') continue;
-    if (w.characters?.length) w.characters.forEach(ch => [...ch.text].forEach(c => out.push({ c, s: ch.start, e: ch.end })));
-    else [...(w.text || '')].forEach((c, i, a) => out.push({ c, s: w.start + (w.end - w.start) * i / a.length, e: w.start + (w.end - w.start) * (i + 1) / a.length }));
-  }
-  return out;
-}
-
-// No key: lay the script over the stretches where someone speaks, skipping the pauses.
+// Lay the script over the stretches where someone speaks, skipping the pauses.
 // Each character counts by how long it takes to say (marks above/below a letter count 0).
 async function scriptChars(file, script, lang) {
   let buf;
@@ -2943,44 +2903,6 @@ async function scriptChars(file, script, lang) {
   };
   let cum = 0;
   return S.map(c => { const a = cum; cum += weight(c); return { c, s: at(a / W), e: at(cum / W) }; });
-}
-
-// Give each script character the time of the matching transcript character (longest common
-// subsequence, spaces ignored); characters with no match are spread between their neighbours.
-function alignScript(script, stt) {
-  const S = [...script], A = [], B = [];
-  S.forEach((c, i) => { if (!/\s/.test(c)) A.push(i); });
-  stt.forEach((x, i) => { if (!/\s/.test(x.c)) B.push(i); });
-  const n = A.length, m = B.length;
-  if (!n || !m || n * m > 40e6) return null;
-  const a = A.map(i => S[i].toLowerCase()), b = B.map(i => stt[i].c.toLowerCase());
-  const Wd = m + 1, dir = new Uint8Array((n + 1) * Wd);
-  let prev = new Int32Array(Wd), cur = new Int32Array(Wd);
-  for (let i = 1; i <= n; i++) {
-    for (let k = 1; k <= m; k++) {
-      if (a[i - 1] === b[k - 1]) { cur[k] = prev[k - 1] + 1; dir[i * Wd + k] = 1; }
-      else if (prev[k] >= cur[k - 1]) { cur[k] = prev[k]; dir[i * Wd + k] = 2; }
-      else { cur[k] = cur[k - 1]; dir[i * Wd + k] = 3; }
-    }
-    [prev, cur] = [cur, prev];
-  }
-  const times = new Array(S.length).fill(null);
-  let matched = 0;
-  for (let i = n, k = m; i > 0 && k > 0;) {
-    const d = dir[i * Wd + k];
-    if (d === 1) { const x = stt[B[k - 1]]; times[A[i - 1]] = [x.s, x.e]; matched++; i--; k--; }
-    else if (d === 2) i--; else k--;
-  }
-  if (matched < n * 0.3) return null;
-  const end = stt[stt.length - 1].e;
-  let last = -1;
-  for (let i = 0; i <= S.length; i++) {
-    if (i < S.length && !times[i]) continue;
-    const t0 = last >= 0 ? times[last][1] : 0, t1 = i < S.length ? times[i][0] : end, gap = i - last - 1;
-    for (let k = 1; k <= gap; k++) times[last + k] = [t0 + (t1 - t0) * (k - 1) / gap, t0 + (t1 - t0) * k / gap];
-    last = i;
-  }
-  return S.map((c, i) => ({ c, s: times[i][0], e: times[i][1] }));
 }
 
 // Cut into words; punctuation is dropped and ๆ stays with its word.
@@ -3234,39 +3156,23 @@ function setSubFile(f) {
   ['dragenter', 'dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('over'); }));
   ['dragleave', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('over'); }));
   dz.addEventListener('drop', e => setSubFile(e.dataTransfer.files[0]));
-  const k = store.get('elKey');
-  if (k) { $('elKey').value = k; $('rememberElKey').checked = true; }
 })();
 
 $('subBtn').addEventListener('click', async () => {
-  const btn = $('subBtn'), status = $('subStatus'), key = $('elKey').value.trim(), script = $('subScript').value.trim(), lang = $('subLang').value;
+  const btn = $('subBtn'), status = $('subStatus'), script = $('subScript').value.trim(), lang = $('subLang').value;
   status.className = 'status'; $('subResult').hidden = true;
   if (!subMedia) return;
-  if (!script && !key) { status.className = 'status err'; status.textContent = 'กรุณาวางสคริปต์ (หรือใส่ ElevenLabs API key ให้ถอดเสียงให้)'; return; }
+  if (!script) { status.className = 'status err'; status.textContent = 'กรุณาวางสคริปต์ที่พากย์ในคลิปนี้'; return; }
   if (typeof Intl.Segmenter === 'undefined') { status.className = 'status err'; status.textContent = 'เบราว์เซอร์นี้ตัดคำไทยไม่ได้ ลองใช้ Chrome หรือ Edge รุ่นใหม่'; return; }
   btn.disabled = true;
   try {
-    let chars, note = '';
-    if (key) {
-      store.set('elKey', $('rememberElKey').checked ? key : null);
-      status.textContent = 'กำลังถอดเสียงด้วย ElevenLabs... (คลิป 1 นาทีใช้เวลาประมาณ 10-20 วินาที)';
-      const stt = sttChars(await transcribe(subMedia, key, lang));
-      if (!stt.some(x => x.c.trim())) throw new Error('ไม่พบเสียงพูดในคลิปนี้');
-      chars = stt;
-      if (script) {
-        const al = alignScript(script, stt);
-        if (al) chars = al; else note = ' (สคริปต์ไม่ตรงกับเสียง เลยใช้คำที่ถอดจากเสียงแทน)';
-      }
-    } else {
-      status.textContent = 'กำลังจับจังหวะเสียงพูดในคลิป...';
-      chars = await scriptChars(subMedia, script, lang);
-      note = ' เวลาซับประมาณจากจังหวะเสียงพูด ถ้าคำไหนเร็วหรือช้าไป กดที่คำแล้วเลื่อนเวลาได้';
-    }
+    status.textContent = 'กำลังจับจังหวะเสียงพูดในคลิป...';
+    const chars = await scriptChars(subMedia, script, lang);
     subCues = toCues(toWords(chars, lang), +$('subPer').value);
     if (!subCues.length) throw new Error('ไม่พบคำในสคริปต์');
     await document.fonts.load('700 60px Kanit').catch(() => {});
     showSubs(subMedia);
-    status.textContent = 'สร้างซับแล้ว กดเล่นดูตัวอย่าง แล้วกดบันทึกคลิปพร้อมซับ' + note;
+    status.textContent = 'สร้างซับแล้ว กดเล่นดูตัวอย่าง แล้วกดบันทึกคลิปพร้อมซับ ถ้าคำไหนเร็วหรือช้าไป กดที่คำแล้วเลื่อนเวลาได้';
   } catch (e) {
     status.className = 'status err';
     status.textContent = 'ผิดพลาด: ' + (e.message || e);
