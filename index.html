@@ -129,9 +129,15 @@
   .sub-stage { margin: 12px 0; border-radius: 12px; overflow: hidden; background: #000; text-align: center; }
   .sub-stage canvas { display: block; margin: 0 auto; max-width: 100%; max-height: 520px; }
   .sub-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0; }
-  .sub-list { max-height: 160px; overflow: auto; font-size: 14px; line-height: 2; color: var(--muted); }
-  .sub-list span { cursor: pointer; padding: 2px 4px; border-radius: 4px; }
+  .sub-list { max-height: 180px; overflow: auto; font-size: 15px; line-height: 2.1; color: var(--muted); }
+  .sub-list span { cursor: pointer; padding: 2px 5px; border-radius: 4px; }
+  .sub-list span:hover { color: #fff; }
   .sub-list span.on { background: var(--yellow); color: #161514; }
+  .sub-list span.sel { outline: 2px solid var(--yellow); color: #fff; }
+  .sub-color { display: block; width: 100%; height: 44px; padding: 3px; border: 1px solid var(--line, #333); border-radius: 8px; background: transparent; cursor: pointer; }
+  .sub-edit { margin: 10px 0; padding: 12px; border: 1px solid var(--line, #333); border-radius: 10px; }
+  .sub-edit input { font-size: 20px; font-weight: 700; }
+  .sub-edit .sub-controls button { padding: 8px 12px; font-size: 14px; }
   textarea { resize: vertical; }
   /* Style extractor: cut map of the reference clip */
   .cutmap { margin-top: 14px; }
@@ -594,7 +600,7 @@
   </section>
   <p class="access-note" id="accessNote" hidden></p>
   <h1>YTS Tools for <span class="brand">MR YSDIY</span> <span class="by">by <b>Noii &amp; Pierrick</b></span></h1>
-  <p class="sub">Don't Give Up, We are here to support YOU อย่ายอมแพ้ เรา2คนพร้อมซัพพอร์ทเสมอ สู้ๆ</p>
+  <p class="sub">Don't Give Up, We are here to support YOU เรา2คนพร้อมซัพพอร์ดเสมอค่ะ สู้ๆนะคะ</p>
   <div class="ctas">
     <a class="book alt" href="https://calendly.com/d/dvzy-m4p-869/niche-selection-mr-ysdiy?month=2026-11" target="_blank" rel="noopener">📅 จองนีช (Niche)</a>
     <a class="book alt" href="https://discord.gg/AX8Pj7X7a" target="_blank" rel="noopener">🎓 เรียนออนไลน์</a>
@@ -609,7 +615,7 @@
     <button class="tab" role="tab" aria-selected="false" data-tab="story">Storyboard ตัดต่อ</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="style">แกะสไตล์ตัดต่อ</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="trim">ตัดเสียงเงียบ 11Labs</button>
-    <button class="tab" role="tab" aria-selected="false" data-tab="subs">ซับไทยทีละคำ</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="subs">ใส่ซับทีละคำ</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="comments">ดึงคอมเมนต์ YouTube</button>
   </div>
 
@@ -867,20 +873,22 @@
     </div>
   </section>
 
-  <!-- Thai word-by-word subtitles: ElevenLabs speech-to-text, burned into the video in the browser -->
+  <!-- Thai word-by-word subtitles: burned into the video in the browser; times from the script + speech, or ElevenLabs -->
   <section class="card" id="subs" role="tabpanel" hidden>
-    <h2>ใส่ซับไทยทีละคำ</h2>
-    <p class="hint">โยนคลิปมา ระบบถอดเสียงด้วย ElevenLabs แล้วใส่ซับไทยขึ้นทีละคำ กลางจอ ตัวขาวขอบดำบางๆ ไม่มีจุดไม่มีลูกน้ำ
-      ได้คลิปใหม่ที่มีซับในตัว พร้อมไฟล์ .srt ต้องใช้ ElevenLabs API key ของตัวเอง (ใช้เครดิต 11Labs ตามความยาวเสียง)</p>
+    <h2>ใส่ซับทีละคำ ไทย | English</h2>
     <div class="drop" id="subDrop" tabindex="0" role="button">
       <strong>ลากคลิปมาวางที่นี่</strong>
       <span>MP4, MOV, WEBM หรือคลิกเพื่อเลือกไฟล์</span>
     </div>
     <input type="file" id="subFile" accept="video/*,.mp4,.mov,.webm" hidden>
     <ul class="files" id="subFileName"></ul>
-    <label for="subScript">สคริปต์ <span style="font-weight:400;color:var(--muted)">ไม่บังคับ ใส่แล้วซับจะสะกดตามสคริปต์</span></label>
-    <textarea id="subScript" rows="4" placeholder="วางสคริปต์ที่ใช้พากย์ (ถ้าไม่ใส่ ระบบจะใช้คำที่ถอดจากเสียง)"></textarea>
+    <label for="subScript">สคริปต์ <span style="font-weight:400;color:var(--muted)">วางสคริปต์ที่พากย์ แล้วกดสร้างซับได้เลย ไม่ต้องใช้ key</span></label>
+    <textarea id="subScript" rows="4" placeholder="วางสคริปต์ที่ใช้พากย์ในคลิปนี้"></textarea>
     <div class="grid">
+      <div>
+        <label for="subLang">ภาษาซับ</label>
+        <select id="subLang"><option value="tha">ไทย</option><option value="eng">English</option></select>
+      </div>
       <div>
         <label for="subPer">จำนวนคำต่อซับ</label>
         <select id="subPer"><option value="1">1 คำ (ทีละคำ)</option><option value="2">2 คำ</option><option value="3">3 คำ</option></select>
@@ -893,11 +901,22 @@
         <label for="subPos">ตำแหน่ง</label>
         <select id="subPos"><option value="0.5">กลางจอ</option><option value="0.7">ค่อนล่าง</option></select>
       </div>
+      <div>
+        <label for="subColor">สีตัวหนังสือ</label>
+        <input type="color" id="subColor" class="sub-color" value="#ffffff">
+      </div>
+      <div>
+        <label for="subStroke">สีขอบ</label>
+        <input type="color" id="subStroke" class="sub-color" value="#000000">
+      </div>
     </div>
-    <label for="elKey">ElevenLabs API key <span style="font-weight:400;color:var(--muted)">ต้องเปิดสิทธิ์ Speech to Text</span></label>
-    <input type="password" id="elKey" placeholder="sk_..." autocomplete="off">
-    <label class="check"><input type="checkbox" id="rememberElKey"> จำ key ไว้ในเบราว์เซอร์นี้ (ไม่ต้องติ๊ก ถ้าใช้เครื่องร่วมกับคนอื่น)</label>
-    <p class="hint" style="margin-top:4px">สร้าง key ที่ <a href="https://elevenlabs.io/app/settings/api-keys" target="_blank" rel="noopener">elevenlabs.io → API Keys</a> แล้วเปิดสิทธิ์ Speech to Text</p>
+    <details>
+      <summary>ไม่มีสคริปต์ หรืออยากได้เวลาตรงเป๊ะ: ใช้ ElevenLabs ถอดเสียง</summary>
+      <label for="elKey">ElevenLabs API key <span style="font-weight:400;color:var(--muted)">ต้องเปิดสิทธิ์ Speech to Text</span></label>
+      <input type="password" id="elKey" placeholder="sk_..." autocomplete="off">
+      <label class="check"><input type="checkbox" id="rememberElKey"> จำ key ไว้ในเบราว์เซอร์นี้ (ไม่ต้องติ๊ก ถ้าใช้เครื่องร่วมกับคนอื่น)</label>
+      <p class="hint" style="margin-top:4px">สร้าง key ที่ <a href="https://elevenlabs.io/app/settings/api-keys" target="_blank" rel="noopener">elevenlabs.io → API Keys</a> ใช้เครดิต 11Labs ตามความยาวเสียง</p>
+    </details>
     <button class="primary" id="subBtn" disabled>สร้างซับ</button>
     <div class="status" id="subStatus"></div>
     <div class="result" id="subResult" hidden></div>
@@ -2864,19 +2883,20 @@ $('clipBtn').addEventListener('click', async () => {
 });
 $('niche').addEventListener('keydown', e => { if (e.key === 'Enter') $('voiceBtn').click(); });
 
-// ═════════════ Thai word-by-word subtitles (ElevenLabs speech-to-text + Intl.Segmenter) ═════════════
-// Speech-to-text gives a time for every character; the Thai text is cut into words in the browser
-// and each word takes the time of its first and last character. The video is then played through
-// a canvas that draws the current word, and recorded to a new file.
+// ═════════════ Thai word-by-word subtitles (script + speech timing, or ElevenLabs speech-to-text) ═════════════
+// Every character gets a time, either from ElevenLabs speech-to-text or spread over the stretches
+// where someone speaks in the clip; the Thai text is cut into words in the browser and each word
+// takes the time of its first and last character. The video is played through a canvas that draws
+// the current word, and recorded to a new file. Words and times can be fixed in the page.
 let subMedia = null, subCues = null;
 
-async function transcribe(file, key) {
+async function transcribe(file, key, lang) {
   const fd = new FormData();
   fd.append('model_id', 'scribe_v1');
   fd.append('file', file);
   fd.append('timestamps_granularity', 'character');
   fd.append('tag_audio_events', 'false');
-  fd.append('language_code', 'tha');
+  fd.append('language_code', lang);
   let res;
   try {
     res = await fetch('https://api.elevenlabs.io/v1/speech-to-text', { method: 'POST', headers: { 'xi-api-key': key }, body: fd });
@@ -2902,6 +2922,26 @@ function sttChars(j) {
   return out;
 }
 
+// No key: lay the script over the stretches where someone speaks, skipping the pauses.
+// Each character counts by how long it takes to say (marks above/below a letter count 0).
+async function scriptChars(file, script, lang) {
+  let buf;
+  try { buf = await new OfflineAudioContext(1, 1, 44100).decodeAudioData(await file.arrayBuffer()); }
+  catch { throw new Error('อ่านเสียงในคลิปนี้ไม่ได้ ลองแปลงเป็น MP4 ก่อน'); }
+  let segs = speechSegments(buf, -35, 0.2);
+  if (!segs.length) segs = [[0, buf.duration]];
+  const total = segs.reduce((a, [x, y]) => a + y - x, 0);
+  const weight = c => /\s/.test(c) || /[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E]/.test(c) ? 0 : /[A-Za-z]/.test(c) ? (lang === 'eng' ? 1 : 0.6) : /[.,!?]/.test(c) ? 0 : 1;
+  const S = [...script], W = S.reduce((a, c) => a + weight(c), 0) || 1;
+  const at = f => {               // fraction of all speech -> time in the clip
+    let left = f * total;
+    for (const [x, y] of segs) { if (left <= y - x) return x + left; left -= y - x; }
+    return segs[segs.length - 1][1];
+  };
+  let cum = 0;
+  return S.map(c => { const a = cum; cum += weight(c); return { c, s: at(a / W), e: at(cum / W) }; });
+}
+
 // Give each script character the time of the matching transcript character (longest common
 // subsequence, spaces ignored); characters with no match are spread between their neighbours.
 function alignScript(script, stt) {
@@ -2911,20 +2951,20 @@ function alignScript(script, stt) {
   const n = A.length, m = B.length;
   if (!n || !m || n * m > 40e6) return null;
   const a = A.map(i => S[i].toLowerCase()), b = B.map(i => stt[i].c.toLowerCase());
-  const W = m + 1, dir = new Uint8Array((n + 1) * W);
-  let prev = new Int32Array(W), cur = new Int32Array(W);
+  const Wd = m + 1, dir = new Uint8Array((n + 1) * Wd);
+  let prev = new Int32Array(Wd), cur = new Int32Array(Wd);
   for (let i = 1; i <= n; i++) {
     for (let k = 1; k <= m; k++) {
-      if (a[i - 1] === b[k - 1]) { cur[k] = prev[k - 1] + 1; dir[i * W + k] = 1; }
-      else if (prev[k] >= cur[k - 1]) { cur[k] = prev[k]; dir[i * W + k] = 2; }
-      else { cur[k] = cur[k - 1]; dir[i * W + k] = 3; }
+      if (a[i - 1] === b[k - 1]) { cur[k] = prev[k - 1] + 1; dir[i * Wd + k] = 1; }
+      else if (prev[k] >= cur[k - 1]) { cur[k] = prev[k]; dir[i * Wd + k] = 2; }
+      else { cur[k] = cur[k - 1]; dir[i * Wd + k] = 3; }
     }
     [prev, cur] = [cur, prev];
   }
   const times = new Array(S.length).fill(null);
   let matched = 0;
   for (let i = n, k = m; i > 0 && k > 0;) {
-    const d = dir[i * W + k];
+    const d = dir[i * Wd + k];
     if (d === 1) { const x = stt[B[k - 1]]; times[A[i - 1]] = [x.s, x.e]; matched++; i--; k--; }
     else if (d === 2) i--; else k--;
   }
@@ -2941,17 +2981,17 @@ function alignScript(script, stt) {
 }
 
 // Cut into words; punctuation is dropped and ๆ stays with its word.
-function toWords(chars) {
+function toWords(chars, lang) {
   const text = chars.map(x => x.c).join(''), starts = [];
   let pos = 0;
   for (const x of chars) { starts.push(pos); pos += x.c.length; }
   const at = off => { let lo = 0, hi = starts.length - 1; while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (starts[mid] <= off) lo = mid; else hi = mid - 1; } return chars[lo]; };
   const words = [];
-  for (const g of new Intl.Segmenter('th', { granularity: 'word' }).segment(text)) {
+  for (const g of new Intl.Segmenter(lang === 'eng' ? 'en' : 'th', { granularity: 'word' }).segment(text)) {
     const w = g.segment.trim();
     if (!w) continue;
     if (/^[ๆฯ]+$/.test(w) && words.length) { words[words.length - 1].t += w; continue; }
-    const t = w.replace(/[.,!?;:"“”'‘’()\[\]…]+/g, '');
+    const t = w.replace(/[.,!?;:"“”()\[\]…]+/g, '').replace(/^['‘’]+|['‘’]+$/g, '');
     if (!t || !/[\p{L}\p{N}]/u.test(t)) continue;
     const a = at(g.index), b = at(g.index + g.segment.length - 1);
     words.push({ t, s: a.s, e: Math.max(b.e, a.s + 0.05) });
@@ -2960,26 +3000,33 @@ function toWords(chars) {
   const merged = [];
   for (const w of words) {
     const p = merged[merged.length - 1];
-    if (p && /^[฀-๿]$/.test(w.t) && /[฀-๿]$/.test(p.t) && w.s - p.e < 0.08) { p.t += w.t; p.e = w.e; }
+    if (p && /^[\u0E00-\u0E7F]$/.test(w.t) && /[\u0E00-\u0E7F]$/.test(p.t) && w.s - p.e < 0.08) { p.t += w.t; p.e = w.e; }
     else merged.push({ ...w });
   }
   return merged;
 }
 
-// Group n words per cue; short gaps are closed so the subtitle doesn't flicker.
+const joinWords = (a, b) => a + (a && (/[A-Za-z0-9]$/.test(a) || /^[A-Za-z0-9]/.test(b)) ? ' ' : '') + b;
+
+// Each cue shows at least briefly, never overlaps the next, and short gaps close so it doesn't flicker.
+function normalizeCues(cues) {
+  cues.sort((a, b) => a.s - b.s);
+  cues.forEach((c, i) => {
+    const next = cues[i + 1];
+    c.s = Math.max(0, c.s);
+    c.e = Math.max(c.e, c.s + 0.15);
+    if (next && (next.s - c.e < 0.3 || c.e > next.s)) c.e = Math.max(next.s, c.s + 0.05);
+  });
+  return cues;
+}
+
 function toCues(words, per) {
   const cues = [];
   for (let i = 0; i < words.length; i += per) {
     const g = words.slice(i, i + per);
-    const text = g.reduce((acc, w) => acc + (acc && (/[A-Za-z0-9]$/.test(acc) || /^[A-Za-z0-9]/.test(w.t)) ? ' ' : '') + w.t, '');
-    cues.push({ text, s: g[0].s, e: g[g.length - 1].e });
+    cues.push({ text: g.reduce((acc, w) => joinWords(acc, w.t), ''), s: g[0].s, e: g[g.length - 1].e });
   }
-  cues.forEach((c, i) => {
-    const next = cues[i + 1];
-    c.e = Math.max(c.e, c.s + 0.15);
-    if (next && (next.s - c.e < 0.3 || c.e > next.s)) c.e = next.s;
-  });
-  return cues;
+  return normalizeCues(cues);
 }
 
 function srtTime(t) {
@@ -2989,7 +3036,12 @@ function srtTime(t) {
 const toSrt = cues => cues.map((c, i) => `${i + 1}\n${srtTime(c.s)} --> ${srtTime(c.e)}\n${c.text}\n`).join('\n');
 const cueAt = t => subCues.findIndex(c => t >= c.s && t < c.e);
 
-// One frame: the video plus the current word, white with a thin black outline.
+function downloadBlob(name, blob) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name; a.click();
+}
+
+// One frame: the video plus the current word, in the chosen colour with a thin outline.
 function drawSubFrame(ctx, video, text) {
   const W = ctx.canvas.width, H = ctx.canvas.height;
   ctx.drawImage(video, 0, 0, W, H);
@@ -3000,9 +3052,9 @@ function drawSubFrame(ctx, video, text) {
   if (tw > W * 0.9) { size = Math.floor(size * W * 0.9 / tw); ctx.font = `700 ${size}px Kanit, "Leelawadee UI", Tahoma, sans-serif`; }
   const cx = W / 2, cy = H * +$('subPos').value + size * 0.06;
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
-  ctx.lineWidth = Math.max(2, size * 0.09); ctx.strokeStyle = '#000';
+  ctx.lineWidth = Math.max(2, size * 0.09); ctx.strokeStyle = $('subStroke').value;
   ctx.strokeText(text, cx, cy);
-  ctx.fillStyle = '#fff';
+  ctx.fillStyle = $('subColor').value;
   ctx.fillText(text, cx, cy);
 }
 
@@ -3016,7 +3068,7 @@ function recorderType() {
     .find(t => window.MediaRecorder && MediaRecorder.isTypeSupported(t));
 }
 
-// Play the clip once (muted to the speakers) through the canvas and record it with its sound.
+// Play the clip once (silent on the speakers) through the canvas and record it with its sound.
 async function burnSubs(file, onProgress) {
   const type = recorderType();
   if (!type) throw new Error('เบราว์เซอร์นี้บันทึกวิดีโอไม่ได้ ลองใช้ Chrome หรือ Edge');
@@ -3050,46 +3102,113 @@ async function burnSubs(file, onProgress) {
 
 function showSubs(file) {
   const result = $('subResult'), base = file.name.replace(/\.[^.]+$/, '');
-  const srtUrl = URL.createObjectURL(new Blob([toSrt(subCues)], { type: 'text/plain' }));
   result.innerHTML = `
-    <strong>✓ ซับ ${subCues.length.toLocaleString()} คำ</strong>
+    <strong id="subCount"></strong>
     <div class="sub-stage"><canvas id="subCanvas"></canvas></div>
     <div class="sub-controls"><button class="ghost" id="subPlay">▶ เล่นดูตัวอย่าง</button>
-      <span class="hint" style="margin:0">ปรับขนาด/ตำแหน่งด้านบนได้ แล้วกดเล่นดูใหม่</span></div>
-    <div class="sub-list" id="subList">${subCues.map((c, i) => `<span data-i="${i}">${esc(c.text)}</span>`).join(' ')}</div>
-    <button class="primary" id="subBurn">บันทึกคลิปพร้อมซับ</button>
+      <span class="hint" style="margin:0">กดที่คำด้านล่างเพื่อแก้คำหรือเลื่อนเวลา</span></div>
+    <div class="sub-list" id="subList"></div>
+    <div class="sub-edit" id="subEdit" hidden>
+      <input type="text" id="subEditText" aria-label="แก้คำ">
+      <div class="sub-controls">
+        <button type="button" class="ghost" data-act="earlier">◀ เร็วขึ้น 0.1 วิ</button>
+        <button type="button" class="ghost" data-act="later">ช้าลง 0.1 วิ ▶</button>
+        <button type="button" class="ghost" data-act="now">ให้คำนี้เริ่มตรงที่หยุดไว้</button>
+        <button type="button" class="ghost" data-act="merge">รวมกับคำถัดไป</button>
+        <button type="button" class="ghost" data-act="split">แยกคำ</button>
+        <button type="button" class="ghost" data-act="del">ลบคำนี้</button>
+      </div>
+      <span class="hint" id="subEditTime" style="margin:0"></span>
+    </div>
+    <div class="actions">
+      <button class="primary" id="subBurn">บันทึกคลิปพร้อมซับ</button>
+      <button type="button" class="ghost" id="subSrt">ไฟล์ซับ .srt</button>
+    </div>
     <div class="status" id="subBurnStatus"></div>
-    <div id="subOut"></div>
-    <a class="dl" href="${srtUrl}" download="${esc(base)}_ซับทีละคำ.srt">ดาวน์โหลดไฟล์ซับ .srt</a>
-    <p class="hint" style="margin-top:10px">ไฟล์ .srt ใช้ใน CapCut ได้: Text → Local captions แล้วนำเข้าไฟล์</p>`;
+    <div id="subOut"></div>`;
   result.hidden = false;
+  $('subSrt').addEventListener('click', () => downloadBlob(`${base}_ซับทีละคำ.srt`, new Blob([toSrt(subCues)], { type: 'text/plain' })));
 
   const url = URL.createObjectURL(file), v = document.createElement('video');
   v.src = url; v.playsInline = true;
-  const cv = $('subCanvas'), ctx = cv.getContext('2d'), spans = [...$('subList').children];
-  let on = -1, raf;
+  const cv = $('subCanvas'), ctx = cv.getContext('2d'), list = $('subList');
+  let on = -1, sel = -1, raf;
+  const fmt = t => t.toFixed(2) + ' วิ';
   const paint = () => {
     const i = cueAt(v.currentTime);
     drawSubFrame(ctx, v, i >= 0 ? subCues[i].text : '');
-    if (i !== on) { spans[on]?.classList.remove('on'); spans[i]?.classList.add('on'); spans[i]?.scrollIntoView({ block: 'nearest' }); on = i; }
+    if (i !== on) {
+      list.children[on]?.classList.remove('on'); list.children[i]?.classList.add('on');
+      if (!v.paused) list.children[i]?.scrollIntoView({ block: 'nearest' });
+      on = i;
+    }
     if (!v.paused) raf = requestAnimationFrame(paint);
   };
-  v.addEventListener('loadeddata', () => { [cv.width, cv.height] = canvasSize(v); v.currentTime = subCues[0]?.s + 0.05 || 0; });
+  const render = () => {
+    list.innerHTML = subCues.map((c, i) => `<span data-i="${i}" class="${i === sel ? 'sel' : ''}">${esc(c.text)}</span>`).join(' ');
+    $('subCount').textContent = `✓ ซับ ${subCues.length.toLocaleString()} คำ`;
+    on = -1; paint();
+  };
+  const select = i => {
+    sel = Math.min(i, subCues.length - 1);
+    $('subEdit').hidden = sel < 0;
+    [...list.children].forEach((x, k) => x.classList.toggle('sel', k === sel));
+    if (sel < 0) return;
+    const c = subCues[sel];
+    $('subEditText').value = c.text;
+    $('subEditTime').textContent = `คำที่ ${sel + 1}: ${fmt(c.s)} ถึง ${fmt(c.e)}`;
+    v.pause(); v.currentTime = c.s + 0.01;
+  };
+  const retime = () => { const c = subCues[sel]; normalizeCues(subCues); render(); select(subCues.indexOf(c)); };
+  const pieces = text => {
+    if (/\s/.test(text)) { const k = text.search(/\s/); return [text.slice(0, k), text.slice(k).trim()]; }
+    const w = [...new Intl.Segmenter('th', { granularity: 'word' }).segment(text)].map(g => g.segment);
+    if (w.length > 1) { const k = Math.ceil(w.length / 2); return [w.slice(0, k).join(''), w.slice(k).join('')]; }
+    const g = [...new Intl.Segmenter('th', { granularity: 'grapheme' }).segment(text)].map(x => x.segment);
+    const k = Math.ceil(g.length / 2); return [g.slice(0, k).join(''), g.slice(k).join('')];
+  };
+  const act = {
+    earlier: c => { c.s -= 0.1; c.e -= 0.1; const p = subCues[sel - 1]; if (p && p.e > c.s) p.e = Math.max(c.s, p.s + 0.05); },
+    later: c => { c.s += 0.1; c.e += 0.1; },
+    now: c => { c.s = v.currentTime; if (c.e < c.s + 0.15) c.e = c.s + 0.4; const p = subCues[sel - 1]; if (p && p.e > c.s) p.e = Math.max(c.s, p.s + 0.05); },
+    merge: c => { const n = subCues[sel + 1]; if (!n) return; c.text = joinWords(c.text, n.text); c.e = n.e; subCues.splice(sel + 1, 1); },
+    split: c => {
+      const [a, b] = pieces(c.text);
+      if (!a || !b) return;
+      const mid = c.s + (c.e - c.s) * a.length / (a.length + b.length);
+      subCues.splice(sel + 1, 0, { text: b, s: mid, e: c.e }); c.text = a; c.e = mid;
+    },
+    del: () => { subCues.splice(sel, 1); },
+  };
+  v.addEventListener('loadeddata', () => { [cv.width, cv.height] = canvasSize(v); render(); v.currentTime = (subCues[0]?.s || 0) + 0.05; });
   v.addEventListener('seeked', paint);
   v.addEventListener('play', () => { $('subPlay').textContent = '❚❚ หยุด'; paint(); });
   v.addEventListener('pause', () => { $('subPlay').textContent = '▶ เล่นดูตัวอย่าง'; cancelAnimationFrame(raf); });
-  ['subSize', 'subPos'].forEach(id => $(id).onchange = paint);
+  ['subSize', 'subPos', 'subColor', 'subStroke'].forEach(id => $(id).oninput = $(id).onchange = paint);
   $('subPlay').onclick = () => v.paused ? v.play() : v.pause();
-  $('subList').onclick = e => { const i = e.target.dataset?.i; if (i != null) v.currentTime = subCues[i].s + 0.01; };
+  list.onclick = e => { const i = e.target.dataset?.i; if (i != null) select(+i); };
+  $('subEditText').addEventListener('input', e => {
+    const t = e.target.value.replace(/[.,]+/g, '').trim();
+    if (sel < 0 || !t) return;
+    subCues[sel].text = t; list.children[sel].textContent = t; on = -1; paint();
+  });
+  $('subEdit').querySelector('.sub-controls').addEventListener('click', e => {
+    const name = e.target.closest('button')?.dataset.act;
+    if (!name || sel < 0) return;
+    act[name](subCues[sel]);
+    if (name === 'del') { normalizeCues(subCues); render(); select(Math.min(sel, subCues.length - 1)); }
+    else retime();
+  });
 
   $('subBurn').onclick = async () => {
     const btn = $('subBurn'), st = $('subBurnStatus');
     v.pause(); btn.disabled = true; st.className = 'status'; $('subOut').innerHTML = '';
     try {
       const { blob, ext } = await burnSubs(file, f => st.textContent = `กำลังบันทึกคลิป... ${Math.round(f * 100)}% (ใช้เวลาเท่าความยาวคลิป อย่าสลับไปแท็บอื่น)`);
-      const outUrl = URL.createObjectURL(blob), name = `${base}_ซับไทย.${ext}`;
+      const outUrl = URL.createObjectURL(blob), name = `${base}_ซับ.${ext}`;
       $('subOut').innerHTML = `<video controls playsinline src="${outUrl}" style="width:100%;max-height:420px;margin:8px 0;border-radius:10px;background:#000"></video>
-        <a class="dl" href="${outUrl}" download="${esc(name)}">ดาวน์โหลด ${esc(name)}</a>`;
+        <button type="button" class="dl" id="subSave">ดาวน์โหลด ${esc(name)}</button>`;
+      $('subSave').addEventListener('click', () => downloadBlob(name, blob));
       st.textContent = 'เสร็จแล้ว';
     } catch (e) {
       st.className = 'status err'; st.textContent = 'ผิดพลาด: ' + (e.message || e);
@@ -3117,27 +3236,34 @@ function setSubFile(f) {
 })();
 
 $('subBtn').addEventListener('click', async () => {
-  const btn = $('subBtn'), status = $('subStatus'), key = $('elKey').value.trim();
+  const btn = $('subBtn'), status = $('subStatus'), key = $('elKey').value.trim(), script = $('subScript').value.trim(), lang = $('subLang').value;
   status.className = 'status'; $('subResult').hidden = true;
   if (!subMedia) return;
-  if (!key) { status.className = 'status err'; status.textContent = 'กรุณาใส่ ElevenLabs API key'; return; }
+  if (!script && !key) { status.className = 'status err'; status.textContent = 'กรุณาวางสคริปต์ (หรือใส่ ElevenLabs API key ให้ถอดเสียงให้)'; return; }
   if (typeof Intl.Segmenter === 'undefined') { status.className = 'status err'; status.textContent = 'เบราว์เซอร์นี้ตัดคำไทยไม่ได้ ลองใช้ Chrome หรือ Edge รุ่นใหม่'; return; }
-  store.set('elKey', $('rememberElKey').checked ? key : null);
   btn.disabled = true;
   try {
-    status.textContent = 'กำลังถอดเสียงด้วย ElevenLabs... (คลิป 1 นาทีใช้เวลาประมาณ 10-20 วินาที)';
-    const stt = sttChars(await transcribe(subMedia, key));
-    if (!stt.some(x => x.c.trim())) throw new Error('ไม่พบเสียงพูดในคลิปนี้');
-    const script = $('subScript').value.trim();
-    let chars = stt, note = '';
-    if (script) {
-      const al = alignScript(script, stt);
-      if (al) chars = al; else note = ' (สคริปต์ไม่ตรงกับเสียง เลยใช้คำที่ถอดจากเสียงแทน)';
+    let chars, note = '';
+    if (key) {
+      store.set('elKey', $('rememberElKey').checked ? key : null);
+      status.textContent = 'กำลังถอดเสียงด้วย ElevenLabs... (คลิป 1 นาทีใช้เวลาประมาณ 10-20 วินาที)';
+      const stt = sttChars(await transcribe(subMedia, key, lang));
+      if (!stt.some(x => x.c.trim())) throw new Error('ไม่พบเสียงพูดในคลิปนี้');
+      chars = stt;
+      if (script) {
+        const al = alignScript(script, stt);
+        if (al) chars = al; else note = ' (สคริปต์ไม่ตรงกับเสียง เลยใช้คำที่ถอดจากเสียงแทน)';
+      }
+    } else {
+      status.textContent = 'กำลังจับจังหวะเสียงพูดในคลิป...';
+      chars = await scriptChars(subMedia, script, lang);
+      note = ' เวลาซับประมาณจากจังหวะเสียงพูด ถ้าคำไหนเร็วหรือช้าไป กดที่คำแล้วเลื่อนเวลาได้';
     }
-    subCues = toCues(toWords(chars), +$('subPer').value);
+    subCues = toCues(toWords(chars, lang), +$('subPer').value);
+    if (!subCues.length) throw new Error('ไม่พบคำในสคริปต์');
     await document.fonts.load('700 60px Kanit').catch(() => {});
     showSubs(subMedia);
-    status.textContent = 'ถอดเสียงเสร็จแล้ว กดเล่นดูตัวอย่าง แล้วกดบันทึกคลิปพร้อมซับ' + note;
+    status.textContent = 'สร้างซับแล้ว กดเล่นดูตัวอย่าง แล้วกดบันทึกคลิปพร้อมซับ' + note;
   } catch (e) {
     status.className = 'status err';
     status.textContent = 'ผิดพลาด: ' + (e.message || e);
