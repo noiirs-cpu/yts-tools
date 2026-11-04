@@ -3396,7 +3396,7 @@ $('sumPromptLink').addEventListener('click', async e => {
 // below; each script comes back in its own text block so the page can count words and offer a copy button.
 const SW_VIBES = ['ตลก', 'เสียดสี', 'น่ารัก', 'ฮีลใจ', 'ใจฟู', 'ซึ้ง', 'ช็อก / ไม่น่าเชื่อ'];
 
-const WRITER_PROMPT = ({ ref, niche, vibe }) => `You are the best YouTube Shorts scriptwriter for an American audience.
+const WRITER_PROMPT = ({ ref, niche, vibe }) => `You are the best YouTube Shorts scriptwriter.
 
 REFERENCE (a script or transcript that got great views; it may be a long-video transcript):
 """
@@ -3413,7 +3413,7 @@ RULES
 - Relatable: tie the story to everyday life the viewer knows (home, school, work, phone, food, pets, family, friends).
 - Payoff: make it the sharpest line in the script, deliver it fast near the end, then end right away. Add a loop only if it fits naturally (the last line flows back into the hook and ends mid-sentence; never "which is why").
 - A 13-year-old must understand every word. Short, clear sentences.
-- Use words real Americans actually say today: casual and current. No AI words or YouTuber clichés (delve, tapestry, testament, journey, realm, buckle up, let's dive in, in today's video, game-changer, mind-blowing).
+- Use the casual, current words people actually say today in everyday English. Never mention a country or nationality as the audience in the script (no phrases like "in America"); just tell the story. No AI words or YouTuber clichés (delve, tapestry, testament, journey, realm, buckle up, let's dive in, in today's video, game-changer, mind-blowing).
 - Emotion: make it touch people. Feeling: ${vibe || 'pick what fits each story: funny, satirical, cute, healing, or heartwarming'}.
 - Make people want to like and comment without asking them to: no "like", "subscribe", or "comment below". End on something relatable, a twist, or a thought people will want to answer.
 - Length: 90 to 115 words per script. Count carefully.
