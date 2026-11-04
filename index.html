@@ -618,6 +618,14 @@
   <div class="ctas">
     <a class="book alt" href="https://calendly.com/d/dvzy-m4p-869/niche-selection-mr-ysdiy?month=2026-11" target="_blank" rel="noopener">📅 จองนีช (Niche)</a>
     <a class="book alt" href="https://discord.gg/AX8Pj7X7a" target="_blank" rel="noopener">🎓 เรียนออนไลน์</a>
+    <a class="book alt" href="https://noiirs-cpu.github.io/yts-tools/niche-hub.html" target="_blank" rel="noopener">📚 ตัวอย่างนีช</a>
+    <details class="support">
+      <summary class="book alt">⭐ รีวิว</summary>
+      <div class="support-menu">
+        <a href="https://discord.gg/AX8Pj7X7a" target="_blank" rel="noopener">🏆 wins-เข้าเส้นชัย ใน Discord</a>
+        <a href="https://www.facebook.com/media/set/?set=a.10163360652939499&amp;type=3" target="_blank" rel="noopener">📸 รีวิวจากนักเรียน ใน Facebook</a>
+      </div>
+    </details>
     <details class="support">
       <summary class="book alt">💬 ซัพพอร์ต</summary>
       <div class="support-menu">
@@ -1624,6 +1632,14 @@ $('gateForm').addEventListener('submit', async e => {
   unlock();
   showAccessNote(h);
 });
+
+// Header drop-down menus (reviews, support): one open at a time, closed by a click elsewhere
+document.addEventListener('click', e => {
+  document.querySelectorAll('details.support[open]').forEach(d => { if (!d.contains(e.target)) d.open = false; });
+});
+document.querySelectorAll('details.support').forEach(d => d.addEventListener('toggle', () => {
+  if (d.open) document.querySelectorAll('details.support[open]').forEach(o => { if (o !== d) o.open = false; });
+}));
 
 // Tabs
 document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {

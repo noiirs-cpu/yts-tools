@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Shorts Niche & Content Vault (Bilingual EN/TH)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            red: '#FF0000',
+                            purple: '#8B5CF6',
+                            pink: '#EC4899',
+                            cyan: '#06B6D4',
+                            emerald: '#10B981',
+                            amber: '#F59E0B',
+                            dark: '#0F172A',
+                            card: '#1E293B',
+                            cardHover: '#334155'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'Sarabun', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Inter', 'Sarabun', sans-serif;
+            background-color: #080C14;
+            color: #F8FAFC;
+            background-image: 
+                radial-gradient(at 10% 10%, rgba(236, 72, 153, 0.12) 0px, transparent 50%),
+                radial-gradient(at 90% 20%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 50% 80%, rgba(6, 182, 212, 0.12) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0F172A;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.65);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-nav {
+            background: rgba(15, 23, 42, 0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .card-glow {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-glow:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px -5px rgba(139, 92, 246, 0.25), 0 8px 10px -6px rgba(236, 72, 153, 0.2);
+            border-color: rgba(168, 85, 247, 0.4);
+        }
+
+        #toast {
+            visibility: hidden;
+            transform: translateY(100%);
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            opacity: 0;
+        }
+        #toast.show {
+            visibility: visible;
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-brand-purple selection:text-white pb-12">
+
+    <!-- Sticky Navigation Bar -->
+    <nav class="glass-nav sticky top-0 z-50 px-4 sm:px-8 py-3.5 mb-6">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <!-- Logo & Title -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-red-600 via-pink-600 to-purple-600 flex items-center justify-center shadow-lg shadow-red-500/20">
+                    <i class="fa-brands fa-youtube text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent flex items-center gap-2">
+                        Shorts <span class="bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">Niche Vault</span>
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-pink-400 border border-pink-500/30">TH/EN 🇹🇭</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">คลังไอเดียทำช่อง Shorts & ตัวอย่างช่องสายต่างๆ</p>
+                </div>
+            </div>
+
+            <!-- Language Mode Selector & Search -->
+            <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+                <!-- Language Toggle Buttons -->
+                <div class="flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-700/60 text-xs w-full sm:w-auto justify-center">
+                    <button id="langBtnBoth" onclick="setLangMode('both')" class="px-3 py-1.5 rounded-lg font-medium transition-all bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow">
+                        EN + TH (ทั้งสองภาษา)
+                    </button>
+                    <button id="langBtnEn" onclick="setLangMode('en')" class="px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition-all">
+                        English
+                    </button>
+                    <button id="langBtnTh" onclick="setLangMode('th')" class="px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition-all">
+                        ภาษาไทย
+                    </button>
+                </div>
+
+                <!-- Global Search Bar -->
+                <div class="relative w-full sm:w-72">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        placeholder="Search / ค้นหาช่อง, ไอเดีย..." 
+                        class="w-full bg-slate-900/90 text-sm text-slate-100 placeholder-slate-500 rounded-xl pl-10 pr-10 py-2 border border-slate-700/60 focus:outline-none focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/20 transition-all"
+                        onkeyup="filterContent()"
+                    >
+                    <button id="clearSearch" onclick="clearSearchInput()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-sm">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-8 flex-1 w-full">
+
+        <!-- Metrics Overview Bar -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="glass-panel rounded-2xl p-4 flex items-center gap-4">
+                <div class="p-3 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                    <i class="fa-solid fa-layer-group text-xl"></i>
+                </div>
+                <div>
+                    <div class="text-2xl font-black text-white" id="statCategories">12</div>
+                    <div class="text-xs font-medium text-slate-400">Core Niches / หมวดหมู่หลัก</div>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-4 flex items-center gap-4">
+                <div class="p-3 rounded-xl bg-red-500/10 text-red-400 border border-red-500/20">
+                    <i class="fa-brands fa-youtube text-xl"></i>
+                </div>
+                <div>
+                    <div class="text-2xl font-black text-white" id="statChannels">65+</div>
+                    <div class="text-xs font-medium text-slate-400">Channels / ช่องตัวอย่าง</div>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-4 flex items-center gap-4">
+                <div class="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <i class="fa-solid fa-bolt text-xl"></i>
+                </div>
+                <div>
+                    <div class="text-2xl font-black text-white">Multi-Chan</div>
+                    <div class="text-xs font-medium text-slate-400">Operator Model / ขยายหลายช่อง</div>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-4 flex items-center gap-4">
+                <div class="p-3 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                    <i class="fa-solid fa-chart-line text-xl"></i>
+                </div>
+                <div>
+                    <div class="text-2xl font-black text-white">High RPM</div>
+                    <div class="text-xs font-medium text-slate-400">Chess & Text / รายได้สูง</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-4 mb-8 no-scrollbar scroll-smooth" id="categoryFilters">
+            <button onclick="setCategoryFilter('all')" class="filter-btn active px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/25">
+                🔥 All Niches (ทั้งหมด)
+            </button>
+            <button onclick="setCategoryFilter('Multi-Channel')" class="filter-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/50 transition-all">
+                👑 Multi-Channel (บริหารหลายช่อง)
+            </button>
+            <button onclick="setCategoryFilter('Animation')" class="filter-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/50 transition-all">
+                🎨 3D & 2D Animation (แอนิเมชัน)
+            </button>
+            <button onclick="setCategoryFilter('Memes')" class="filter-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/50 transition-all">
+                😂 Memes & Comics (มีม & การ์ตูน)
+            </button>
+            <button onclick="setCategoryFilter('Minecraft')" class="filter-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/50 transition-all">
+                🧱 Minecraft & Gaming (เกม)
+            </button>
+            <button onclick="setCategoryFilter('Text-Based')" class="filter-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/50 transition-all">
+                💬 Text-Based & Dashcam (ข้อความตัวหนังสือ)
+            </button>
+            <button onclick="setCategoryFilter('Edits')" class="filter-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/50 transition-all">
+                ✂️ Edits & Clipping (ไฮไลต์ & ตัดต่อ)
+            </button>
+            <button onclick="setCategoryFilter('Commentary')" class="filter-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/50 transition-all">
+                🎙️ Commentary (การพากย์บรรยาย)
+            </button>
+            <button onclick="setCategoryFilter('Concept')" class="filter-btn px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/50 transition-all">
+                🚀 Unique Concepts (คอนเซปต์เฉพาะ)
+            </button>
+        </div>
+
+        <!-- Dynamic Content Container -->
+        <div id="nichesContainer" class="space-y-10">
+            <!-- Rendered by JavaScript -->
+        </div>
+
+        <!-- Empty Search State -->
+        <div id="noResults" class="hidden text-center py-16 glass-panel rounded-3xl my-8">
+            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-800 flex items-center justify-center text-slate-500 text-2xl">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-1">No channels or niches found</h3>
+            <p class="text-sm text-slate-400 mb-4">ไม่พบข้อมูลช่องหรือแนวทางที่ตรงกับคำค้นหาของคุณ</p>
+            <button onclick="resetFilters()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold rounded-xl transition-all">
+                Reset Filters (รีเซ็ตการค้นหา)
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Toast Popup Notification -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 bg-slate-800 text-white border border-slate-700 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm">
+            <i class="fa-solid fa-check"></i>
+        </div>
+        <div>
+            <p class="text-xs font-bold text-white">Copied to Clipboard! (คัดลอกแล้ว)</p>
+            <p class="text-[11px] text-slate-400" id="toastMessage">Handle copied successfully.</p>
+        </div>
+    </div>
+
+    <script>
+        // Language viewing mode: 'both', 'en', 'th'
+        let langMode = 'both';
+        let activeCategoryFilter = 'all';
+
+        // Complete Bilingual Niche Dataset
+        const nicheData = [
+            {
+                id: "multi-channel",
+                filterGroup: "Multi-Channel",
+                titleEN: "Multi-Channel Operator Model",
+                titleTH: "โมเดลบริหารหลายช่อง - ต่อยอดช่องเดิมในหลายบัญชี",
+                badgeEN: "Operator Scalability",
+                badgeTH: "สเกลช่องได้รวดเร็ว",
+                icon: "fa-solid fa-network-wired",
+                color: "from-purple-500 to-indigo-600",
+                descEN: "Same niche scaled across multiple channels by a single creator to dominate search results and increase monetization.",
+                descTH: "สร้างและขยายหลายช่องในแนวทางเดียวกันโดยครีเอเตอร์คนเดียว เพื่อครองพื้นที่การค้นหาและเพิ่มช่องทางสร้างรายได้",
+                groups: [
+                    {
+                        subTitleEN: "Chief Brioso Network Example",
+                        subTitleTH: "ตัวอย่างเครือข่ายช่องของ Chief Brioso",
+                        channels: [
+                            { name: "Chief Brioso", handle: "chiefbrioso", url: "https://www.youtube.com/@chiefbrioso", noteEN: "Primary Brand", noteTH: "ช่องแบรนด์หลัก" },
+                            { name: "Brioso Goat", handle: "BriosoGoat", url: "https://www.youtube.com/@BriosoGoat", noteEN: "Sub-channel", noteTH: "ช่องย่อย" },
+                            { name: "Brioso Ws", handle: "BriosoWs", url: "https://www.youtube.com/@BriosoWs", noteEN: "Sub-channel", noteTH: "ช่องย่อย" },
+                            { name: "More Brioso", handle: "MoreBrioso", url: "https://www.youtube.com/@MoreBrioso", noteEN: "Expansion", noteTH: "ช่องขยายฐานผู้ชม" }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "top-bottom-memes",
+                filterGroup: "Memes",
+                titleEN: "Top/Bottom Split-Screen Memes",
+                titleTH: "มีมแบ่งหน้าจอบน-ล่าง",
+                badgeEN: "High Engagement",
+                badgeTH: "มีส่วนร่วมสูง",
+                icon: "fa-solid fa-table-cells-row",
+                color: "from-pink-500 to-rose-600",
+                descEN: "Split screen dynamic layout: top clip shows funny meme video, bottom shows satisfying or gameplay visuals.",
+                descTH: "รูปแบบแบ่งสองจอ: ด้านบนแสดงคลิปมีมตลก ด้านล่างใส่คลิปเกมเพลย์หรือวิดีโอผ่อนคลายดึงดูดสายตา",
+                groups: [
+                    {
+                        subTitleEN: "Top Creators in Split Memes",
+                        subTitleTH: "ช่องยอดนิยมสายมีมแบ่งสองจอ",
+                        channels: [
+                            { name: "Crazy Meme", handle: "crazymeme13", url: "https://www.youtube.com/@crazymeme13" },
+                            { name: "Snap Curious Meme", handle: "SnapCuriousMeme", url: "https://www.youtube.com/@SnapCuriousMeme" },
+                            { name: "Vazh YT", handle: "VazhYT", url: "https://www.youtube.com/@VazhYT" },
+                            { name: "Meme Spaz", handle: "memespaz26", url: "https://www.youtube.com/@memespaz26" },
+                            { name: "Meme Doggy Z", handle: "MemeDoggyZ", url: "https://www.youtube.com/@MemeDoggyZ" },
+                            { name: "Zdak", handle: "zdak", url: "https://www.youtube.com/@zdak" }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "fullscreen-memes",
+                filterGroup: "Memes",
+                titleEN: "Full-Screen Video Memes",
+                titleTH: "มีมวิดีโอเต็มหน้าจอ",
+                badgeEN: "Hyper-Frequent Uploads",
+                badgeTH: "โพสต์คลิปบ่อยมาก",
+                icon: "fa-solid fa-expand",
+                color: "from-amber-500 to-orange-600",
+                descEN: "Immersive single-video full-screen memes with constant fast upload volume focusing on specific themes.",
+                descTH: "วิดีโอมีมเต็มหน้าจอ เน้นการอัปโหลดถี่มากอย่างต่อเนื่อง สร้างกระแสในกลุ่มธีมเฉพาะ",
+                groups: [
+                    {
+                        subTitleEN: "Full-Screen Meme Channels",
+                        subTitleTH: "ช่องมีมเต็มหน้าจอตัวอย่าง",
+                        channels: [
+                            { name: "Tizzy US", handle: "TizzyUS", url: "https://www.youtube.com/@TizzyUS", noteEN: "Cats & dogs focus, hyper-frequent schedule", noteTH: "เน้นแมวและหมา โพสต์ถี่มาก", badgeColor: "bg-emerald-500/20 text-emerald-300" },
+                            { name: "Only Shrek", handle: "OnlyShrek", url: "https://www.youtube.com/@OnlyShrek", noteEN: "Niche Character Focus", noteTH: "เน้นตัวละครยอดฮิตเฉพาะกลุ่ม" }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "reading-stories",
+                filterGroup: "Memes",
+                titleEN: "Reading Memes / Comics / Reddit Stories",
+                titleTH: "อ่านมีม / คอมมิก / เรื่องเล่า Reddit",
+                badgeEN: "Storytelling",
+                badgeTH: "เล่าเรื่องชวนติดตาม",
+                icon: "fa-solid fa-book-open-reader",
+                color: "from-emerald-500 to-teal-600",
+                descEN: "Voiceover audio reading viral Reddit threads, relatable web comics, or funny internet memes.",
+                descTH: "คลิปอ่านกระทู้ Reddit สุดฮิต คอมมิกสั้น หรือมีมตลกๆ พร้อมเสียงพากย์น่าติดตาม",
+                groups: [
+                    {
+                        subTitleEN: "Curated Reading Channels",
+                        subTitleTH: "ช่องสายอ่านการ์ตูนและเรื่องเล่า",
+                        channels: [
+                            { name: "Zuace", handle: "Zuace", url: "https://www.youtube.com/@Zuace" },
+                            { name: "Reighar Stories 369", handle: "ReigharStories369", url: "https://www.youtube.com/@ReigharStories369" },
+                            { name: "Not Reighar", handle: "NotReighar", url: "https://www.youtube.com/@NotReighar" },
+                            { name: "Oops Reighar", handle: "OopsReighar", url: "https://www.youtube.com/@OopsReighar" }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "minecraft-formats",
+                filterGroup: "Minecraft",
+                titleEN: "Minecraft Formats",
+                titleTH: "รูปแบบเกม Minecraft",
+                badgeEN: "Evergreen Gaming",
+                badgeTH: "สายเกมอมตะ",
+                icon: "fa-solid fa-cube",
+                color: "from-green-500 to-emerald-700",
+                descEN: "Using Minecraft parkour as a visual background for comic strips, commentary, or popular brainrot audio.",
+                descTH: "ใช้ฉากกระโดด Parkour ของ Minecraft เป็นพื้นหลังประกอบภาพการ์ตูน เสียงพากย์ หรือคอนเทนต์กระแส",
+                groups: [
+                    {
+                        subTitleEN: "Comic Strip on Parkour",
+                        subTitleTH: "คอมมิกบนฉากกระโดด Parkour",
+                        channels: [
+                            { name: "Kaine YT", handle: "KaineYT1", url: "https://www.youtube.com/@KaineYT1", noteEN: "Comic strip on parkour", noteTH: "คอมมิกบนฉากกระโดด Parkour" },
+                            { name: "DrBurger", handle: "DrBurger-h1w", url: "https://www.youtube.com/@DrBurger-h1w", noteEN: "Comic strip on parkour", noteTH: "คอมมิกบนฉากกระโดด Parkour" }
+                        ]
+                    },
+                    {
+                        subTitleEN: "Commentary",
+                        subTitleTH: "บทพากย์ / วิจารณ์เรื่องราว",
+                        channels: [
+                            { name: "Smartieleng", handle: "Smartieleng", url: "https://www.youtube.com/@Smartieleng" },
+                            { name: "Whitye MC", handle: "WhityeMC", url: "https://www.youtube.com/@WhityeMC" }
+                        ]
+                    },
+                    {
+                        subTitleEN: "Brainrot Style",
+                        subTitleTH: "สไตล์ Brainrot / ไร้สาระยอดฮิต",
+                        channels: [
+                            { name: "Panny Wanny", handle: "PannyWanny", url: "https://www.youtube.com/@PannyWanny" },
+                            { name: "Cubix Tube", handle: "Cubix-Tube", url: "https://www.youtube.com/@Cubix-Tube" }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "3d-animation",
+                filterGroup: "Animation",
+                titleEN: "3D Animation",
+                titleTH: "แอนิเมชัน 3 มิติ",
+                badgeEN: "High Viral Retention",
+                badgeTH: "การรับชมสูงมาก",
+                icon: "fa-solid fa-cubes",
+                color: "from-blue-500 to-cyan-600",
+                descEN: "Custom 3D animated shorts explaining bizarre facts, hypothetical scenarios, or thematic stories.",
+                descTH: "แอนิเมชัน 3 มิติสร้างเอง อธิบายเรื่องราวน่าทึ่ง สมมติสถานการณ์ หรือแทกติกกีฬาอย่างหมากรุก",
+                groups: [
+                    {
+                        subTitleEN: "Leaders",
+                        subTitleTH: "ผู้นำเทรนด์แอนิเมชัน 3D",
+                        channels: [
+                            { name: "zackdfilms", handle: "zackdfilms", url: "https://www.youtube.com/@zackdfilms", noteEN: "Industry pioneer in 3D Shorts", noteTH: "ผู้บุกเบิกเทรนด์ 3D Shorts" },
+                            { name: "His YT Story", handle: "hisytstory", url: "https://www.youtube.com/@hisytstory" },
+                            { name: "Her YT Story", handle: "HerYTStory", url: "https://www.youtube.com/@HerYTStory" }
+                        ]
+                    },
+                    {
+                        subTitleEN: "Sub-Niches",
+                        subTitleTH: "กลุ่มเฉพาะย่อย (Sub-Niches)",
+                        channels: [
+                            { name: "Real Chess 360", handle: "RealChess360", url: "https://www.youtube.com/@RealChess360", noteEN: "Chess focus", noteTH: "เน้นกลยุทธ์หมากรุก", badgeColor: "bg-purple-500/20 text-purple-300" },
+                            { name: "The Daily Downshift", handle: "The_Daily_Downshift", url: "https://www.youtube.com/@The_Daily_Downshift", noteEN: "Car stories + musicmediaco style", noteTH: "เรื่องราวรถยนต์ สไตล์ MusicMedia", badgeColor: "bg-cyan-500/20 text-cyan-300" }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "2d-animation",
+                filterGroup: "Animation",
+                titleEN: "2D Animation Stories",
+                titleTH: "เรื่องเล่าแอนิเมชัน 2 มิติ",
+                badgeEN: "High Watch Time",
+                badgeTH: "เวลาการดูยาวนาน",
+                icon: "fa-solid fa-paintbrush",
+                color: "from-cyan-500 to-blue-600",
+                descEN: "2D illustrated storytime content featuring stylized avatar rigs explaining viral stories or funny encounters.",
+                descTH: "ลายเส้นแอนิเมชัน 2 มิติ เล่าเรื่องราวชีวิตประจำวัน หรือเหตุการณ์ตลกๆ ชวนอินตาม",
+                groups: [
+                    {
+                        subTitleEN: "2D Storytellers",
+                        subTitleTH: "ช่องนักเล่าเรื่องด้วยภาพ 2D",
+                        channels: [
+                            { name: "Hoodie Guy Stories", handle: "HoodieGuyStories", url: "https://www.youtube.com/@HoodieGuyStories" },
+                            { name: "Big Dan Babys", handle: "BigDanBabys", url: "https://www.youtube.com/@BigDanBabys" },
+                            { name: "Soonrok 95", handle: "Soonrok_95", url: "https://www.youtube.com/@Soonrok_95" },
+                            { name: "Tales of Laws", handle: "talesoflaws", url: "https://www.youtube.com/@talesoflaws" },
+                            { name: "Nyro Story", handle: "nyrostory", url: "https://www.youtube.com/@nyrostory" },
+                            { name: "Mesigugu", handle: "mesigugu", url: "https://www.youtube.com/@mesigugu" }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "roblox-animation",
+                filterGroup: "Animation",
+                titleEN: "Roblox Animation Stories",
+                titleTH: "เรื่องเล่าแอนิเมชัน Roblox",
+                badgeEN: "Massive Youth Audience",
+                badgeTH: "ฐานผู้ชมเด็กและวัยรุ่นสูงมาก",
+                icon: "fa-solid fa-gamepad",
+                color: "from-red-500 to-amber-600",
+                descEN: "Short dramatic, romantic, or comedic animated stories made inside Roblox engine or Studio.",
+                descTH: "คลิปละครสั้น ตลก ดราม่า ที่สร้างและถ่ายทำผ่านตัวละครและแมปในเกม Roblox",
+                groups: [
+                    {
+                        subTitleEN: "Roblox Story Creators",
+                        subTitleTH: "ผู้สร้างคอนเทนต์ละคร Roblox",
+                        channels: [
+                            { name: "Capybluh", handle: "capybluh", url: "https://www.youtube.com/@capybluh" },
+                            { name: "Roblox Man 99", handle: "Roblox.Man99", url: "https://www.youtube.com/@Roblox.Man99" },
+                            { name: "Jim Storiez", handle: "JimStoriez", url: "https://www.youtube.com/@JimStoriez" },
+                            { name: "Mashles 27", handle: "Mashles27", url: "https://www.youtube.com/@Mashles27" },
+                            { name: "Dylan Stories YT", handle: "DylanStoriesYT", url: "https://www.youtube.com/@DylanStoriesYT" },
+                            { name: "Onca YT", handle: "onca_yt", url: "https://www.youtube.com/@onca_yt" },
+                            { name: "Xenost", handle: "Xenost-j3i", url: "https://www.youtube.com/@Xenost-j3i" },
+                            { name: "Im Crellar", handle: "ImCrellar", url: "https://www.youtube.com/@ImCrellar" },
+                            { name: "Gneef", handle: "Gneef", url: "https://www.youtube.com/@Gneef" },
+                            { name: "Sailor Blox Story", handle: "SailorBloxStory", url: "https://www.youtube.com/@SailorBloxStory" },
+                            { name: "Noobifiedd", handle: "Noobifiedd", url: "https://www.youtube.com/@Noobifiedd" },
+                            { name: "Zeeflay", handle: "Zeeflay", url: "https://www.youtube.com/@Zeeflay" },
+                            { name: "Ashyyy", handle: "Ashyyy-", url: "https://www.youtube.com/@Ashyyy-" }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "text-based",
+                filterGroup: "Text-Based",
+                titleEN: "Text-Based Formats",
+                titleTH: "รูปแบบเน้นข้อความตัวหนังสือ",
+                badgeEN: "Faceless & Scalable",
+                badgeTH: "ไม่ต้องเปิดหน้า ทำซ้ำง่าย",
+                icon: "fa-solid fa-comments",
+                color: "from-violet-500 to-purple-700",
+                descEN: "Dynamic text overlays animating text conversations, dashcam action footage, or commentary captions.",
+                descTH: "ใช้ข้อความตัวหนังสือวิ่งบนคลิป ทั้งบทแชตสมมติ คลิปกล้องหน้ารถพร้อมซับ หรือพากย์ด้วยตัวอักษร",
+                groups: [
+                    {
+                        subTitleEN: "Fake Text Messages",
+                        subTitleTH: "แชตข้อความปลอม - ตอบกลับเจ็บๆ",
+                        channels: [
+                            { name: "Aero Txt", handle: "aerotxt", url: "https://www.youtube.com/@aerotxt", noteEN: "High comeback potential", noteTH: "ตอบกลับเจ็บๆ เรียกแชร์สูง", badgeColor: "bg-emerald-500/20 text-emerald-300" },
+                            { name: "Dozzek Text", handle: "Dozzektext", url: "https://www.youtube.com/@Dozzektext" }
+                        ]
+                    },
+                    {
+                        subTitleEN: "Crime & Dashcam Footage with Text Overlay",
+                        subTitleTH: "วิดีโออาชญากรรม & กล้องหน้ารถพร้อมข้อความ",
+                        channels: [
+                            { name: "Crime Catchers YT", handle: "CrimeCatchersYT", url: "https://www.youtube.com/@CrimeCatchersYT" },
+                            { name: "Unhinged Roads", handle: "Unhingedroads", url: "https://www.youtube.com/@Unhingedroads" },
+                            { name: "EYE Crime", handle: "EYE_Crime", url: "https://www.youtube.com/@EYE_Crime" },
+                            { name: "Prime Dash Cam", handle: "PrimeDashCam", url: "https://www.youtube.com/@PrimeDashCam" },
+                            { name: "Homeowner Cams", handle: "HomeownerCams", url: "https://www.youtube.com/@HomeownerCams" },
+                            { name: "Nexa Cams", handle: "NexaCams", url: "https://www.youtube.com/@NexaCams" }
+                        ]
+                    },
+                    {
+                        subTitleEN: "Commentary with Text Overlay",
+                        subTitleTH: "ข้อความพากย์บนคลิป",
+                        channels: [
+                            { name: "Realize Food", handle: "RealizeFood", url: "https://www.youtube.com/@RealizeFood", noteEN: "Food niche", noteTH: "สายอาหาร" },
+                            { name: "Viral VIPs", handle: "ViralVIPs", url: "https://www.youtube.com/@ViralVIPs" }
+                        ]
+                    },
+                    {
+                        subTitleEN: "Wholesome Text Stories",
+                        subTitleTH: "เรื่องราวอบอุ่นหัวใจ - แหล่งตัดคลิปดี",
+                        channels: [
+                            { name: "On Camera Motion", handle: "OnCameraMotion", url: "https://www.youtube.com/@OnCameraMotion", noteEN: "Good clipping source", noteTH: "แหล่งวัตถุดิบตัดคลิปดีมาก", badgeColor: "bg-cyan-500/20 text-cyan-300" }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "edits-clipping",
+                filterGroup: "Edits",
+                titleEN: "Edits & Clipping",
+                titleTH: "การตัดต่อคลิป & ไฮไลต์",
+                badgeEN: "High RPM Potential",
+                badgeTH: "โอกาสทำรายได้สูง",
+                icon: "fa-solid fa-scissors",
+                color: "from-yellow-500 to-amber-600",
+                descEN: "Fast-paced edits and highlight clipping from live streams, famous creators, movies, or grandmaster chess moments.",
+                descTH: "การตัดต่อคลิปไฮไลต์ความยาวสั้นจากสตรีมเมอร์ หนังดัง หรือแมตช์หมากรุกช็อตเด็ด",
+                groups: [
+                    {
+                        subTitleEN: "Streamer Edits",
+                        subTitleTH: "ตัดต่อคลิปสตรีมเมอร์",
+                        channels: [
+                            { name: "Nexxo Recaps", handle: "NexxoRecaps", url: "https://www.youtube.com/@NexxoRecaps" },
+                            { name: "Not Snickerly", handle: "NotSnickerly", url: "https://www.youtube.com/@NotSnickerly" },
+                            { name: "Da Plug", handle: "DaPlug.", url: "https://www.youtube.com/@DaPlug." },
+                            { name: "Zylok Clips", handle: "Zylok.clipss", url: "https://www.youtube.com/@Zylok.clipss" },
+                            { name: "Appel Juice Roblox", handle: "AppelJuiceRoblox", url: "https://www.youtube.com/@AppelJuiceRoblox" },
+                            { name: "projsxl", handle: "projsxl", url: "https://www.youtube.com/@projsxl" },
+                            { name: "ranj", handle: "ranj-j3h", url: "https://www.youtube.com/@ranj-j3h" }
+                        ]
+                    },
+                    {
+                        subTitleEN: "Creator-Focused Edits (DrDonut)",
+                        subTitleTH: "ตัดต่อเน้นครีเอเตอร์ DrDonut",
+                        channels: [
+                            { name: "Clips Donut", handle: "clipsdonut", url: "https://www.youtube.com/@clipsdonut" },
+                            { name: "Yellow Donut", handle: "yellowdonutt", url: "https://www.youtube.com/@yellowdonutt", noteEN: "Great thumbnail study", noteTH: "ศึกษาการทำภาพปกดีเยี่ยม", badgeColor: "bg-amber-500/20 text-amber-300" },
+                            { name: "DrDonut Two", handle: "DrDonutTwo", url: "https://www.youtube.com/@DrDonutTwo" }
+                        ]
+                    },
+                    {
+                        subTitleEN: "Movie/Show Edits & Chess Clips",
+                        subTitleTH: "ตัดต่อหนัง / ซีรีส์ & คลิปหมากรุก",
+                        channels: [
+                            { name: "Sona Darus", handle: "SonaDarus", url: "https://www.youtube.com/@SonaDarus" },
+                            { name: "Indecisive Show YT", handle: "IndecisiveShowYT", url: "https://www.youtube.com/@IndecisiveShowYT" },
+                            { name: "Gotham Moments", handle: "GothamMoments", url: "https://www.youtube.com/@GothamMoments", noteEN: "High RPM potential", noteTH: "มีโอกาสทำ RPM (รายได้) สูง", badgeColor: "bg-emerald-500/20 text-emerald-300 font-bold" }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "spoken-commentary",
+                filterGroup: "Commentary",
+                titleEN: "Spoken Commentary",
+                titleTH: "การพากย์เสียงบรรยาย",
+                badgeEN: "Voiceover Centric",
+                badgeTH: "เน้นการใช้เสียงพากย์",
+                icon: "fa-solid fa-microphone",
+                color: "from-rose-500 to-pink-700",
+                descEN: "Creator voiceover narrations explaining movie scenes, gaming breakdowns, traditional commentary, or sports.",
+                descTH: "คลิปพากย์เสียงคนจริงๆ สรุปเรื่องราวในหนัง วิเคราะห์เกม กีฬา หรือแสดงความคิดเห็นต่อประเด็นไวรัล",
+                groups: [
+                    {
+                        subTitleEN: "Movie Recaps & Commentary",
+                        subTitleTH: "สรุปหนังและพากย์บรรยาย",
+                        channels: [
+                            { name: "AM Clips YT", handle: "AMclipsYT", url: "https://www.youtube.com/@AMclipsYT" },
+                            { name: "Specular Nove", handle: "SpecularNove", url: "https://www.youtube.com/@SpecularNove" },
+                            { name: "Kuza Moves", handle: "KuzaMoves", url: "https://www.youtube.com/@KuzaMoves" }
+                        ]
+                    },
+                    {
+                        subTitleEN: "Gaming & Traditional Commentary",
+                        subTitleTH: "พากย์เกม & พากย์สไตล์ดั้งเดิม",
+                        channels: [
+                            { name: "Patched Out", handle: "PatchedOut", url: "https://www.youtube.com/@PatchedOut" },
+                            { name: "Real Slip", handle: "RealSlip", url: "https://www.youtube.com/@RealSlip", noteEN: "Among Us focus", noteTH: "เน้นเกม Among Us" },
+                            { name: "Greylin YT", handle: "GreylinYT", url: "https://www.youtube.com/@GreylinYT" },
+                            { name: "Yukio Gaming 28", handle: "YukioGaming28", url: "https://www.youtube.com/@YukioGaming28" },
+                            { name: "Clip Rotter", handle: "cliprotter", url: "https://www.youtube.com/@cliprotter", noteEN: "Traditional style", noteTH: "สไตล์พากย์ดั้งเดิม" }
+                        ]
+                    },
+                    {
+                        subTitleEN: "Sports Commentary",
+                        subTitleTH: "พากย์กีฬา",
+                        channels: [
+                            { name: "Surging Sports", handle: "SurgingSports", url: "https://www.youtube.com/@SurgingSports" }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "concept-niches",
+                filterGroup: "Concept",
+                titleEN: "Specific / Concept Niches",
+                titleTH: "ไอเดียกลุ่มเฉพาะทาง / คอนเซปต์ใหม่",
+                badgeEN: "Unique Formats",
+                badgeTH: "รูปแบบแปลกใหม่",
+                icon: "fa-solid fa-lightbulb",
+                color: "from-teal-500 to-emerald-600",
+                descEN: "Innovative concept formats: speedrunning YouTube Shorts mechanics, daily ongoing challenges, AI pets, and motivation.",
+                descTH: "คอนเซปต์เฉพาะทางสร้างสรรค์ เช่น สปีดรันอัลกอริทึม Shorts, อัปเดตรายวันต่อเนื่อง, เพื่อนสัตว์เลี้ยง AI และแรงบันดาลใจ",
+                groups: [
+                    {
+                        subTitleEN: "Explaining / Speedrunning Shorts",
+                        subTitleTH: "อธิบาย / สปีดรัน Shorts - คู่แข่งน้อย โอกาสสูง",
+                        channels: [
+                            { name: "Nova Explains Shorts", handle: "NovaExplainsShorts", url: "https://www.youtube.com/@NovaExplainsShorts", noteEN: "Low competition, high potential", noteTH: "คู่แข่งน้อย โอกาสโตสูงมาก", badgeColor: "bg-emerald-500/20 text-emerald-300" },
+                            { name: "Joe Caine", handle: "joe_caine", url: "https://www.youtube.com/@joe_caine", noteEN: "Shorts Speedrunning Pioneer", noteTH: "ผู้บุกเบิกแนว Speedrunning Shorts" }
+                        ]
+                    },
+                    {
+                        subTitleEN: "Daily Progress / Faceless Content",
+                        subTitleTH: "อัปเดตต่อเนื่องทุกวัน - เหมาะสำหรับ Faceless Content",
+                        channels: [
+                            { name: "The Daily Project YT", handle: "TheDailyProject-YT", url: "https://www.youtube.com/@TheDailyProject-YT", noteEN: "'Day X of covering this ___' format", noteTH: "คอนเซปต์ 'ทำเรื่องนี้วันที่ X'", badgeColor: "bg-purple-500/20 text-purple-300" }
+                        ]
+                    },
+                    {
+                        subTitleEN: "AI Animals, Motivation & Wholesome",
+                        subTitleTH: "สัตว์เลี้ยง AI, แรงบันดาลใจ & อบอุ่นหัวใจ",
+                        channels: [
+                            { name: "Tim and Jeffy", handle: "timandjeffy", url: "https://www.youtube.com/@timandjeffy", noteEN: "AI animal friends (High volume)", noteTH: "เพื่อนสัตว์เลี้ยง AI (ยอดวิวสูงมาก)", badgeColor: "bg-cyan-500/20 text-cyan-300" },
+                            { name: "Peakz Motivation", handle: "peakzmotivation", url: "https://www.youtube.com/@peakzmotivation" },
+                            { name: "Insanity Interactions", handle: "InsanityInteractions", url: "https://www.youtube.com/@InsanityInteractions", noteEN: "Sports focus", noteTH: "เน้นสายกีฬา" },
+                            { name: "Kind Otter", handle: "KindOtter", url: "https://www.youtube.com/@KindOtter" },
+                            { name: "Pets Are Angelz", handle: "PetsAreAngelz", url: "https://www.youtube.com/@PetsAreAngelz" },
+                            { name: "GJ Shortz", handle: "GJShortz", url: "https://www.youtube.com/@GJShortz" }
+                        ]
+                    },
+                    {
+                        subTitleEN: "Saturated Niche Caution",
+                        subTitleTH: "สถานที่แปลกตาบนโลก - แนะนำให้หลีกเลี่ยง (ตลาดอิ่มตัว)",
+                        channels: [
+                            { name: "Its Wonder Planet", handle: "itswonderplanet", url: "https://www.youtube.com/@itswonderplanet", noteEN: "⚠️ Avoid / Saturated ('Places on Earth...')", noteTH: "⚠️ ตลาดอิ่มตัวมากแล้ว แนะนำให้หลีกเลี่ยง", isWarning: true, badgeColor: "bg-red-500/30 text-red-300 border border-red-500/40 font-bold" }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        function getBilingualText(en, th) {
+            if (langMode === 'en') return en || th;
+            if (langMode === 'th') return th || en;
+            // Both EN & TH
+            if (en && th && en !== th) {
+                return `${en} <span class="text-slate-400 font-normal text-xs sm:text-sm">(${th})</span>`;
+            }
+            return en || th;
+        }
+
+        function getBilingualSubHeader(en, th) {
+            if (langMode === 'en') return en;
+            if (langMode === 'th') return th;
+            return `${en} &bull; <span class="text-slate-400 font-normal">${th}</span>`;
+        }
+
+        function renderNiches() {
+            const container = document.getElementById('nichesContainer');
+            const noResults = document.getElementById('noResults');
+            const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            container.innerHTML = '';
+            let totalMatchCount = 0;
+
+            nicheData.forEach(niche => {
+                // Category Filter
+                const matchesCategory = (activeCategoryFilter === 'all') || (niche.filterGroup === activeCategoryFilter);
+                if (!matchesCategory) return;
+
+                // Search Filter Across EN & TH
+                let matchingGroups = [];
+                
+                niche.groups.forEach(group => {
+                    const matchingChannels = group.channels.filter(ch => {
+                        const searchBase = (
+                            ch.name + ' ' + 
+                            ch.handle + ' ' + 
+                            (ch.noteEN || '') + ' ' + 
+                            (ch.noteTH || '') + ' ' + 
+                            group.subTitleEN + ' ' + 
+                            group.subTitleTH + ' ' + 
+                            niche.titleEN + ' ' + 
+                            niche.titleTH
+                        ).toLowerCase();
+
+                        return searchBase.includes(searchVal);
+                    });
+
+                    if (matchingChannels.length > 0) {
+                        matchingGroups.push({
+                            ...group,
+                            channels: matchingChannels
+                        });
+                    }
+                });
+
+                if (matchingGroups.length > 0) {
+                    totalMatchCount += matchingGroups.reduce((acc, g) => acc + g.channels.length, 0);
+
+                    const section = document.createElement('section');
+                    section.className = 'glass-panel rounded-3xl p-5 sm:p-8 space-y-6';
+                    
+                    let groupsHTML = '';
+
+                    matchingGroups.forEach(group => {
+                        let channelsHTML = '';
+                        
+                        group.channels.forEach(ch => {
+                            const warningBorder = ch.isWarning ? 'border-red-500/50 hover:border-red-400 bg-red-950/20' : 'border-slate-800/80 hover:border-slate-700 bg-slate-900/60';
+                            
+                            const noteText = langMode === 'en' ? ch.noteEN : (langMode === 'th' ? ch.noteTH : (ch.noteEN ? `${ch.noteEN} / ${ch.noteTH || ''}` : ''));
+
+                            channelsHTML += `
+                                <div class="card-glow ${warningBorder} rounded-2xl p-4 flex flex-col justify-between border transition-all relative group">
+                                    <div>
+                                        <div class="flex items-start justify-between gap-2 mb-1.5">
+                                            <div class="font-bold text-white text-base group-hover:text-purple-300 transition-colors">
+                                                ${ch.name}
+                                            </div>
+                                            <button onclick="copyToClipboard('@${ch.handle}')" title="Copy handle / คัดลอก" class="text-slate-500 hover:text-slate-300 p-1.5 rounded-lg hover:bg-slate-800 transition-colors">
+                                                <i class="fa-regular fa-copy text-xs"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <p class="text-xs text-slate-400 mb-3 font-mono">@${ch.handle}</p>
+                                        
+                                        ${noteText ? `
+                                            <div class="mb-3">
+                                                <span class="inline-block text-[11px] px-2.5 py-1 rounded-lg ${ch.badgeColor || 'bg-slate-800 text-slate-300 border border-slate-700/50'}">
+                                                    ${noteText}
+                                                </span>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+
+                                    <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between">
+                                        <span class="text-[10px] uppercase font-extrabold text-slate-500 tracking-wider">YouTube</span>
+                                        <a href="${ch.url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-red-600/90 hover:bg-red-600 text-white transition-all shadow-md shadow-red-600/20">
+                                            <span>Visit</span>
+                                            <i class="fa-brands fa-youtube text-sm"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            `;
+                        });
+
+                        groupsHTML += `
+                            <div class="space-y-3">
+                                <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+                                    <span>${getBilingualSubHeader(group.subTitleEN, group.subTitleTH)}</span>
+                                </h4>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                    ${channelsHTML}
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    section.innerHTML = `
+                        <!-- Category Header -->
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+                            <div class="flex items-start sm:items-center gap-3.5">
+                                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr ${niche.color} flex items-center justify-center text-white text-xl shadow-lg shrink-0">
+                                    <i class="${niche.icon}"></i>
+                                </div>
+                                <div>
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <h2 class="text-lg sm:text-xl font-black text-white">
+                                            ${getBilingualText(niche.titleEN, niche.titleTH)}
+                                        </h2>
+                                        <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-slate-800 text-purple-300 border border-purple-500/30">
+                                            ${langMode === 'th' ? niche.badgeTH : niche.badgeEN}
+                                        </span>
+                                    </div>
+                                    <p class="text-xs text-slate-400 mt-1 max-w-3xl leading-relaxed">
+                                        ${langMode === 'th' ? niche.descTH : (langMode === 'en' ? niche.descEN : `${niche.descEN} &bull; <span class="text-slate-400">${niche.descTH}</span>`)}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subgroups -->
+                        <div class="space-y-6 pt-1">
+                            ${groupsHTML}
+                        </div>
+                    `;
+
+                    container.appendChild(section);
+                }
+            });
+
+            if (totalMatchCount === 0) {
+                noResults.classList.remove('hidden');
+            } else {
+                noResults.classList.add('hidden');
+            }
+        }
+
+        function setLangMode(mode) {
+            langMode = mode;
+            
+            // Toggle active styling on language buttons
+            const btnBoth = document.getElementById('langBtnBoth');
+            const btnEn = document.getElementById('langBtnEn');
+            const btnTh = document.getElementById('langBtnTh');
+
+            [btnBoth, btnEn, btnTh].forEach(btn => {
+                btn.className = "px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition-all";
+            });
+
+            if (mode === 'both') {
+                btnBoth.className = "px-3 py-1.5 rounded-lg font-medium transition-all bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow";
+            } else if (mode === 'en') {
+                btnEn.className = "px-3 py-1.5 rounded-lg font-medium transition-all bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow";
+            } else if (mode === 'th') {
+                btnTh.className = "px-3 py-1.5 rounded-lg font-medium transition-all bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow";
+            }
+
+            renderNiches();
+        }
+
+        function setCategoryFilter(cat) {
+            activeCategoryFilter = cat;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-gradient-to-r', 'from-purple-600', 'to-pink-600', 'text-white', 'shadow-lg');
+                btn.classList.add('bg-slate-800/80', 'text-slate-300');
+            });
+
+            event.currentTarget.classList.add('active', 'bg-gradient-to-r', 'from-purple-600', 'to-pink-600', 'text-white', 'shadow-lg');
+            event.currentTarget.classList.remove('bg-slate-800/80', 'text-slate-300');
+
+            renderNiches();
+        }
+
+        function filterContent() {
+            const input = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('clearSearch');
+            
+            if (input.value.length > 0) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+            
+            renderNiches();
+        }
+
+        function clearSearchInput() {
+            const input = document.getElementById('searchInput');
+            input.value = '';
+            document.getElementById('clearSearch').classList.add('hidden');
+            renderNiches();
+        }
+
+        function resetFilters() {
+            clearSearchInput();
+            activeCategoryFilter = 'all';
+            const firstBtn = document.querySelector('.filter-btn');
+            if (firstBtn) firstBtn.click();
+        }
+
+        function copyToClipboard(text) {
+            const tempInput = document.createElement('input');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            showToast(`Copied ${text} to clipboard`);
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMessage');
+            toastMsg.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2200);
+        }
+
+        // Initialize on window load
+        window.onload = function() {
+            renderNiches();
+        };
+    </script>
+</body>
+</html>
