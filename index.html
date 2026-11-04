@@ -139,7 +139,8 @@
   .sub-edit input { font-size: 20px; font-weight: 700; }
   .sub-edit .sub-controls button { padding: 8px 12px; font-size: 14px; }
   .sw-script { margin: 14px 0; }
-  .sw-script pre.prompt { white-space: pre-wrap; color: var(--text, #fff); font-size: 15px; line-height: 1.6; }
+  .sw-script textarea { font-size: 15px; line-height: 1.6; }
+  .sw-note { margin: 0 0 10px; padding: 10px 14px; border-left: 4px solid var(--yellow); border-radius: 8px; background: rgba(255,198,26,.08); }
   .sw-count { font-size: 13px; color: var(--muted); }
   .sw-count.bad { color: var(--err); }
   textarea { resize: vertical; }
@@ -3408,10 +3409,10 @@ function renderWriter(text) {
   let last = 0, n = 0;
   for (const m of text.matchAll(/```(?:text)?\s*([\s\S]*?)```/g)) {
     out.push(renderMd(text.slice(last, m.index)));
-    const script = m[1].trim(), w = swWords(script), ok = w >= 90 && w <= 115;
-    out.push(`<div class="sw-script"><pre class="prompt">${esc(script)}</pre>
-      <div class="actions" style="margin-top:6px"><button type="button" class="ghost sw-copy" data-i="${n++}">คัดลอกสคริปต์</button>
-      <span class="sw-count${ok ? '' : ' bad'}">${w} คำ${ok ? '' : ' (ควรอยู่ระหว่าง 90-115 คำ)'}</span></div></div>`);
+    const script = m[1].trim();
+    out.push(`<div class="sw-script"><textarea class="sw-edit" rows="7" aria-label="สคริปต์ ${n + 1} แก้ได้">${esc(script)}</textarea>
+      <div class="actions" style="margin-top:6px"><button type="button" class="ghost sw-copy" data-i="${n}">คัดลอกสคริปต์</button>
+      <span class="sw-count" data-i="${n++}"></span></div></div>`);
     last = m.index + m[0].length;
   }
   out.push(renderMd(text.slice(last)));
@@ -3454,10 +3455,18 @@ $('swBtn').addEventListener('click', async () => {
     const cand = j.candidates?.[0];
     const text = (cand?.content?.parts || []).filter(x => x.text && !x.thought).map(x => x.text).join('').trim();
     if (!text) throw new Error(cand?.finishReason === 'SAFETY' || j.promptFeedback?.blockReason ? 'Gemini ไม่ยอมเขียนเรื่องนี้ (ติดเรื่องความปลอดภัยของเนื้อหา)' : 'Gemini ไม่ได้ตอบกลับมา ลองใหม่อีกครั้ง');
-    const scripts = [...text.matchAll(/```(?:text)?\s*([\s\S]*?)```/g)].map(m => m[1].trim());
-    result.innerHTML = `<div class="md">${renderWriter(text)}</div>`;
+    result.innerHTML = `<p class="hint sw-note">✏️ สคริปต์ที่ได้เป็นตัวตั้งต้นนะคะ ไม่ชอบตรงไหน แก้ในกล่องสคริปต์ได้เลย
+      ทั้งเปลี่ยนคำ ตัดประโยค หรือเขียนฮุกใหม่ ระบบนับคำให้ใหม่ทุกครั้งที่แก้ และปุ่มคัดลอกจะคัดลอกฉบับที่แก้แล้ว
+      ถ้าไม่ชอบทั้งหมด กด "เขียน 3 สคริปต์" อีกครั้งเพื่อได้ชุดใหม่</p><div class="md">${renderWriter(text)}</div>`;
+    const boxes = [...result.querySelectorAll('.sw-edit')], counts = [...result.querySelectorAll('.sw-count')];
+    const recount = i => {
+      const w = swWords(boxes[i].value), ok = w >= 90 && w <= 115;
+      counts[i].textContent = `${w} คำ${ok ? '' : ' (ควรอยู่ระหว่าง 90-115 คำ)'}`;
+      counts[i].classList.toggle('bad', !ok);
+    };
+    boxes.forEach((b, i) => { recount(i); b.addEventListener('input', () => recount(i)); });
     result.querySelectorAll('.sw-copy').forEach(b => b.addEventListener('click', async () => {
-      b.textContent = (await copyText(scripts[b.dataset.i])) ? 'คัดลอกแล้ว ✓' : 'คัดลอกไม่ได้';
+      b.textContent = (await copyText(boxes[b.dataset.i].value.trim())) ? 'คัดลอกแล้ว ✓' : 'คัดลอกไม่ได้';
       setTimeout(() => b.textContent = 'คัดลอกสคริปต์', 1800);
     }));
     result.hidden = false;
