@@ -138,6 +138,10 @@
   .sub-edit { margin: 10px 0; padding: 12px; border: 1px solid var(--line, #333); border-radius: 10px; }
   .sub-edit input { font-size: 20px; font-weight: 700; }
   .sub-edit .sub-controls button { padding: 8px 12px; font-size: 14px; }
+  .sw-script { margin: 14px 0; }
+  .sw-script pre.prompt { white-space: pre-wrap; color: var(--text, #fff); font-size: 15px; line-height: 1.6; }
+  .sw-count { font-size: 13px; color: var(--muted); }
+  .sw-count.bad { color: var(--err); }
   textarea { resize: vertical; }
   /* Style extractor: cut map of the reference clip */
   .cutmap { margin-top: 14px; }
@@ -241,6 +245,7 @@
   .tab[data-tab=voice]::before { content: "\1F399\FE0F"; }
   .tab[data-tab=keywords]::before { content: "\1F511"; }
   .tab[data-tab=clips]::before { content: "\1F3AC"; }
+  .tab[data-tab=writer]::before { content: "\270D\FE0F"; }
   .tab[data-tab=summary]::before { content: "\1F4D6"; }
   .tab[data-tab=policy]::before { content: "\1F6E1\FE0F"; }
   .tab[data-tab=story]::before { content: "\1F39E\FE0F"; }
@@ -610,6 +615,7 @@
     <button class="tab" role="tab" aria-selected="true" data-tab="voice">สร้างเสียง 11Labs</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="keywords">หาคีย์เวิร์ด</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="clips">หาคลิป X / IG</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="writer">เขียนสคริปต์</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="summary">สรุปเรื่องจาก YouTube</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="policy">เช็คกฎ Shorts Commentary</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="story">Storyboard ตัดต่อ</button>
@@ -978,6 +984,42 @@
     <div class="result" id="sumResult" hidden></div>
     <p class="hint" style="margin-top:10px">ไม่มี key? <a href="#" id="sumPromptLink">คัดลอกพรอมต์ไปวางใน Gemini เอง</a></p>
     <div class="panel" id="sumPanel" hidden></div>
+  </section>
+
+  <!-- Script writer: a proven script or transcript -> 3 new scripts in that style (Gemini, viewer's own key) -->
+  <section class="card" id="writer" role="tabpanel" hidden>
+    <h2>เขียนสคริปต์จากสคริปต์ที่ยอดวิวดี</h2>
+    <details class="howto">
+      <summary>วิธีแกะสคริปต์จาก transcript (คลิปยาว / คลิปสั้น)</summary>
+      <ol class="hint" style="margin:12px 0 4px;padding-left:22px;line-height:1.9">
+        <li><b>คลิปสั้น (Shorts):</b> คัดลอกลิงก์ เช่น youtube.com/<b>shorts/</b>ABC123 แล้วเปลี่ยน <b>shorts/</b> เป็น <b>watch?v=</b> จะได้ youtube.com/<b>watch?v=</b>ABC123 (หรือวางลิงก์ในช่องด้านล่าง แล้วกดเปิดหน้า watch ได้เลย)</li>
+        <li><b>คลิปยาว:</b> เปิดคลิปตามปกติ ใช้ลิงก์ watch อยู่แล้ว</li>
+        <li>ใต้คลิป กด <b>...เพิ่มเติม</b> (ส่วนคำอธิบาย) เลื่อนลงไป กด <b>แสดงข้อความถอดเสียง</b> (Show transcript)</li>
+        <li>กล่องข้อความจะขึ้นด้านขวา กด <b>⋮</b> ที่หัวกล่อง แล้วเลือก <b>สลับการประทับเวลา</b> (Toggle timestamps) เพื่อซ่อนเวลา</li>
+        <li>ลากคลุมข้อความทั้งหมด กด Ctrl+C แล้วมาวางในช่องสคริปต์ต้นแบบด้านล่าง</li>
+      </ol>
+      <p class="hint" style="margin:0">ถ้าไม่มีปุ่มแสดงข้อความถอดเสียง แปลว่าคลิปนั้นไม่มีซับ ลองคลิปอื่น คลิปยาววางทั้งเรื่องได้เลย ระบบจะดูโครงเรื่องแล้วย่อเป็นสคริปต์ Shorts ให้</p>
+      <label for="swLink">แปลงลิงก์ Shorts เป็นหน้า watch</label>
+      <input type="text" id="swLink" placeholder="https://youtube.com/shorts/...">
+      <div class="actions" style="margin-top:8px"><a class="ghost" id="swOpen" href="#" target="_blank" rel="noopener" hidden>เปิดหน้า watch</a>
+        <span class="hint" id="swWatch" style="margin:0"></span></div>
+    </details>
+    <label for="swRef">สคริปต์ต้นแบบที่ยอดวิวดี <span style="font-weight:400;color:var(--muted)">จากช่องตัวเองหรือช่องคู่แข่ง วาง transcript ได้เลย</span></label>
+    <textarea id="swRef" rows="7" placeholder="วางสคริปต์หรือ transcript ที่นี่"></textarea>
+    <div class="hint" id="swRefCount" style="margin:4px 0 0"></div>
+    <label for="swNiche">นีช / หัวข้อที่อยากได้ <span style="font-weight:400;color:var(--muted)">ไม่บังคับ</span></label>
+    <input type="text" id="swNiche" placeholder="เช่น Animals, Japan facts, Food, Family">
+    <label for="swVibe">อารมณ์ของสคริปต์</label>
+    <input type="text" id="swVibe" placeholder="ไม่ใส่ = ให้ AI เลือกให้เหมาะกับเรื่อง">
+    <div class="quick" id="swVibeQuick"></div>
+    <label for="swKey">Gemini API key <span style="font-weight:400;color:var(--muted)">ขอฟรีที่ <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a></span></label>
+    <input type="password" id="swKey" placeholder="AIza..." autocomplete="off">
+    <label class="check"><input type="checkbox" id="swRemember"> จำ key ไว้ในเบราว์เซอร์นี้ (ไม่ต้องติ๊ก ถ้าใช้เครื่องร่วมกับคนอื่น)</label>
+    <button class="primary" id="swBtn">เขียน 3 สคริปต์</button>
+    <div class="status" id="swStatus"></div>
+    <div class="result" id="swResult" hidden></div>
+    <p class="hint" style="margin-top:10px">ไม่มี key? <a href="#" id="swPromptLink">คัดลอกพรอมต์ไปวางใน Gemini / Claude / ChatGPT เอง</a></p>
+    <div class="panel" id="swPanel" hidden></div>
   </section>
 </main>
 
@@ -3261,6 +3303,7 @@ async function gemini(path, key, init = {}) {
   if (!res.ok) {
     const msg = j.error?.message || res.statusText;
     if (/API key not valid|API_KEY_INVALID/i.test(msg) || res.status === 401 || res.status === 403) throw new Error('Gemini API key ไม่ถูกต้อง');
+    if (/prepay|credits are depleted|billing/i.test(msg)) throw new Error('เครดิต Gemini ของ key นี้หมด เข้า Google AI Studio เพื่อเติมเครดิต หรือใช้ key อื่น');
     if (res.status === 429) throw new Error('ใช้ Gemini ฟรีเกินโควต้าแล้ว รอสักครู่แล้วลองใหม่');
     if (/fetch content/i.test(msg)) throw new Error('Gemini เปิดคลิปนี้ไม่ได้ (คลิปอาจเป็นส่วนตัว หรือถูกจำกัดอายุ)');
     throw new Error(msg);
@@ -3316,6 +3359,120 @@ $('sumPromptLink').addEventListener('click', async e => {
   const link = $('sumLink').value.trim();
   await showPromptPanel($('sumPanel'), SUMMARY_PROMPT({ link: link || '(วางลิงก์ YouTube)', note: $('sumNote').value.trim() }),
     'story-summary_youtube.txt', 'เปิด Gemini แล้วกด Ctrl+V วางพรอมต์ แล้วกดส่ง Gemini ดูคลิป YouTube จากลิงก์ได้เลย');
+});
+
+// ═════════════ Script writer: proven script -> 3 new scripts in that style ═════════════
+// Gemini (viewer's own key) studies why the reference worked and writes three new scripts by the rules
+// below; each script comes back in its own text block so the page can count words and offer a copy button.
+const SW_VIBES = ['ตลก', 'เสียดสี', 'น่ารัก', 'ฮีลใจ', 'ใจฟู', 'ซึ้ง', 'ช็อก / ไม่น่าเชื่อ'];
+
+const WRITER_PROMPT = ({ ref, niche, vibe }) => `You are the best YouTube Shorts scriptwriter for an American audience.
+
+REFERENCE (a script or transcript that got great views; it may be a long-video transcript):
+"""
+${ref}
+"""
+
+Study why it worked: the hook type, pacing, structure, the feeling it creates, and the payoff.
+Then write 3 brand-new Shorts scripts in that style, each on a different topic${niche ? ` within this niche: ${niche}` : ' close to the reference niche'}.
+Do NOT retell the reference: no same topic, facts, or sentences. Use Google Search to make sure each topic is real and not already overdone on YouTube; pick fresh angles.
+
+RULES
+- Hook: the first sentence is sharp and short (10 words or fewer): a contradiction, a surprising claim, or a curiosity gap. No intro, no "Did you know".
+- Cut every filler word. Every sentence must push the story forward.
+- Relatable: tie the story to everyday life the viewer knows (home, school, work, phone, food, pets, family, friends).
+- Payoff: make it the sharpest line in the script, deliver it fast near the end, then end right away. Add a loop only if it fits naturally (the last line flows back into the hook and ends mid-sentence; never "which is why").
+- A 13-year-old must understand every word. Short, clear sentences.
+- Use words real Americans actually say today: casual and current. No AI words or YouTuber clichés (delve, tapestry, testament, journey, realm, buckle up, let's dive in, in today's video, game-changer, mind-blowing).
+- Emotion: make it touch people. Feeling: ${vibe || 'pick what fits each story: funny, satirical, cute, healing, or heartwarming'}.
+- Make people want to like and comment without asking them to: no "like", "subscribe", or "comment below". End on something relatable, a twist, or a thought people will want to answer.
+- Length: 90 to 115 words per script. Count carefully.
+- Facts must be true and advertiser-friendly. No preaching.
+
+OUTPUT FORMAT (notes in Thai, scripts in English), exactly like this for each script:
+**สคริปต์ 1: (ชื่อเรื่องภาษาไทย)**
+อารมณ์: ... | ฮุกแบบ: ...
+\`\`\`text
+(the script, English, ready to read aloud, no labels)
+\`\`\`
+ทำไมถึงเวิร์ก: (ภาษาไทย 1-2 ประโยค: ฮุก, payoff, ทำไมคนจะอยากคอมเมนต์)
+
+Then finish with:
+**สิ่งที่สคริปต์ต้นแบบทำได้ดี**
+- (3 ข้อ ภาษาไทย)`;
+
+const swWords = t => (t.trim().match(/\S+/g) || []).length;
+
+function renderWriter(text) {
+  const out = [];
+  let last = 0, n = 0;
+  for (const m of text.matchAll(/```(?:text)?\s*([\s\S]*?)```/g)) {
+    out.push(renderMd(text.slice(last, m.index)));
+    const script = m[1].trim(), w = swWords(script), ok = w >= 90 && w <= 115;
+    out.push(`<div class="sw-script"><pre class="prompt">${esc(script)}</pre>
+      <div class="actions" style="margin-top:6px"><button type="button" class="ghost sw-copy" data-i="${n++}">คัดลอกสคริปต์</button>
+      <span class="sw-count${ok ? '' : ' bad'}">${w} คำ${ok ? '' : ' (ควรอยู่ระหว่าง 90-115 คำ)'}</span></div></div>`);
+    last = m.index + m[0].length;
+  }
+  out.push(renderMd(text.slice(last)));
+  return out.join('');
+}
+
+setupQuick('swVibeQuick', 'swVibe', SW_VIBES.map(t => ({ label: t, value: t })));
+{
+  const k = store.get('gemKey');
+  if (k) { $('swKey').value = k; $('swRemember').checked = true; }
+}
+$('swRef').addEventListener('input', () => {
+  const w = swWords($('swRef').value);
+  $('swRefCount').textContent = w ? `${w.toLocaleString()} คำ` : '';
+});
+$('swLink').addEventListener('input', () => {
+  const v = $('swLink').value.trim();
+  let id = null;
+  try { id = v ? extractVideoId(v) : null; } catch { id = null; }
+  const url = id ? `https://www.youtube.com/watch?v=${id}` : '';
+  $('swOpen').hidden = !id; $('swOpen').href = url || '#';
+  $('swWatch').textContent = v && !id ? 'อ่านลิงก์นี้ไม่ได้' : url;
+});
+
+$('swBtn').addEventListener('click', async () => {
+  const btn = $('swBtn'), status = $('swStatus'), result = $('swResult');
+  const ref = $('swRef').value.trim(), key = $('swKey').value.trim();
+  status.className = 'status'; status.textContent = '';
+  const fail = msg => { status.className = 'status err'; status.textContent = msg; };
+  if (swWords(ref) < 20) return fail('กรุณาวางสคริปต์ต้นแบบ (อย่างน้อยสัก 20 คำ)');
+  if (!key) return fail('กรุณาใส่ Gemini API key (ขอฟรีที่ Google AI Studio) หรือกด "คัดลอกพรอมต์" ด้านล่างไปวางเอง');
+  store.set('gemKey', $('swRemember').checked ? key : null);
+  btn.disabled = true; result.hidden = true;
+  try {
+    status.textContent = 'Gemini กำลังแกะสไตล์และเขียน 3 สคริปต์... (ประมาณ 30-90 วินาที)';
+    const j = await gemini('/v1beta/models/gemini-flash-latest:generateContent', key, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: WRITER_PROMPT({ ref, niche: $('swNiche').value.trim(), vibe: $('swVibe').value.trim() }) }] }],
+        tools: [{ google_search: {} }] }) });
+    const cand = j.candidates?.[0];
+    const text = (cand?.content?.parts || []).filter(x => x.text && !x.thought).map(x => x.text).join('').trim();
+    if (!text) throw new Error(cand?.finishReason === 'SAFETY' || j.promptFeedback?.blockReason ? 'Gemini ไม่ยอมเขียนเรื่องนี้ (ติดเรื่องความปลอดภัยของเนื้อหา)' : 'Gemini ไม่ได้ตอบกลับมา ลองใหม่อีกครั้ง');
+    const scripts = [...text.matchAll(/```(?:text)?\s*([\s\S]*?)```/g)].map(m => m[1].trim());
+    result.innerHTML = `<div class="md">${renderWriter(text)}</div>`;
+    result.querySelectorAll('.sw-copy').forEach(b => b.addEventListener('click', async () => {
+      b.textContent = (await copyText(scripts[b.dataset.i])) ? 'คัดลอกแล้ว ✓' : 'คัดลอกไม่ได้';
+      setTimeout(() => b.textContent = 'คัดลอกสคริปต์', 1800);
+    }));
+    result.hidden = false;
+    status.textContent = 'เขียนเสร็จแล้ว เอาสคริปต์ไปทำเสียงได้ที่แท็บ "สร้างเสียง 11Labs" หรือ ElevenLabs ได้เลย';
+  } catch (e) {
+    fail('ผิดพลาด: ' + (e.message || e));
+  }
+  btn.disabled = false;
+});
+
+$('swPromptLink').addEventListener('click', async e => {
+  e.preventDefault();
+  const ref = $('swRef').value.trim();
+  await showPromptPanel($('swPanel'), WRITER_PROMPT({ ref: ref || '(วางสคริปต์ต้นแบบที่นี่)', niche: $('swNiche').value.trim(), vibe: $('swVibe').value.trim() }),
+    'script-writer.txt', 'เปิด Gemini, Claude หรือ ChatGPT แล้วกด Ctrl+V วางพรอมต์ แล้วกดส่ง');
 });
 
 const savedKey = store.get('ytKey');
