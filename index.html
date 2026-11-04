@@ -543,7 +543,7 @@
   .primary:hover:not(:disabled), a.dl:hover, button.dl:hover { filter: brightness(1.06); }
   .niche.picked .use { background: var(--btn); color: var(--pick); border-color: var(--pick); }
   /* Booking link (Calendly): the one call-to-action in the header */
-  .ctas { display: flex; flex-wrap: wrap; gap: 12px; margin: 0 0 20px; }
+  .ctas { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 0 0 20px; }
   .book {
     display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 12px 22px; border-radius: 999px;
     background: var(--pick); color: var(--pick-text); border: 2px solid #ffe08a; text-decoration: none;
@@ -555,6 +555,14 @@
   .book:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
   .book.alt { background: var(--btn); color: var(--pick); border-color: var(--pick); box-shadow: 0 4px 0 #000, 0 0 14px rgba(255,198,26,.2); }
   .book.alt:active { box-shadow: 0 1px 0 #000; }
+  .support { position: relative; }
+  .support summary { list-style: none; cursor: pointer; }
+  .support summary::-webkit-details-marker { display: none; }
+  .support-menu { position: absolute; top: calc(100% + 10px); left: 0; z-index: 30; display: grid; gap: 6px; min-width: 290px; padding: 8px;
+    background: #161514; border: 2px solid var(--pick); border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.6); }
+  .support-menu a { display: block; padding: 10px 14px; border-radius: 10px; color: #fff; text-decoration: none; font-family: var(--display); font-weight: 600; }
+  .support-menu a:hover, .support-menu a:focus-visible { background: var(--pick); color: var(--pick-text); }
+  @media (max-width: 520px) { .support-menu { left: auto; right: 0; min-width: 260px; } }
   /* How-to video in the comments tab */
   .howto { margin: 0 0 8px; }
   .howto summary {
@@ -573,9 +581,9 @@
     main:not(.locked) > #accessNote { grid-column: 1 / -1; grid-row: 1; justify-self: end; float: none; }
     main:not(.locked) > h1 { grid-column: 1 / -1; grid-row: 2; }
     main:not(.locked) > .sub { grid-column: 1 / -1; grid-row: 3; }
-    main:not(.locked) > .ctas { grid-column: 1 / -1; grid-row: 2 / span 2; justify-self: end; align-self: center; margin: 0; }
-    main:not(.locked) > .tabs { grid-column: 1; grid-row: 4; flex-direction: column; flex-wrap: nowrap; position: sticky; top: 16px; margin: 0; }
-    main:not(.locked) > section.card { grid-column: 2; grid-row: 4; }
+    main:not(.locked) > .ctas { grid-column: 1 / -1; grid-row: 4; justify-self: start; margin: 0 0 22px; }
+    main:not(.locked) > .tabs { grid-column: 1; grid-row: 5; flex-direction: column; flex-wrap: nowrap; position: sticky; top: 16px; margin: 0; }
+    main:not(.locked) > section.card { grid-column: 2; grid-row: 5; }
   }
   /* Narrow screens: menu as a 2-column grid of tiles */
   @media (max-width: 899px) {
@@ -610,6 +618,13 @@
   <div class="ctas">
     <a class="book alt" href="https://calendly.com/d/dvzy-m4p-869/niche-selection-mr-ysdiy?month=2026-11" target="_blank" rel="noopener">📅 จองนีช (Niche)</a>
     <a class="book alt" href="https://discord.gg/AX8Pj7X7a" target="_blank" rel="noopener">🎓 เรียนออนไลน์</a>
+    <details class="support">
+      <summary class="book alt">💬 ซัพพอร์ต</summary>
+      <div class="support-menu">
+        <a href="https://m.me/noii.rs" target="_blank" rel="noopener">💬 ทักแชทหน่อยทาง Messenger</a>
+        <a href="https://discord.gg/AX8Pj7X7a" target="_blank" rel="noopener">🎮 ติดต่อหน่อย | เพียริค ใน Discord</a>
+      </div>
+    </details>
   </div>
 
   <div class="tabs" role="tablist">
@@ -977,10 +992,16 @@
     <label for="sumNote">อยากรู้อะไรเพิ่ม <span style="font-weight:400;color:var(--muted)">ไม่บังคับ</span></label>
     <input type="text" id="sumNote" placeholder="เช่น คนในคลิปเป็นใคร, เกิดที่ประเทศไหน, มีข่าวต่อไหม">
     <div class="quick" id="sumNoteQuick"></div>
-    <label for="gemKey">Gemini API key <span style="font-weight:400;color:var(--muted)">ขอฟรีที่ <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a></span></label>
-    <input type="password" id="gemKey" placeholder="AIza..." autocomplete="off">
-    <label class="check"><input type="checkbox" id="rememberGemKey"> จำ key ไว้ในเบราว์เซอร์นี้ (ไม่ต้องติ๊ก ถ้าใช้เครื่องร่วมกับคนอื่น)</label>
-    <button class="primary" id="sumBtn">สรุปเลย</button>
+    <div id="sumKeyBox">
+      <label for="gemKey">Gemini API key <span style="font-weight:400;color:var(--muted)">ขอฟรีที่ <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a></span></label>
+      <input type="password" id="gemKey" placeholder="AIza..." autocomplete="off">
+      <label class="check"><input type="checkbox" id="rememberGemKey"> จำ key ไว้ในเบราว์เซอร์นี้ (ไม่ต้องติ๊ก ถ้าใช้เครื่องร่วมกับคนอื่น)</label>
+      <button class="primary" id="sumBtn">สรุปเลย</button>
+    </div>
+    <div id="sumLinkNote" hidden>
+      <p class="hint">ลิงก์ claude.ai ต่อ Gemini ไม่ได้ ปุ่มสรุปเลยจึงใช้ได้บนเว็บ GitHub Pages กดเปิดแล้วใช้แท็บ "สรุปเรื่องจาก YouTube" ได้เลย (ใช้รหัสเข้าใช้เดิม)</p>
+      <a class="dl" href="https://noiirs-cpu.github.io/yts-tools/" target="_blank" rel="noopener">เปิดเว็บ YTS Tools (GitHub Pages)</a>
+    </div>
     <div class="status" id="sumStatus"></div>
     <div class="result" id="sumResult" hidden></div>
     <p class="hint" style="margin-top:10px">ไม่มี key? <a href="#" id="sumPromptLink">คัดลอกพรอมต์ไปวางใน Gemini เอง</a></p>
@@ -1013,9 +1034,12 @@
     <label for="swVibe">อารมณ์ของสคริปต์</label>
     <input type="text" id="swVibe" placeholder="ไม่ใส่ = ให้ AI เลือกให้เหมาะกับเรื่อง">
     <div class="quick" id="swVibeQuick"></div>
-    <label for="swKey">Gemini API key <span style="font-weight:400;color:var(--muted)">ขอฟรีที่ <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a></span></label>
-    <input type="password" id="swKey" placeholder="AIza..." autocomplete="off">
-    <label class="check"><input type="checkbox" id="swRemember"> จำ key ไว้ในเบราว์เซอร์นี้ (ไม่ต้องติ๊ก ถ้าใช้เครื่องร่วมกับคนอื่น)</label>
+    <div id="swKeyBox">
+      <label for="swKey">Gemini API key <span style="font-weight:400;color:var(--muted)">ขอฟรีที่ <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a></span></label>
+      <input type="password" id="swKey" placeholder="AIza..." autocomplete="off">
+      <label class="check"><input type="checkbox" id="swRemember"> จำ key ไว้ในเบราว์เซอร์นี้ (ไม่ต้องติ๊ก ถ้าใช้เครื่องร่วมกับคนอื่น)</label>
+    </div>
+    <p class="hint" id="swClaudeNote" hidden>บนลิงก์นี้ Claude เขียนให้เลย ไม่ต้องใช้ key (ครั้งแรกจะมีหน้าต่างขออนุญาต กดอนุญาตได้เลย)</p>
     <button class="primary" id="swBtn">เขียน 3 สคริปต์</button>
     <div class="status" id="swStatus"></div>
     <div class="result" id="swResult" hidden></div>
@@ -3299,7 +3323,7 @@ const SUMMARY_PROMPT = ({ link, note }) => `ช่วยดูคลิป YouTu
 async function gemini(path, key, init = {}) {
   let res;
   try { res = await fetch(`${GEMINI}${path}${path.includes('?') ? '&' : '?'}key=${encodeURIComponent(key)}`, init); }
-  catch { throw new Error('เชื่อมต่อ Gemini ไม่ได้ ตรวจสอบอินเทอร์เน็ต'); }
+  catch { throw new Error('เชื่อมต่อ Gemini ไม่ได้ ถ้าเปิดจากลิงก์ claude.ai ให้ใช้เว็บ https://noiirs-cpu.github.io/yts-tools/ แทน (ลิงก์ claude.ai ไม่ให้ต่อ Gemini)'); }
   const j = await res.json().catch(() => ({}));
   if (!res.ok) {
     const msg = j.error?.message || res.statusText;
@@ -3318,6 +3342,11 @@ setupQuick('sumNoteQuick', 'sumNote', ['คนในคลิปเป็นใ�
   if (k) { $('gemKey').value = k; $('rememberGemKey').checked = true; }
 }
 $('sumLink').addEventListener('keydown', e => { if (e.key === 'Enter') $('sumBtn').click(); });
+// Inside claude.ai Gemini can't be reached and Claude can't watch videos: send students to the GitHub Pages copy.
+sampleReady.then(sample => {
+  if (!sample) return;
+  $('sumKeyBox').hidden = true; $('sumLinkNote').hidden = false;
+});
 
 $('sumBtn').addEventListener('click', async () => {
   const btn = $('sumBtn'), status = $('sumStatus'), result = $('sumResult');
@@ -3376,7 +3405,7 @@ ${ref}
 
 Study why it worked: the hook type, pacing, structure, the feeling it creates, and the payoff.
 Then write 3 brand-new Shorts scripts in that style, each on a different topic${niche ? ` within this niche: ${niche}` : ' close to the reference niche'}.
-Do NOT retell the reference: no same topic, facts, or sentences. Use Google Search to make sure each topic is real and not already overdone on YouTube; pick fresh angles.
+Do NOT retell the reference: no same topic, facts, or sentences. If you can search the web, use it to make sure each topic is real and not already overdone on YouTube; otherwise rely on what you know. Pick fresh angles.
 
 RULES
 - Hook: the first sentence is sharp and short (10 words or fewer): a contradiction, a surprising claim, or a curiosity gap. No intro, no "Did you know".
@@ -3420,6 +3449,13 @@ function renderWriter(text) {
 }
 
 setupQuick('swVibeQuick', 'swVibe', SW_VIBES.map(t => ({ label: t, value: t })));
+// Inside claude.ai Gemini can't be reached, but Claude can write right here without a key.
+let swSample = null;
+sampleReady.then(sample => {
+  if (!sample) return;
+  swSample = sample;
+  $('swKeyBox').hidden = true; $('swClaudeNote').hidden = false;
+});
 {
   const k = store.get('gemKey');
   if (k) { $('swKey').value = k; $('swRemember').checked = true; }
@@ -3443,18 +3479,29 @@ $('swBtn').addEventListener('click', async () => {
   status.className = 'status'; status.textContent = '';
   const fail = msg => { status.className = 'status err'; status.textContent = msg; };
   if (swWords(ref) < 20) return fail('กรุณาวางสคริปต์ต้นแบบ (อย่างน้อยสัก 20 คำ)');
-  if (!key) return fail('กรุณาใส่ Gemini API key (ขอฟรีที่ Google AI Studio) หรือกด "คัดลอกพรอมต์" ด้านล่างไปวางเอง');
-  store.set('gemKey', $('swRemember').checked ? key : null);
+  if (!swSample && !key) return fail('กรุณาใส่ Gemini API key (ขอฟรีที่ Google AI Studio) หรือกด "คัดลอกพรอมต์" ด้านล่างไปวางเอง');
+  if (!swSample) store.set('gemKey', $('swRemember').checked ? key : null);
   btn.disabled = true; result.hidden = true;
   try {
-    status.textContent = 'Gemini กำลังแกะสไตล์และเขียน 3 สคริปต์... (ประมาณ 30-90 วินาที)';
-    const j = await gemini('/v1beta/models/gemini-flash-latest:generateContent', key, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: WRITER_PROMPT({ ref, niche: $('swNiche').value.trim(), vibe: $('swVibe').value.trim() }) }] }],
-        tools: [{ google_search: {} }] }) });
-    const cand = j.candidates?.[0];
-    const text = (cand?.content?.parts || []).filter(x => x.text && !x.thought).map(x => x.text).join('').trim();
-    if (!text) throw new Error(cand?.finishReason === 'SAFETY' || j.promptFeedback?.blockReason ? 'Gemini ไม่ยอมเขียนเรื่องนี้ (ติดเรื่องความปลอดภัยของเนื้อหา)' : 'Gemini ไม่ได้ตอบกลับมา ลองใหม่อีกครั้ง');
+    const prompt = WRITER_PROMPT({ ref, niche: $('swNiche').value.trim(), vibe: $('swVibe').value.trim() });
+    let text;
+    if (swSample) {
+      status.textContent = 'Claude กำลังแกะสไตล์และเขียน 3 สคริปต์... (ประมาณ 30-90 วินาที)';
+      try { text = (await swSample(prompt, { modelTier: 'complex' })).text.trim(); }
+      catch (e) {
+        throw new Error(e?.code === 'not_granted' ? 'ยังไม่ได้อนุญาตให้ Claude เขียนในหน้านี้ กดปุ่มอีกครั้งแล้วกดอนุญาต'
+          : e?.code === 'rate_limited' ? 'ใช้ Claude ถี่เกินไป รอสักครู่แล้วลองใหม่' : (e?.message || 'Claude เขียนไม่สำเร็จ ลองใหม่อีกครั้ง'));
+      }
+      if (!text) throw new Error('Claude ไม่ได้ตอบกลับมา ลองใหม่อีกครั้ง');
+    } else {
+      status.textContent = 'Gemini กำลังแกะสไตล์และเขียน 3 สคริปต์... (ประมาณ 30-90 วินาที)';
+      const j = await gemini('/v1beta/models/gemini-flash-latest:generateContent', key, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], tools: [{ google_search: {} }] }) });
+      const cand = j.candidates?.[0];
+      text = (cand?.content?.parts || []).filter(x => x.text && !x.thought).map(x => x.text).join('').trim();
+      if (!text) throw new Error(cand?.finishReason === 'SAFETY' || j.promptFeedback?.blockReason ? 'Gemini ไม่ยอมเขียนเรื่องนี้ (ติดเรื่องความปลอดภัยของเนื้อหา)' : 'Gemini ไม่ได้ตอบกลับมา ลองใหม่อีกครั้ง');
+    }
     result.innerHTML = `<p class="hint sw-note">✏️ สคริปต์ที่ได้เป็นตัวตั้งต้นนะคะ ไม่ชอบตรงไหน แก้ในกล่องสคริปต์ได้เลย
       ทั้งเปลี่ยนคำ ตัดประโยค หรือเขียนฮุกใหม่ ระบบนับคำให้ใหม่ทุกครั้งที่แก้ และปุ่มคัดลอกจะคัดลอกฉบับที่แก้แล้ว
       ถ้าไม่ชอบทั้งหมด กด "เขียน 3 สคริปต์" อีกครั้งเพื่อได้ชุดใหม่</p><div class="md">${renderWriter(text)}</div>`;
