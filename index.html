@@ -1220,7 +1220,7 @@
     <p class="hint">เว็บนี้รวมเครื่องมือทำ YouTube Shorts ไว้ในที่เดียว เลือกเมนูด้านซ้าย (บนมือถืออยู่ด้านบน) แต่ละอันทำงานแยกกันได้ ด้านล่างอธิบายทุกปุ่มว่าทำอะไร ใช้ยังไง และต้องมีอะไรบ้าง</p>
     <div class="gd-quick">
       <div><b>⚡ อยากได้คลิปเลย</b>
-        <p class="hint" style="margin:0 0 8px">กดปุ่ม <b>อัตโนมัติ</b> มุมขวาบน พิมพ์ไอเดียเดียว ระบบเขียนสคริปต์ ทำเสียงพากย์ ตัดช่วงเงียบ หาภาพประกอบ ใส่ซับทีละคำ ใส่เสียงประกอบ (SFX) แล้วเรนเดอร์เป็นคลิปแนวตั้งให้</p>
+        <p class="hint" style="margin:0 0 8px">กดปุ่ม <b>อัตโนมัติ</b> มุมขวาบน พิมพ์ไอเดียเดียว ระบบเขียนสคริปต์ ทำเสียงพากย์ ตัดช่วงเงียบ หาภาพประกอบ ใส่ซับทีละคำ ใส่ลูกศรเปิดคลิปและเสียงประกอบ (SFX) แล้วเรนเดอร์เป็นคลิปแนวตั้งให้</p>
         <button type="button" class="dl" data-go="auto">เปิดหน้าอัตโนมัติ</button></div>
       <div><b>🧩 อยากทำเองทีละขั้น</b>
         <p class="hint" style="margin:0">ลำดับแนะนำ: หาคีย์เวิร์ด → หาคลิป → สรุปเรื่องจาก YouTube → เขียนสคริปต์ → สร้างเสียง 11Labs → ตัดเสียงเงียบ → Storyboard ตัดต่อ → ใส่ซับทีละคำ → เช็คกฎ → ตัดต่อใน CapCut → โพสต์</p></div>
@@ -1255,7 +1255,7 @@
   <!-- Auto: one idea -> script, voice, silence trim, footage, word-by-word subtitles, rendered clip (viewer's own keys) -->
   <section class="card" id="auto" role="tabpanel" hidden>
     <h2>⚡ อัตโนมัติ: พิมพ์ไอเดีย ได้คลิปเลย</h2>
-    <p class="hint">รวมเครื่องมือในเว็บนี้ไว้ในปุ่มเดียว: เขียนสคริปต์ → ทำเสียงพากย์ → ตัดช่วงเงียบ → หาภาพประกอบ → ใส่ซับทีละคำและ SFX → เรนเดอร์เป็นคลิปแนวตั้ง 9:16 พร้อมชื่อคลิป คำอธิบาย แฮชแท็ก และเช็คความเสี่ยงให้ ใช้ Chrome หรือ Edge บนคอม และอย่าสลับแท็บระหว่างเรนเดอร์</p>
+    <p class="hint">รวมเครื่องมือในเว็บนี้ไว้ในปุ่มเดียว: เขียนสคริปต์ → ทำเสียงพากย์ → ตัดช่วงเงียบ → หาภาพประกอบ → ใส่ซับทีละคำ ลูกศร และ SFX → เรนเดอร์เป็นคลิปแนวตั้ง 9:16 พร้อมชื่อคลิป คำอธิบาย แฮชแท็ก และเช็คความเสี่ยงให้ ใช้ Chrome หรือ Edge บนคอม และอย่าสลับแท็บระหว่างเรนเดอร์</p>
     <div id="autoLinkNote" hidden>
       <p class="hint">ลิงก์ claude.ai ต่อ Gemini และ Pexels ไม่ได้ ปุ่มอัตโนมัติจึงใช้ได้บนเว็บ GitHub Pages กดเปิดแล้วกดปุ่ม ⚡ อัตโนมัติ มุมขวาบน (ใช้รหัสเข้าใช้เดิม)</p>
       <a class="dl" href="https://noiirs-cpu.github.io/yts-tools/" target="_blank" rel="noopener">เปิดเว็บ YTS Tools (GitHub Pages)</a>
@@ -3929,11 +3929,14 @@ const EL_STOCK = [['TX3LPaxmHKxFdv7VOQHJ', 'Liam - Energetic, Social Media Creat
   ['Xb7hH8MSUJpSbSDYk0k2', 'Alice - Clear, Engaging Educator'], ['onwK4e9ZLuTAKqWW03F9', 'Daniel - Steady Broadcaster'],
   ['pFZP5JQG7iQjIQuC4Bku', 'Lily - Velvety Actress'], ['pqHfZKP75CvOlQylNhV4', 'Bill - Wise, Mature, Balanced'],
   ['pNInz6obpgDQGcFmaJgB', 'Adam - Dominant, Firm']];
-// SFX picked by moment: a hit on the hook, a whoosh on every cut, a sub drop where the last scene (the payoff) starts.
+// SFX by moment: a pop with the opening arrow, clicks (2-3 in a row) alternating with a camera shutter on the cuts,
+// a sub drop where the last scene (the payoff) starts. One click and one shutter sound per clip so it stays consistent.
 const AUTO_SFX = {
-  hook: ['impact-01', 'impact-02', 'impact-03', 'impact-04', 'impact-05'],
-  cut: ['whoosh-01', 'whoosh-02', 'whoosh-03', 'whoosh-04', 'whoosh-05', 'whoosh-06', 'whoosh-07', 'whoosh-08', 'whoosh-09'],
+  hook: ['pop-01', 'pop-02'],
+  click: ['click-01', 'click-02', 'click-03', 'click-04', 'click-05'],
+  shutter: ['shutter-01', 'shutter-02'],
   payoff: ['subdrop-01', 'subdrop-02', 'subdrop-03'] };
+const AUTO_POP_AT = 0.1;  // seconds: the pop and the arrow land together
 let autoCancel = false, autoClipFiles = [];
 
 // Script size for the length: English ~2.2-2.6 words/s, Thai ~8-10 characters/s (spaces not counted).
@@ -4123,11 +4126,14 @@ async function autoMixSfx(voice, wins) {
   const sr = 44100, probe = new OfflineAudioContext(2, 1, sr);
   const vbuf = await probe.decodeAudioData(await voice.arrayBuffer());
   const pick = a => a[Math.floor(Math.random() * a.length)];
-  const cuts = wins.slice(1).map(w => w[0]), plan = [{ name: pick(AUTO_SFX.hook), t: 0, db: -13, on: 'start' }];
-  const shift = Math.floor(Math.random() * AUTO_SFX.cut.length);
-  cuts.forEach((t, k) => plan.push(k === cuts.length - 1 && cuts.length >= 2
-    ? { name: pick(AUTO_SFX.payoff), t, db: -12, on: 'start' }
-    : { name: AUTO_SFX.cut[(k + shift) % AUTO_SFX.cut.length], t, db: -15, on: 'peak' }));
+  const cuts = wins.slice(1).map(w => w[0]), plan = [{ name: pick(AUTO_SFX.hook), t: AUTO_POP_AT, db: -13, on: 'start' }];
+  const click = pick(AUTO_SFX.click), shutter = pick(AUTO_SFX.shutter), run = () => 2 + Math.floor(Math.random() * 2);
+  let clicks = run();
+  cuts.forEach((t, k) => {
+    if (k === cuts.length - 1 && cuts.length >= 2) return plan.push({ name: pick(AUTO_SFX.payoff), t, db: -12, on: 'start' });
+    if (clicks > 0) { clicks--; return plan.push({ name: click, t, db: -16, on: 'peak' }); }
+    clicks = run(); plan.push({ name: shutter, t, db: -15, on: 'peak' });
+  });
   const ctx = new OfflineAudioContext(2, vbuf.length, sr);
   const v = ctx.createBufferSource(); v.buffer = vbuf; v.connect(ctx.destination); v.start(0);
   let used = 0;
@@ -4198,6 +4204,28 @@ function autoWindows(cues, dur, n) {
   return b.slice(0, -1).map((x, i) => [x, b[i + 1]]);
 }
 
+// Red arrow with a black 3D side: pops in with the pop sound, bobs toward the middle of the picture, shrinks away.
+function drawAutoArrow(ctx, W, H, t, a) {
+  if (!a || t < a.from || t > a.to) return;
+  const k = t - a.from, left = a.to - t;
+  let s = k < 0.09 ? k / 0.09 * 1.18 : k < 0.2 ? 1.18 - (k - 0.09) / 0.11 * 0.18 : 1;
+  if (left < 0.12) s *= left / 0.12;
+  if (s <= 0.01) return;
+  const L = 0.42 * W, ang = 35 * Math.PI / 180, bob = k > 0.2 ? Math.sin((k - 0.2) * 2 * Math.PI * 2.2) * 0.02 * W : 0;
+  const pts = [[0, 0], [-0.4, -0.3], [-0.36, -0.11], [-1, -0.17], [-1, 0.17], [-0.36, 0.11], [-0.4, 0.3]];
+  const shape = (ox, oy) => {
+    ctx.setTransform(1, 0, 0, 1, a.x * W + ox, a.y * H + oy);
+    ctx.rotate(ang); ctx.translate(bob, 0); ctx.scale(s, s);
+    ctx.beginPath(); pts.forEach(([x, y], i) => ctx[i ? 'lineTo' : 'moveTo'](x * L, y * L)); ctx.closePath();
+  };
+  ctx.save();
+  const ex = 0.075 * L * s;
+  ctx.fillStyle = '#000'; ctx.shadowColor = 'rgba(0,0,0,.4)'; ctx.shadowBlur = 18;
+  for (let d = ex; d > 0; d -= 3) { shape(-d * 0.8, -d); ctx.fill(); ctx.shadowBlur = 0; }
+  shape(0, 0); ctx.fillStyle = '#ff1010'; ctx.fill();
+  ctx.restore();
+}
+
 function drawCover(ctx, v, W, H) {
   const k = Math.max(W / v.videoWidth, H / v.videoHeight), w = v.videoWidth * k, h = v.videoHeight * k;
   ctx.drawImage(v, (W - w) / 2, (H - h) / 2, w, h);
@@ -4240,16 +4268,24 @@ async function autoRender(o) {
       o.media.forEach((x, k) => { if (x.v && x.v !== m.v && !x.v.paused) x.v.pause(); });
       if (m.v) {
         m.v.loop = true;
-        if (Math.abs(m.v.currentTime - (m.off || 0)) > 0.3) m.v.currentTime = m.off || 0;
+        if (m.v.paused && Math.abs(m.v.currentTime - (m.off || 0)) > 0.3) m.v.currentTime = m.off || 0;
         m.v.play().catch(() => {});
       }
       cur = i;
+    }
+    // Start the next clip a moment early (still showing this one) so its first frame is ready exactly on the cut.
+    const nx = o.media[i + 1], nextAt = o.wins[i + 1]?.[0];
+    if (nx?.v && nx.v !== m.v && nx.v.paused && nextAt !== undefined && t >= nextAt - 0.35) {
+      nx.v.loop = true;
+      if (Math.abs(nx.v.currentTime - (nx.off || 0)) > 0.3) nx.v.currentTime = nx.off || 0;
+      nx.v.play().catch(() => {});
     }
     if (!m.v) { drawBackdrop(pctx, W, H, t, i); have = true; }
     else if (m.v.readyState >= 2 && !m.v.seeking) { drawCover(pctx, m.v, W, H); have = true; }
     else if (!have) drawBackdrop(pctx, W, H, t, i);
     ctx.drawImage(pic, 0, 0);
     ctx.fillStyle = 'rgba(0,0,0,0.2)'; ctx.fillRect(0, 0, W, H);
+    drawAutoArrow(ctx, W, H, t, o.arrow);
     const c = o.cues.find(x => t >= x.s && t < x.e);
     if (c) drawCaption(ctx, c.text, o.style);
     o.onProgress(Math.min(1, t / o.dur));
@@ -4420,7 +4456,8 @@ $('autoBtn').addEventListener('click', async () => {
     try { mix = await autoMixSfx(voice, wins); } catch {}
     autoCheck();
     const style = { size: +$('autoSize').value, pos: 0.5, color: $('autoColor').value, stroke: $('autoStroke').value };
-    const out = await autoRender({ audio: mix.audio, cues, wins, media, dur, style,
+    const arrow = { x: 0.6, y: 0.37, from: AUTO_POP_AT, to: Math.min(AUTO_POP_AT + 2.3, (wins[1]?.[0] ?? dur) - 0.05) };
+    const out = await autoRender({ audio: mix.audio, cues, wins, media, dur, style, arrow,
       onProgress: f => autoStep(4, 'run', `กำลังเรนเดอร์ ${Math.round(f * 100)}% (อย่าสลับแท็บ)`) });
     autoStep(4, 'ok', `${Math.round(dur)} วินาที · ${cues.length} คำ${mix.count ? ` · SFX ${mix.count} จุด` : ''}`);
 
