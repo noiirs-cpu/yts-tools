@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>YTS Tools for MR YSDIY by Noii &amp; Pierrick</title>
+<meta name="author" content="Noii Studio">
+<meta name="copyright" content="© 2026 Noii Studio. All rights reserved.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=Kanit:wght@500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
@@ -112,7 +114,10 @@
   .warn li { margin-bottom: 6px; }
   .warn li .tag { font-size: 12px; font-weight: 700; color: var(--lv); margin-left: 6px; }
   .warn .none { margin: 8px 0 0; color: var(--muted); }
-  main.locked > :not(#gate) { display: none !important; }
+  main.locked > :not(#gate):not(.site-foot) { display: none !important; }
+  .site-foot { margin: 44px 0 0; padding: 18px 4px 0; border-top: 1px solid var(--line, #333); color: var(--muted); font-size: 13px; line-height: 1.75; text-align: center; }
+  .site-foot p { margin: 0 0 6px; }
+  .site-foot b { color: var(--text, #fff); }
   main:not(.locked) > #gate { display: none; }
   .gate { max-width: 440px; margin: 12vh auto 0; }
   .access-note { margin: 0 0 12px; font-size: 13px; color: var(--muted); text-align: right; }
@@ -621,6 +626,7 @@
     main:not(.locked) > .ctas { grid-column: 1 / -1; grid-row: 4; justify-self: stretch; margin: 0 0 22px; }
     main:not(.locked) > .tabs { grid-column: 1; grid-row: 5; flex-direction: column; flex-wrap: nowrap; position: sticky; top: 16px; margin: 0; }
     main:not(.locked) > section.card { grid-column: 2; grid-row: 5; }
+    main:not(.locked) > .site-foot { grid-column: 1 / -1; grid-row: 6; }
   }
   /* Narrow screens: menu as a 2-column grid of tiles */
   @media (max-width: 899px) {
@@ -1214,7 +1220,7 @@
     <p class="hint">เว็บนี้รวมเครื่องมือทำ YouTube Shorts ไว้ในที่เดียว เลือกเมนูด้านซ้าย (บนมือถืออยู่ด้านบน) แต่ละอันทำงานแยกกันได้ ด้านล่างอธิบายทุกปุ่มว่าทำอะไร ใช้ยังไง และต้องมีอะไรบ้าง</p>
     <div class="gd-quick">
       <div><b>⚡ อยากได้คลิปเลย</b>
-        <p class="hint" style="margin:0 0 8px">กดปุ่ม <b>อัตโนมัติ</b> มุมขวาบน พิมพ์ไอเดียเดียว ระบบเขียนสคริปต์ ทำเสียงพากย์ ตัดช่วงเงียบ หาภาพประกอบ ใส่ซับทีละคำ แล้วเรนเดอร์เป็นคลิปแนวตั้งให้</p>
+        <p class="hint" style="margin:0 0 8px">กดปุ่ม <b>อัตโนมัติ</b> มุมขวาบน พิมพ์ไอเดียเดียว ระบบเขียนสคริปต์ ทำเสียงพากย์ ตัดช่วงเงียบ หาภาพประกอบ ใส่ซับทีละคำ ใส่เสียงประกอบ (SFX) แล้วเรนเดอร์เป็นคลิปแนวตั้งให้</p>
         <button type="button" class="dl" data-go="auto">เปิดหน้าอัตโนมัติ</button></div>
       <div><b>🧩 อยากทำเองทีละขั้น</b>
         <p class="hint" style="margin:0">ลำดับแนะนำ: หาคีย์เวิร์ด → หาคลิป → สรุปเรื่องจาก YouTube → เขียนสคริปต์ → สร้างเสียง 11Labs → ตัดเสียงเงียบ → Storyboard ตัดต่อ → ใส่ซับทีละคำ → เช็คกฎ → ตัดต่อใน CapCut → โพสต์</p></div>
@@ -1233,7 +1239,7 @@
         <tr><td><b>Gemini API key</b></td><td><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a></td><td>สรุปเรื่องจาก YouTube, เขียนสคริปต์, อัตโนมัติ</td></tr>
         <tr><td><b>YouTube Data API v3 key</b></td><td><a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" rel="noopener">Google Cloud Console</a> (มีคลิปสอนในแท็บดึงคอมเมนต์)</td><td>ดึงคอมเมนต์ YouTube</td></tr>
         <tr><td><b>Pexels API key</b></td><td><a href="https://www.pexels.com/api/" target="_blank" rel="noopener">pexels.com/api</a></td><td>อัตโนมัติ (ภาพประกอบ)</td></tr>
-        <tr><td><b>ElevenLabs API key + Voice ID</b></td><td><a href="https://elevenlabs.io/app/settings/api-keys" target="_blank" rel="noopener">elevenlabs.io</a></td><td>อัตโนมัติ (ถ้าเลือกเสียง ElevenLabs) ใช้เครดิตของบัญชีตัวเอง</td></tr>
+        <tr><td><b>ElevenLabs API key</b></td><td><a href="https://elevenlabs.io/app/settings/api-keys" target="_blank" rel="noopener">elevenlabs.io</a></td><td>อัตโนมัติ (เสียงพากย์) แผนฟรี 10,000 เครดิตต่อเดือน ใช้เครดิตของบัญชีตัวเอง</td></tr>
       </tbody>
     </table></div>
     <p class="hint">ทุก key เก็บในเบราว์เซอร์ของเราเท่านั้น และจะจำไว้ก็ต่อเมื่อติ๊ก "จำ key" ถ้าใช้คอมร่วมกับคนอื่นอย่าติ๊ก และอย่าส่ง key ให้ใคร ราคาและโควตาเป็นไปตามเงื่อนไขของแต่ละบริการ</p>
@@ -1249,7 +1255,7 @@
   <!-- Auto: one idea -> script, voice, silence trim, footage, word-by-word subtitles, rendered clip (viewer's own keys) -->
   <section class="card" id="auto" role="tabpanel" hidden>
     <h2>⚡ อัตโนมัติ: พิมพ์ไอเดีย ได้คลิปเลย</h2>
-    <p class="hint">รวมเครื่องมือในเว็บนี้ไว้ในปุ่มเดียว: เขียนสคริปต์ → ทำเสียงพากย์ → ตัดช่วงเงียบ → หาภาพประกอบ → ใส่ซับทีละคำ → เรนเดอร์เป็นคลิปแนวตั้ง 9:16 พร้อมชื่อคลิป คำอธิบาย แฮชแท็ก และเช็คความเสี่ยงให้ ใช้ Chrome หรือ Edge บนคอม และอย่าสลับแท็บระหว่างเรนเดอร์</p>
+    <p class="hint">รวมเครื่องมือในเว็บนี้ไว้ในปุ่มเดียว: เขียนสคริปต์ → ทำเสียงพากย์ → ตัดช่วงเงียบ → หาภาพประกอบ → ใส่ซับทีละคำและ SFX → เรนเดอร์เป็นคลิปแนวตั้ง 9:16 พร้อมชื่อคลิป คำอธิบาย แฮชแท็ก และเช็คความเสี่ยงให้ ใช้ Chrome หรือ Edge บนคอม และอย่าสลับแท็บระหว่างเรนเดอร์</p>
     <div id="autoLinkNote" hidden>
       <p class="hint">ลิงก์ claude.ai ต่อ Gemini และ Pexels ไม่ได้ ปุ่มอัตโนมัติจึงใช้ได้บนเว็บ GitHub Pages กดเปิดแล้วกดปุ่ม ⚡ อัตโนมัติ มุมขวาบน (ใช้รหัสเข้าใช้เดิม)</p>
       <a class="dl" href="https://noiirs-cpu.github.io/yts-tools/" target="_blank" rel="noopener">เปิดเว็บ YTS Tools (GitHub Pages)</a>
@@ -1265,11 +1271,12 @@
         <div><label for="autoFoot">ภาพประกอบ</label>
           <select id="autoFoot"><option value="pexels">ภาพจาก Pexels (ฟรี ต้องมี key)</option><option value="mine">คลิปของฉันเอง</option><option value="color">พื้นหลังสี (ไม่ใช้ภาพ)</option></select></div>
         <div><label for="autoVoice">เสียงพากย์</label>
-          <select id="autoVoice"><option value="gemini">เสียง Google (ใช้ Gemini key)</option><option value="eleven">ElevenLabs (Voice ID ของฉัน)</option></select></div>
+          <select id="autoVoice"><option value="eleven" selected>ElevenLabs (ฟรีเดือนละ 10,000 เครดิต)</option><option value="gemini">เสียง Google (ฟรีแต่จำกัดวันละไม่กี่ครั้ง)</option></select></div>
       </div>
       <div class="grid">
-        <div id="autoGemVoiceBox"><label for="autoGemVoice">เสียง Google</label><select id="autoGemVoice"></select></div>
-        <div id="autoElBox" hidden><label for="autoElVoice">ElevenLabs Voice ID</label><input type="text" id="autoElVoice" placeholder="เช่น FnCtGPKPoQhHDrR1Ri5J"></div>
+        <div id="autoGemVoiceBox" hidden><label for="autoGemVoice">เสียง Google</label><select id="autoGemVoice"></select></div>
+        <div id="autoElBox"><label for="autoElPick">เสียง ElevenLabs</label><select id="autoElPick"></select>
+          <input type="text" id="autoElVoice" placeholder="วาง Voice ID เช่น FnCtGPKPoQhHDrR1Ri5J" autocomplete="off" hidden style="margin-top:8px"></div>
         <div><label for="autoSize">ขนาดซับ</label>
           <select id="autoSize"><option value="0.085">เล็ก</option><option value="0.11" selected>พอดี</option><option value="0.14">ใหญ่</option></select></div>
         <div><label for="autoColor">สีซับ / สีขอบ</label>
@@ -1288,9 +1295,11 @@
         <label for="autoPexKey">Pexels API key <span style="font-weight:400;color:var(--muted)">ขอฟรีที่ <a href="https://www.pexels.com/api/" target="_blank" rel="noopener">pexels.com/api</a></span></label>
         <input type="password" id="autoPexKey" placeholder="ใส่ Pexels API key" autocomplete="off">
       </div>
-      <div id="autoElKeyBox" hidden>
-        <label for="autoElKey">ElevenLabs API key</label>
+      <div id="autoElKeyBox">
+        <label for="autoElKey">ElevenLabs API key <span style="font-weight:400;color:var(--muted)">สมัครฟรีแล้วสร้าง key ที่ <a href="https://elevenlabs.io/app/settings/api-keys" target="_blank" rel="noopener">elevenlabs.io</a></span></label>
         <input type="password" id="autoElKey" placeholder="sk_..." autocomplete="off">
+        <p class="hint" style="margin:6px 0 0">แผนฟรีได้ 10,000 เครดิตต่อเดือน (ประมาณ 1 เครดิตต่อตัวอักษร คลิป 45 วินาทีใช้ราว 400-700) แต่แผนฟรีใช้ได้แบบส่วนตัว ถ้าช่องสร้างรายได้แล้วควรใช้แผน Starter ขึ้นไป
+          ใส่ key แล้วเสียงใน My Voices ของเราจะขึ้นในช่องเลือกเสียงด้วย เสียงพื้นฐานเป็นสำเนียงฝรั่ง ถ้าพากย์ไทยแนะนำเพิ่มเสียงไทยจาก Voice Library เข้า My Voices ก่อน</p>
       </div>
       <label class="check"><input type="checkbox" id="autoRemember"> จำ key ไว้ในเบราว์เซอร์นี้ (ไม่ต้องติ๊ก ถ้าใช้เครื่องร่วมกับคนอื่น)</label>
       <label class="check"><input type="checkbox" id="autoReview"> ขอดูและแก้สคริปต์ก่อนทำเสียง</label>
@@ -1309,6 +1318,13 @@
       <div class="result auto-out" id="autoResult" hidden></div>
     </div>
   </section>
+
+  <footer class="site-foot">
+    <p><b>© 2026 Noii Studio</b> · YTS Tools for MR YSDIY by Noii &amp; Pierrick · สงวนลิขสิทธิ์ทั้งหมด (All rights reserved)</p>
+    <p>เว็บไซต์ เครื่องมือ พรอมต์ ข้อความ และไฟล์ทั้งหมดในหน้านี้ได้รับความคุ้มครองตามพระราชบัญญัติลิขสิทธิ์ พ.ศ. 2537
+      ห้ามคัดลอก ทำซ้ำ ดัดแปลง เผยแพร่ หรือจำหน่ายส่วนใดส่วนหนึ่งโดยไม่ได้รับอนุญาตเป็นลายลักษณ์อักษร
+      เมื่อพบการนำหน้านี้ไปเปิดบนเว็บอื่น ระบบจะแจ้งเจ้าของเว็บทันที</p>
+  </footer>
 </main>
 
 <script>
@@ -1886,7 +1902,33 @@ $('gateForm').addEventListener('submit', async e => {
   status.className = 'status'; status.textContent = '';
   unlock();
   showAccessNote(h);
+  copyAlert({ code: code.toUpperCase() });
 });
+
+// ═════════════ Copyright: alert the owner when this page runs on someone else's site ═════════════
+// © 2026 Noii Studio. All rights reserved. Copying, re-hosting or selling this page is not allowed.
+// COPY_ALERT_URL is the owner's Google Apps Script web app (copy-alert.gs in the YTS Prompt folder);
+// it e-mails the owner with the details below. Nothing is sent from the real site, claude.ai or a local file.
+const COPY_ALERT_URL = '';
+const HOME_HOST = /^(noiirs-cpu\.github\.io|localhost|127\.0\.0\.1|\[::1\]|)$|(^|\.)(claude\.ai|claudeusercontent\.com)$|\.translate\.goog$/i;
+function copyAlert(extra = {}) {
+  if (!COPY_ALERT_URL || HOME_HOST.test(location.hostname)) return;
+  const once = `ytsAlert:${location.hostname}:${extra.code || 'visit'}:${isoDay(Date.now())}`;
+  if (store.get(once)) return;
+  store.set(once, '1');
+  const gh = /^([a-z0-9-]+)\.github\.io$/i.exec(location.hostname);
+  const info = {
+    url: location.href, host: location.hostname, title: document.title, referrer: document.referrer,
+    github: gh ? gh[1] : '', repo: gh ? `https://github.com/${gh[1]}/${location.pathname.split('/')[1] || gh[0]}` : '',
+    access: (store.get('ytsAccess') || '').slice(0, 12), time: new Date().toString(),
+    tz: Intl.DateTimeFormat().resolvedOptions().timeZone, lang: navigator.languages?.join(', ') || navigator.language,
+    ua: navigator.userAgent, screen: `${screen.width}x${screen.height}`, ...extra };
+  const body = new URLSearchParams(info);
+  try { if (navigator.sendBeacon?.(COPY_ALERT_URL, body)) return; } catch {}
+  fetch(COPY_ALERT_URL, { method: 'POST', mode: 'no-cors', body }).catch(() => {});
+}
+copyAlert();
+console.log('%c© 2026 Noii Studio · YTS Tools · สงวนลิขสิทธิ์ ห้ามคัดลอกหรือนำไปเผยแพร่ซ้ำ', 'font:700 14px sans-serif;color:#f5c400');
 
 // Header drop-down menus (reviews, support): one open at a time, closed by a click elsewhere
 document.addEventListener('click', e => {
@@ -3850,7 +3892,7 @@ const GUIDE_TOP = [
   { icon: '📚', title: 'ตัวอย่างนีช', what: 'เปิดคลัง Niche Vault ตัวอย่างนีชและช่องจริง ค้นหาได้ ไทย/อังกฤษ' },
   { icon: '⭐', title: 'รีวิว', what: 'ดูผลงานนักเรียนในห้อง wins-เข้าเส้นชัย บน Discord และอัลบั้มรีวิวบน Facebook' },
   { icon: '💬', title: 'ซัพพอร์ต', what: 'ทักแชทหน่อยทาง Messenger หรือติดต่อหน่อย | เพียริค ใน Discord' },
-  { icon: '⚡', title: 'อัตโนมัติ', what: 'พิมพ์ไอเดียเดียว ได้คลิปพร้อมเสียง ภาพ และซับ (ต้องใช้ Gemini key และ Pexels key ถ้าจะใช้ภาพจาก Pexels)', tab: 'auto' },
+  { icon: '⚡', title: 'อัตโนมัติ', what: 'พิมพ์ไอเดียเดียว ได้คลิปพร้อมเสียง ภาพ ซับ และ SFX (ต้องใช้ Gemini key, ElevenLabs key และ Pexels key ถ้าจะใช้ภาพจาก Pexels)', tab: 'auto' },
 ];
 const openTab = name => {
   document.querySelector(`.tab[data-tab="${name}"]`)?.click();
@@ -3874,7 +3916,24 @@ $('autoOpen').addEventListener('click', () => openTab('auto'));
 const AUTO_VOICES = ['Kore', 'Puck', 'Charon', 'Zephyr', 'Fenrir', 'Leda', 'Orus', 'Aoede', 'Callirrhoe', 'Autonoe', 'Enceladus',
   'Iapetus', 'Umbriel', 'Algieba', 'Despina', 'Erinome', 'Algenib', 'Rasalgethi', 'Laomedeia', 'Achernar', 'Alnilam',
   'Schedar', 'Gacrux', 'Pulcherrima', 'Achird', 'Zubenelgenubi', 'Vindemiatrix', 'Sadachbia', 'Sadaltager', 'Sulafat'];
-const AUTO_STEPS = ['เขียนสคริปต์และวางแผนภาพ', 'ทำเสียงพากย์', 'ตัดช่วงเงียบ', 'หาภาพประกอบ', 'ใส่ซับทีละคำและเรนเดอร์คลิป'];
+const AUTO_STEPS = ['เขียนสคริปต์และวางแผนภาพ', 'ทำเสียงพากย์', 'ตัดช่วงเงียบ', 'หาภาพประกอบ', 'ใส่ซับทีละคำ SFX และเรนเดอร์คลิป'];
+// ElevenLabs stock ("premade") voices: every account, free plan included, can use them through the API.
+const EL_STOCK = [['TX3LPaxmHKxFdv7VOQHJ', 'Liam - Energetic, Social Media Creator'], ['cgSgspJ2msm6clMCkdW9', 'Jessica - Playful, Bright, Warm'],
+  ['nPczCjzI2devNBz1zQrb', 'Brian - Deep, Resonant and Comforting'], ['FGY2WhTYpPnrIDTdsKH5', 'Laura - Enthusiast, Quirky Attitude'],
+  ['JBFqnCBsd6RMkjVDRZzb', 'George - Warm, Captivating Storyteller'], ['bIHbv24MWmeRgasZH58o', 'Will - Relaxed Optimist'],
+  ['cjVigY5qzO86Huf0OWal', 'Eric - Smooth, Trustworthy'], ['iP95p4xoKVk53GoZ742B', 'Chris - Charming, Down-to-Earth'],
+  ['EXAVITQu4vr4xnSDxMaL', 'Sarah - Mature, Reassuring, Confident'], ['XrExE9yKIg1WjnnlVkGX', 'Matilda - Knowledgable, Professional'],
+  ['hpp4J3VqNfWAUOO0d1Us', 'Bella - Professional, Bright, Warm'], ['CwhRBWXzGAHq8TQ4Fs17', 'Roger - Laid-Back, Casual, Resonant'],
+  ['IKne3meq5aSn9XLyUdCD', 'Charlie - Deep, Confident, Energetic'], ['N2lVS1w4EtoT3dr4eOWO', 'Callum - Husky Trickster'],
+  ['SAz9YHcvj6GT2YYXdXww', 'River - Relaxed, Neutral, Informative'], ['SOYHLrjzK2X1ezoPC6cr', 'Harry - Fierce Warrior'],
+  ['Xb7hH8MSUJpSbSDYk0k2', 'Alice - Clear, Engaging Educator'], ['onwK4e9ZLuTAKqWW03F9', 'Daniel - Steady Broadcaster'],
+  ['pFZP5JQG7iQjIQuC4Bku', 'Lily - Velvety Actress'], ['pqHfZKP75CvOlQylNhV4', 'Bill - Wise, Mature, Balanced'],
+  ['pNInz6obpgDQGcFmaJgB', 'Adam - Dominant, Firm']];
+// SFX picked by moment: a hit on the hook, a whoosh on every cut, a sub drop where the last scene (the payoff) starts.
+const AUTO_SFX = {
+  hook: ['impact-01', 'impact-02', 'impact-03', 'impact-04', 'impact-05'],
+  cut: ['whoosh-01', 'whoosh-02', 'whoosh-03', 'whoosh-04', 'whoosh-05', 'whoosh-06', 'whoosh-07', 'whoosh-08', 'whoosh-09'],
+  payoff: ['subdrop-01', 'subdrop-02', 'subdrop-03'] };
 let autoCancel = false, autoClipFiles = [];
 
 // Script size for the length: English ~2.2-2.6 words/s, Thai ~8-10 characters/s (spaces not counted).
@@ -3990,14 +4049,122 @@ async function elevenVoice(text, key, voice, onStatus) {
     } catch { throw new Error('เชื่อมต่อ ElevenLabs ไม่ได้ ตรวจสอบอินเทอร์เน็ต'); }
     if (!res.ok) {
       const j = await res.json().catch(() => ({})), d = j.detail || {}, msg = d.message || (typeof d === 'string' ? d : '') || res.statusText;
-      if (res.status === 401) throw new Error(/permission/i.test(msg) ? 'ElevenLabs key นี้ยังไม่ได้เปิดสิทธิ์ Text to Speech' : 'ElevenLabs API key ไม่ถูกต้อง');
-      if (res.status === 404) throw new Error('ไม่พบ Voice ID นี้ในบัญชี ElevenLabs');
-      if (res.status === 402 || /quota|credit/i.test(msg)) throw new Error('เครดิต ElevenLabs ไม่พอ');
-      throw new Error(msg);
+      const st = String(d.status || d.code || '');
+      if (st === 'quota_exceeded' || /quota|credits? (remaining|left)|not enough credits/i.test(msg))
+        throw new Error(`เครดิต ElevenLabs ไม่พอ (สคริปต์นี้ใช้ประมาณ ${text.length} เครดิต) รอรอบเดือนใหม่ หรือเลือกเสียง Google แทน`);
+      if (st === 'detected_unusual_activity' || /unusual activity/i.test(msg))
+        throw new Error('ElevenLabs ระงับการใช้แบบฟรีของบัญชีนี้ (มักเกิดเมื่อใช้ VPN หรือสมัครหลายบัญชี) ปิด VPN แล้วลองใหม่ หรือใช้แผนเสียเงิน');
+      if (res.status === 402 || /free users|not available for free|paid plan|subscription/i.test(msg))
+        throw new Error('เสียงนี้ใช้กับบัญชีฟรีไม่ได้ เลือกเสียงพื้นฐานในรายการแทน');
+      if (res.status === 401) throw new Error(/permission/i.test(msg) ? 'ElevenLabs key นี้ยังไม่ได้เปิดสิทธิ์ Text to Speech (แก้สิทธิ์ key ที่ elevenlabs.io)' : 'ElevenLabs API key ไม่ถูกต้อง');
+      if (res.status === 404 || st === 'voice_not_found') throw new Error('ไม่พบเสียงนี้ในบัญชี ElevenLabs เลือกเสียงอื่น');
+      if (res.status === 429) throw new Error('เรียก ElevenLabs ถี่เกินไป รอสักครู่แล้วลองใหม่');
+      throw new Error(msg || `ElevenLabs ตอบกลับผิดพลาด (${res.status})`);
     }
     parts.push(await res.blob());
   }
   return new Blob(parts, { type: 'audio/mpeg' });
+}
+
+// Stock voices are always listed; with a key the account's own voices (My Voices) come first.
+let elLoadedKey;  // undefined until the first load, so the stock list shows even without a key
+async function elLoadVoices(key) {
+  if (key === elLoadedKey) return;
+  elLoadedKey = key;
+  const pick = $('autoElPick');
+  let mine = [], stock = EL_STOCK;
+  if (key) {
+    try {
+      const res = await fetch('https://api.elevenlabs.io/v1/voices', { headers: { 'xi-api-key': key } });
+      if (res.ok) {
+        const vs = (await res.json()).voices || [];
+        mine = vs.filter(v => v.category !== 'premade').map(v => [v.voice_id, v.name]);
+        const pre = vs.filter(v => v.category === 'premade').map(v => [v.voice_id, v.name]);
+        if (pre.length) stock = pre;
+      }
+    } catch {}
+  }
+  // read the choice only now: the student may have picked another voice while the list was loading
+  const cur = pick.value, want = cur && cur !== '__custom' ? cur : (store.get('elVoice') || EL_STOCK[0][0]);
+  const opt = ([id, name]) => `<option value="${esc(id)}">${esc(name)}</option>`;
+  pick.innerHTML = (mine.length ? `<optgroup label="เสียงของฉัน (My Voices)">${mine.map(opt).join('')}</optgroup>` : '')
+    + `<optgroup label="เสียงพื้นฐาน (ใช้ได้ทุกบัญชี)">${stock.map(opt).join('')}</optgroup>`
+    + '<option value="__custom">ใส่ Voice ID เอง...</option>';
+  const ids = [...mine, ...stock].map(v => v[0]), unknown = want && !ids.includes(want);
+  pick.value = cur === '__custom' || unknown ? '__custom' : want;
+  if (unknown && !$('autoElVoice').value) $('autoElVoice').value = want;
+  $('autoElVoice').hidden = pick.value !== '__custom';
+}
+const elVoiceId = () => $('autoElPick').value === '__custom' ? $('autoElVoice').value.trim() : $('autoElPick').value;
+const elVoiceName = () => $('autoElPick').value === '__custom' ? $('autoElVoice').value.trim()
+  : ($('autoElPick').selectedOptions[0]?.textContent || '').split(' - ')[0];
+
+// Voice + SFX mixed offline: each sound is levelled by its loudest 50 ms, whooshes are lined up so their
+// loudest moment lands on the cut. Files sit next to the page (sfx/); if they can't load the clip simply has no SFX.
+const sfxCache = new Map();
+async function sfxLoad(name, ctx) {
+  if (!sfxCache.has(name)) sfxCache.set(name, (async () => {
+    const res = await fetch(`sfx/${name}.mp3`);
+    if (!res.ok) throw new Error(name);
+    const buf = await ctx.decodeAudioData(await res.arrayBuffer());
+    const sr = buf.sampleRate, win = Math.round(sr * 0.05), chans = [...Array(buf.numberOfChannels)].map((_, c) => buf.getChannelData(c));
+    let best = 0, at = 0;
+    for (let i = 0; i + win <= buf.length; i += win >> 1) {
+      let e = 0;
+      for (const ch of chans) for (let k = i; k < i + win; k++) e += ch[k] * ch[k];
+      e = Math.sqrt(e / (win * chans.length));
+      if (e > best) { best = e; at = (i + win / 2) / sr; }
+    }
+    return { buf, peak: at, level: best || 1 };
+  })().catch(e => { sfxCache.delete(name); throw e; }));
+  return sfxCache.get(name);
+}
+async function autoMixSfx(voice, wins) {
+  const sr = 44100, probe = new OfflineAudioContext(2, 1, sr);
+  const vbuf = await probe.decodeAudioData(await voice.arrayBuffer());
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  const cuts = wins.slice(1).map(w => w[0]), plan = [{ name: pick(AUTO_SFX.hook), t: 0, db: -13, on: 'start' }];
+  const shift = Math.floor(Math.random() * AUTO_SFX.cut.length);
+  cuts.forEach((t, k) => plan.push(k === cuts.length - 1 && cuts.length >= 2
+    ? { name: pick(AUTO_SFX.payoff), t, db: -12, on: 'start' }
+    : { name: AUTO_SFX.cut[(k + shift) % AUTO_SFX.cut.length], t, db: -15, on: 'peak' }));
+  const ctx = new OfflineAudioContext(2, vbuf.length, sr);
+  const v = ctx.createBufferSource(); v.buffer = vbuf; v.connect(ctx.destination); v.start(0);
+  let used = 0;
+  for (const p of plan) {
+    let fx;
+    try { fx = await sfxLoad(p.name, probe); } catch { continue; }
+    const src = ctx.createBufferSource(), g = ctx.createGain();
+    src.buffer = fx.buf; g.gain.value = Math.pow(10, p.db / 20) / fx.level;
+    src.connect(g).connect(ctx.destination);
+    let when = p.on === 'peak' ? p.t - fx.peak : p.t, off = 0;
+    if (when < 0) { off = -when; when = 0; }
+    if (when >= vbuf.duration - 0.05) continue;
+    src.start(when, off); used++;
+  }
+  if (!used) return { audio: voice, count: 0 };
+  const out = await ctx.startRendering();
+  // soft ceiling so a hit under a loud word never clips; 30 ms fade at the very end
+  const fade = Math.round(sr * 0.03);
+  for (let c = 0; c < out.numberOfChannels; c++) {
+    const d = out.getChannelData(c);
+    for (let i = 0; i < d.length; i++) {
+      const x = d[i], a = Math.abs(x);
+      if (a > 0.8) d[i] = Math.sign(x) * (0.8 + 0.2 * Math.tanh((a - 0.8) / 0.2));
+      if (i > d.length - fade) d[i] *= (d.length - i) / fade;
+    }
+  }
+  return { audio: wavBlob(out), count: used };
+}
+function wavBlob(buf) {
+  const ch = buf.numberOfChannels, n = buf.length, sr = buf.sampleRate, data = new DataView(new ArrayBuffer(44 + n * ch * 2));
+  const str = (o, t) => [...t].forEach((c, i) => data.setUint8(o + i, c.charCodeAt(0)));
+  str(0, 'RIFF'); data.setUint32(4, 36 + n * ch * 2, true); str(8, 'WAVEfmt '); data.setUint32(16, 16, true);
+  data.setUint16(20, 1, true); data.setUint16(22, ch, true); data.setUint32(24, sr, true); data.setUint32(28, sr * ch * 2, true);
+  data.setUint16(32, ch * 2, true); data.setUint16(34, 16, true); str(36, 'data'); data.setUint32(40, n * ch * 2, true);
+  const chans = [...Array(ch)].map((_, c) => buf.getChannelData(c));
+  for (let i = 0, o = 44; i < n; i++) for (let c = 0; c < ch; c++, o += 2) data.setInt16(o, Math.max(-1, Math.min(1, chans[c][i])) * 0x7fff, true);
+  return new Blob([data], { type: 'audio/wav' });
 }
 
 async function pexelsSearch(q, key) {
@@ -4118,6 +4285,14 @@ const autoCheck = () => { if (autoCancel) throw new Error('หยุดแล้
   if (px) $('autoPexKey').value = px;
   if (el) $('autoElKey').value = el;
   if (g || px || el) $('autoRemember').checked = true;
+  elLoadVoices(el);
+  $('autoElKey').addEventListener('change', () => elLoadVoices($('autoElKey').value.trim()));
+  $('autoElPick').addEventListener('change', () => {
+    $('autoElVoice').hidden = $('autoElPick').value !== '__custom';
+    if ($('autoElPick').value !== '__custom') store.set('elVoice', $('autoElPick').value);
+    else $('autoElVoice').focus();
+  });
+  $('autoElVoice').addEventListener('change', () => { const v = $('autoElVoice').value.trim(); if (v) store.set('elVoice', v); });
   const dz = $('autoDrop'), inp = $('autoFiles');
   const setClips = list => {
     autoClipFiles = [...list].filter(f => /^video\//.test(f.type) || /\.(mp4|mov|webm)$/i.test(f.name));
@@ -4142,14 +4317,15 @@ $('autoBtn').addEventListener('click', async () => {
   const status = $('autoStatus'), btn = $('autoBtn'), steps = $('autoSteps'), result = $('autoResult');
   const idea = $('autoIdea').value.trim(), lang = $('autoLang').value, sec = +$('autoLen').value, foot = $('autoFoot').value;
   const gemKey = $('autoGemKey').value.trim(), pexKey = $('autoPexKey').value.trim(), eleven = $('autoVoice').value === 'eleven';
-  const elKey = $('autoElKey').value.trim(), elVoice = $('autoElVoice').value.trim();
+  const elKey = $('autoElKey').value.trim(), elVoice = elVoiceId(), elName = elVoiceName();
   const fail = msg => { status.className = 'status err'; status.textContent = msg; };
   status.className = 'status'; status.textContent = '';
   if (idea.length < 6) return fail('กรุณาพิมพ์ไอเดียคลิป');
   if (!gemKey) return fail('กรุณาใส่ Gemini API key');
   if (foot === 'pexels' && !pexKey) return fail('กรุณาใส่ Pexels API key หรือเลือกภาพประกอบแบบอื่น');
   if (foot === 'mine' && !autoClipFiles.length) return fail('กรุณาลากคลิปของตัวเองมาวาง หรือเลือกภาพประกอบแบบอื่น');
-  if (eleven && (!elKey || !elVoice)) return fail('กรุณาใส่ ElevenLabs API key และ Voice ID');
+  if (eleven && !elKey) return fail('กรุณาใส่ ElevenLabs API key (สมัครฟรีที่ elevenlabs.io) หรือเลือกเสียง Google');
+  if (eleven && !elVoice) return fail('กรุณาเลือกเสียง ElevenLabs หรือวาง Voice ID');
   if (typeof Intl.Segmenter === 'undefined') return fail('เบราว์เซอร์นี้ตัดคำไทยไม่ได้ ลองใช้ Chrome หรือ Edge รุ่นใหม่');
   const remember = $('autoRemember').checked;
   store.set('gemKey', remember ? gemKey : null);
@@ -4187,7 +4363,7 @@ $('autoBtn').addEventListener('click', async () => {
     i = 1; autoStep(1, 'run');
     let voice = eleven ? await elevenVoice(plan.script, elKey, elVoice, n => autoStep(1, 'run', n))
       : await geminiVoice(plan.script, gemKey, $('autoGemVoice').value, lang, n => autoStep(1, 'run', n));
-    autoStep(1, 'ok', eleven ? `ElevenLabs · ${elVoice}` : `Google · ${$('autoGemVoice').value}`);
+    autoStep(1, 'ok', eleven ? `ElevenLabs · ${elName} · ประมาณ ${plan.script.length} เครดิต` : `Google · ${$('autoGemVoice').value}`);
     autoCheck();
 
     // 3. silence trim (same tool as the "ตัดเสียงเงียบ" tab)
@@ -4239,10 +4415,14 @@ $('autoBtn').addEventListener('click', async () => {
     // 5. subtitles + render
     i = 4; autoStep(4, 'run', 'กำลังเรนเดอร์ ใช้เวลาเท่าความยาวคลิป อย่าสลับแท็บ');
     await document.fonts.load('700 60px Kanit').catch(() => {});
+    autoStep(4, 'run', 'กำลังใส่ SFX');
+    let mix = { audio: voice, count: 0 };
+    try { mix = await autoMixSfx(voice, wins); } catch {}
+    autoCheck();
     const style = { size: +$('autoSize').value, pos: 0.5, color: $('autoColor').value, stroke: $('autoStroke').value };
-    const out = await autoRender({ audio: voice, cues, wins, media, dur, style,
+    const out = await autoRender({ audio: mix.audio, cues, wins, media, dur, style,
       onProgress: f => autoStep(4, 'run', `กำลังเรนเดอร์ ${Math.round(f * 100)}% (อย่าสลับแท็บ)`) });
-    autoStep(4, 'ok', `${Math.round(dur)} วินาที · ${cues.length} คำ`);
+    autoStep(4, 'ok', `${Math.round(dur)} วินาที · ${cues.length} คำ${mix.count ? ` · SFX ${mix.count} จุด` : ''}`);
 
     const base = slugify(plan.title || idea, 40) || 'auto-clip', name = `${base}.${out.ext}`;
     const caption = [plan.description, plan.hashtags.join(' ')].filter(Boolean).join('\n\n');
