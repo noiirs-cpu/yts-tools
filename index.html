@@ -151,6 +151,33 @@
   .cc-need .hint { margin: 0 0 8px; }
   .cc-steps { margin: 6px 0 0; padding-left: 22px; line-height: 1.9; }
   .cc-warn { margin: 12px 0; padding: 10px 14px; border-left: 4px solid var(--yellow); border-radius: 8px; background: rgba(255,198,26,.08); }
+  .ctas .auto-open { margin-left: auto; cursor: pointer; font-size: 19px; }
+  .gd-quick { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; margin: 14px 0; }
+  .gd-quick > div, .gd-item { border: 1px solid var(--line, #333); border-radius: 12px; padding: 14px 16px; }
+  .gd-quick > div > b:first-child { display: block; font-size: 17px; margin-bottom: 4px; }
+  .gd-list { display: grid; gap: 10px; margin: 10px 0; }
+  .gd-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .gd-head b { font-size: 17px; flex: 1; min-width: 160px; }
+  .gd-head .ghost { padding: 6px 12px; font-size: 13px; }
+  .gd-item p, .gd-item ol { margin: 6px 0 0; }
+  .gd-item ol { padding-left: 22px; line-height: 1.8; }
+  .gd-need { margin-top: 6px; font-size: 13px; color: var(--yellow); }
+  .gd-table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0; }
+  .gd-table th, .gd-table td { border: 1px solid var(--line, #333); padding: 8px 10px; text-align: left; vertical-align: top; }
+  .gd-wrap { overflow-x: auto; }
+  .auto-steps { list-style: none; padding: 0; margin: 14px 0 6px; display: grid; gap: 6px; }
+  .auto-steps li { padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line, #333); color: var(--muted); }
+  .auto-steps li::before { content: "○ "; }
+  .auto-steps li.run { color: #fff; border-color: var(--yellow); }
+  .auto-steps li.run::before { content: "⏳ "; }
+  .auto-steps li.ok { color: #fff; }
+  .auto-steps li.ok::before { content: "✅ "; }
+  .auto-steps li.skip::before { content: "➖ "; }
+  .auto-steps li.err { color: var(--err); border-color: var(--err); }
+  .auto-steps li.err::before { content: "❌ "; }
+  .auto-steps small { display: block; margin-top: 2px; color: var(--muted); }
+  .auto-out video { display: block; width: 100%; max-width: 360px; margin: 10px auto; border-radius: 12px; background: #000; }
+  .auto-risk { margin: 10px 0; padding: 10px 14px; border-left: 4px solid var(--yellow); border-radius: 8px; background: rgba(255,198,26,.08); }
   textarea { resize: vertical; }
   /* Style extractor: cut map of the reference clip */
   .cutmap { margin-top: 14px; }
@@ -251,6 +278,7 @@
     background: var(--edge); box-shadow: inset 0 -3px 0 rgba(0,0,0,.25);
   }
   /* icons as CSS escapes so they survive the ASCII-only link build */
+  .tab[data-tab=guide]::before { content: "\1F4D8"; }
   .tab[data-tab=voice]::before { content: "\1F399\FE0F"; }
   .tab[data-tab=keywords]::before { content: "\1F511"; }
   .tab[data-tab=clips]::before { content: "\1F3AC"; }
@@ -590,7 +618,7 @@
     main:not(.locked) > #accessNote { grid-column: 1 / -1; grid-row: 1; justify-self: end; float: none; }
     main:not(.locked) > h1 { grid-column: 1 / -1; grid-row: 2; }
     main:not(.locked) > .sub { grid-column: 1 / -1; grid-row: 3; }
-    main:not(.locked) > .ctas { grid-column: 1 / -1; grid-row: 4; justify-self: start; margin: 0 0 22px; }
+    main:not(.locked) > .ctas { grid-column: 1 / -1; grid-row: 4; justify-self: stretch; margin: 0 0 22px; }
     main:not(.locked) > .tabs { grid-column: 1; grid-row: 5; flex-direction: column; flex-wrap: nowrap; position: sticky; top: 16px; margin: 0; }
     main:not(.locked) > section.card { grid-column: 2; grid-row: 5; }
   }
@@ -623,7 +651,7 @@
   </section>
   <p class="access-note" id="accessNote" hidden></p>
   <h1>YTS Tools for <span class="brand">MR YSDIY</span> <span class="by">by <b>Noii &amp; Pierrick</b></span></h1>
-  <p class="sub">Don't Give Up, We are here to support YOU เรา2คนพร้อมซัพพอร์ตเสมอค่ะ สู้ๆนะคะ</p>
+  <p class="sub">Tools are Tools the main ENGINE is YOU. เครื่องมือแค่เครื่องมือ ตัวเราคือพลังที่สำคัญที่สุดค่ะ</p>
   <div class="ctas">
     <a class="book alt" href="https://calendly.com/d/dvzy-m4p-869/niche-selection-mr-ysdiy?month=2026-11" target="_blank" rel="noopener">📅 จองนีช (Niche)</a>
     <a class="book alt" href="https://discord.gg/AX8Pj7X7a" target="_blank" rel="noopener">🎓 เรียนออนไลน์</a>
@@ -642,10 +670,13 @@
         <a href="https://discord.gg/AX8Pj7X7a" target="_blank" rel="noopener">🎮 ติดต่อหน่อย | เพียริค ใน Discord</a>
       </div>
     </details>
+    <button type="button" class="book auto-open" id="autoOpen">⚡ อัตโนมัติ</button>
   </div>
 
   <div class="tabs" role="tablist">
-    <button class="tab" role="tab" aria-selected="true" data-tab="voice">สร้างเสียง 11Labs</button>
+    <button class="tab" role="tab" aria-selected="true" data-tab="guide">คู่มือใช้งาน</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="auto" style="display:none">อัตโนมัติ</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="voice">สร้างเสียง 11Labs</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="keywords">หาคีย์เวิร์ด</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="clips">หาคลิป X / IG</button>
     <button class="tab" role="tab" aria-selected="false" data-tab="writer">เขียนสคริปต์</button>
@@ -894,7 +925,7 @@
   </section>
 
   <!-- Voice design -->
-  <section class="card" id="voice" role="tabpanel">
+  <section class="card" id="voice" role="tabpanel" hidden>
     <h2>สร้างเสียงเองใน 11Labs</h2>
     <p class="hint">ใส่นีชของช่อง แล้วให้ AI ออกแบบเสียงที่เหมาะกับคนดูกลุ่มนั้น ได้พรอมต์ Voice Design ไม่เกิน 1,000 ตัวอักษร และสคริปต์สำหรับช่อง Text to Preview นำไปวางใน ElevenLabs ได้เลย</p>
     <label for="niche">นีชของช่อง <span style="font-weight:400;color:var(--muted)">ใส่เอง หรือเลือกจากปุ่มด้านล่าง</span></label>
@@ -1175,6 +1206,108 @@
         <a href="https://business.facebook.com" target="_blank" rel="noopener">Meta Business Suite</a></p>
       <p class="hint" style="margin:0">ถ้าติดปัญหา เช่น ติดตั้งไม่ผ่าน CapCut ไม่เห็นโปรเจกต์ หรือซับไทยเพี้ยน มีวิธีแก้ท้ายไฟล์ ให้ Claude อ่านแล้วช่วยแก้ได้เลย</p>
     </details>
+  </section>
+
+  <!-- User guide: what every button does (first tab) -->
+  <section class="card" id="guide" role="tabpanel">
+    <h2>คู่มือใช้งาน YTS Tools</h2>
+    <p class="hint">เว็บนี้รวมเครื่องมือทำ YouTube Shorts ไว้ในที่เดียว เลือกเมนูด้านซ้าย (บนมือถืออยู่ด้านบน) แต่ละอันทำงานแยกกันได้ ด้านล่างอธิบายทุกปุ่มว่าทำอะไร ใช้ยังไง และต้องมีอะไรบ้าง</p>
+    <div class="gd-quick">
+      <div><b>⚡ อยากได้คลิปเลย</b>
+        <p class="hint" style="margin:0 0 8px">กดปุ่ม <b>อัตโนมัติ</b> มุมขวาบน พิมพ์ไอเดียเดียว ระบบเขียนสคริปต์ ทำเสียงพากย์ ตัดช่วงเงียบ หาภาพประกอบ ใส่ซับทีละคำ แล้วเรนเดอร์เป็นคลิปแนวตั้งให้</p>
+        <button type="button" class="dl" data-go="auto">เปิดหน้าอัตโนมัติ</button></div>
+      <div><b>🧩 อยากทำเองทีละขั้น</b>
+        <p class="hint" style="margin:0">ลำดับแนะนำ: หาคีย์เวิร์ด → หาคลิป → สรุปเรื่องจาก YouTube → เขียนสคริปต์ → สร้างเสียง 11Labs → ตัดเสียงเงียบ → Storyboard ตัดต่อ → ใส่ซับทีละคำ → เช็คกฎ → ตัดต่อใน CapCut → โพสต์</p></div>
+    </div>
+
+    <h3 class="step-title">ปุ่มในเมนู</h3>
+    <div class="gd-list" id="guideList"></div>
+
+    <h3 class="step-title">ปุ่มด้านบน</h3>
+    <div class="gd-list" id="guideTop"></div>
+
+    <h3 class="step-title">Key ที่ต้องใช้ (ขอเองฟรี ใช้ของตัวเอง)</h3>
+    <div class="gd-wrap"><table class="gd-table">
+      <thead><tr><th>Key</th><th>ขอที่ไหน</th><th>ใช้กับ</th></tr></thead>
+      <tbody>
+        <tr><td><b>Gemini API key</b></td><td><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a></td><td>สรุปเรื่องจาก YouTube, เขียนสคริปต์, อัตโนมัติ</td></tr>
+        <tr><td><b>YouTube Data API v3 key</b></td><td><a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" rel="noopener">Google Cloud Console</a> (มีคลิปสอนในแท็บดึงคอมเมนต์)</td><td>ดึงคอมเมนต์ YouTube</td></tr>
+        <tr><td><b>Pexels API key</b></td><td><a href="https://www.pexels.com/api/" target="_blank" rel="noopener">pexels.com/api</a></td><td>อัตโนมัติ (ภาพประกอบ)</td></tr>
+        <tr><td><b>ElevenLabs API key + Voice ID</b></td><td><a href="https://elevenlabs.io/app/settings/api-keys" target="_blank" rel="noopener">elevenlabs.io</a></td><td>อัตโนมัติ (ถ้าเลือกเสียง ElevenLabs) ใช้เครดิตของบัญชีตัวเอง</td></tr>
+      </tbody>
+    </table></div>
+    <p class="hint">ทุก key เก็บในเบราว์เซอร์ของเราเท่านั้น และจะจำไว้ก็ต่อเมื่อติ๊ก "จำ key" ถ้าใช้คอมร่วมกับคนอื่นอย่าติ๊ก และอย่าส่ง key ให้ใคร ราคาและโควตาเป็นไปตามเงื่อนไขของแต่ละบริการ</p>
+
+    <h3 class="step-title">ใช้บนลิงก์ claude.ai ต่างจากเว็บ GitHub Pages ยังไง</h3>
+    <ul class="hint" style="padding-left:20px;line-height:1.9">
+      <li>เว็บ <a href="https://noiirs-cpu.github.io/yts-tools/" target="_blank" rel="noopener">noiirs-cpu.github.io/yts-tools</a> ใช้ได้ครบทุกปุ่ม</li>
+      <li>บนลิงก์ claude.ai ปุ่ม <b>อัตโนมัติ</b> และ <b>สรุปเรื่องจาก YouTube</b> ใช้ไม่ได้ (ลิงก์ไม่ให้ต่อ Gemini) จะมีปุ่มพาไปเว็บ GitHub Pages ให้ ส่วน <b>เขียนสคริปต์</b> ให้ Claude เขียนแทนโดยไม่ต้องใช้ key</li>
+      <li>ไฟล์ที่บันทึกจากลิงก์ claude.ai บางชนิดจะมาเป็น .zip หรือ .mp4 เพราะลิงก์บันทึกบางนามสกุลไม่ได้</li>
+    </ul>
+  </section>
+
+  <!-- Auto: one idea -> script, voice, silence trim, footage, word-by-word subtitles, rendered clip (viewer's own keys) -->
+  <section class="card" id="auto" role="tabpanel" hidden>
+    <h2>⚡ อัตโนมัติ: พิมพ์ไอเดีย ได้คลิปเลย</h2>
+    <p class="hint">รวมเครื่องมือในเว็บนี้ไว้ในปุ่มเดียว: เขียนสคริปต์ → ทำเสียงพากย์ → ตัดช่วงเงียบ → หาภาพประกอบ → ใส่ซับทีละคำ → เรนเดอร์เป็นคลิปแนวตั้ง 9:16 พร้อมชื่อคลิป คำอธิบาย แฮชแท็ก และเช็คความเสี่ยงให้ ใช้ Chrome หรือ Edge บนคอม และอย่าสลับแท็บระหว่างเรนเดอร์</p>
+    <div id="autoLinkNote" hidden>
+      <p class="hint">ลิงก์ claude.ai ต่อ Gemini และ Pexels ไม่ได้ ปุ่มอัตโนมัติจึงใช้ได้บนเว็บ GitHub Pages กดเปิดแล้วกดปุ่ม ⚡ อัตโนมัติ มุมขวาบน (ใช้รหัสเข้าใช้เดิม)</p>
+      <a class="dl" href="https://noiirs-cpu.github.io/yts-tools/" target="_blank" rel="noopener">เปิดเว็บ YTS Tools (GitHub Pages)</a>
+    </div>
+    <div id="autoForm">
+      <label for="autoIdea">ไอเดียคลิป</label>
+      <textarea id="autoIdea" rows="3" placeholder="เช่น ทำไมคนญี่ปุ่นยืนชิดซ้ายบนบันไดเลื่อน แต่ที่โอซาก้ายืนขวา"></textarea>
+      <div class="grid">
+        <div><label for="autoLang">ภาษาสคริปต์</label>
+          <select id="autoLang"><option value="English">English</option><option value="ไทย">ไทย</option></select></div>
+        <div><label for="autoLen">ความยาว</label>
+          <select id="autoLen"><option value="30">30 วินาที</option><option value="45" selected>45 วินาที (แนะนำ)</option><option value="60">60 วินาที</option></select></div>
+        <div><label for="autoFoot">ภาพประกอบ</label>
+          <select id="autoFoot"><option value="pexels">ภาพจาก Pexels (ฟรี ต้องมี key)</option><option value="mine">คลิปของฉันเอง</option><option value="color">พื้นหลังสี (ไม่ใช้ภาพ)</option></select></div>
+        <div><label for="autoVoice">เสียงพากย์</label>
+          <select id="autoVoice"><option value="gemini">เสียง Google (ใช้ Gemini key)</option><option value="eleven">ElevenLabs (Voice ID ของฉัน)</option></select></div>
+      </div>
+      <div class="grid">
+        <div id="autoGemVoiceBox"><label for="autoGemVoice">เสียง Google</label><select id="autoGemVoice"></select></div>
+        <div id="autoElBox" hidden><label for="autoElVoice">ElevenLabs Voice ID</label><input type="text" id="autoElVoice" placeholder="เช่น FnCtGPKPoQhHDrR1Ri5J"></div>
+        <div><label for="autoSize">ขนาดซับ</label>
+          <select id="autoSize"><option value="0.085">เล็ก</option><option value="0.11" selected>พอดี</option><option value="0.14">ใหญ่</option></select></div>
+        <div><label for="autoColor">สีซับ / สีขอบ</label>
+          <div style="display:flex;gap:8px"><input type="color" id="autoColor" class="sub-color" value="#ffffff" aria-label="สีตัวหนังสือ"><input type="color" id="autoStroke" class="sub-color" value="#000000" aria-label="สีขอบ"></div></div>
+      </div>
+      <div id="autoClipsBox" hidden>
+        <div class="drop" id="autoDrop" tabindex="0" role="button" style="margin-top:12px">
+          <strong>ลากคลิปของตัวเองมาวาง (หลายไฟล์ได้)</strong>
+          <span>ระบบจะสลับใช้ทีละช่วงตามเนื้อเรื่อง</span>
+        </div>
+        <input type="file" id="autoFiles" accept="video/*,.mp4,.mov,.webm" multiple hidden>
+      </div>
+      <label for="autoGemKey">Gemini API key <span style="font-weight:400;color:var(--muted)">ขอที่ <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a></span></label>
+      <input type="password" id="autoGemKey" placeholder="AIza..." autocomplete="off">
+      <div id="autoPexBox">
+        <label for="autoPexKey">Pexels API key <span style="font-weight:400;color:var(--muted)">ขอฟรีที่ <a href="https://www.pexels.com/api/" target="_blank" rel="noopener">pexels.com/api</a></span></label>
+        <input type="password" id="autoPexKey" placeholder="ใส่ Pexels API key" autocomplete="off">
+      </div>
+      <div id="autoElKeyBox" hidden>
+        <label for="autoElKey">ElevenLabs API key</label>
+        <input type="password" id="autoElKey" placeholder="sk_..." autocomplete="off">
+      </div>
+      <label class="check"><input type="checkbox" id="autoRemember"> จำ key ไว้ในเบราว์เซอร์นี้ (ไม่ต้องติ๊ก ถ้าใช้เครื่องร่วมกับคนอื่น)</label>
+      <label class="check"><input type="checkbox" id="autoReview"> ขอดูและแก้สคริปต์ก่อนทำเสียง</label>
+      <div class="actions">
+        <button class="primary" id="autoBtn">⚡ สร้างคลิปเลย</button>
+        <button type="button" class="ghost" id="autoStop" hidden>หยุด</button>
+      </div>
+      <div class="status" id="autoStatus"></div>
+      <ol class="auto-steps" id="autoSteps" hidden></ol>
+      <div id="autoReviewBox" hidden>
+        <label for="autoScriptEdit">สคริปต์ (แก้ได้)</label>
+        <textarea id="autoScriptEdit" rows="7"></textarea>
+        <div class="hint" id="autoScriptCount" style="margin:4px 0 0"></div>
+        <button class="primary" id="autoContinue">ใช้สคริปต์นี้ ทำต่อ</button>
+      </div>
+      <div class="result auto-out" id="autoResult" hidden></div>
+    </div>
   </section>
 </main>
 
@@ -3220,18 +3353,22 @@ function downloadBlob(name, blob) {
 
 // One frame: the video plus the current word, in the chosen colour with a thin outline.
 function drawSubFrame(ctx, video, text) {
+  ctx.drawImage(video, 0, 0, ctx.canvas.width, ctx.canvas.height);
+  drawCaption(ctx, text, { size: +$('subSize').value, pos: +$('subPos').value, color: $('subColor').value, stroke: $('subStroke').value });
+}
+// The word itself: centred, in the style's colour with a thin outline. Size and position are fractions of the frame.
+function drawCaption(ctx, text, st) {
   const W = ctx.canvas.width, H = ctx.canvas.height;
-  ctx.drawImage(video, 0, 0, W, H);
   if (!text) return;
-  let size = Math.round(Math.min(W, H) * +$('subSize').value);
+  let size = Math.round(Math.min(W, H) * st.size);
   ctx.font = `700 ${size}px Kanit, "Leelawadee UI", Tahoma, sans-serif`;
   const tw = ctx.measureText(text).width;
   if (tw > W * 0.9) { size = Math.floor(size * W * 0.9 / tw); ctx.font = `700 ${size}px Kanit, "Leelawadee UI", Tahoma, sans-serif`; }
-  const cx = W / 2, cy = H * +$('subPos').value + size * 0.06;
+  const cx = W / 2, cy = H * st.pos + size * 0.06;
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
-  ctx.lineWidth = Math.max(2, size * 0.09); ctx.strokeStyle = $('subStroke').value;
+  ctx.lineWidth = Math.max(2, size * 0.09); ctx.strokeStyle = st.stroke;
   ctx.strokeText(text, cx, cy);
-  ctx.fillStyle = $('subColor').value;
+  ctx.fillStyle = st.color;
   ctx.fillText(text, cx, cy);
 }
 
@@ -3678,6 +3815,473 @@ $('ccCopy').addEventListener('click', async e => {
   const b = e.currentTarget;
   b.textContent = (await copyText(CAPCUT_MD)) ? 'คัดลอกแล้ว ✓' : 'คัดลอกไม่ได้';
   setTimeout(() => b.textContent = 'คัดลอกทั้งไฟล์', 1800);
+});
+
+// ═════════════ User guide: what every button does ═════════════
+const GUIDE_ITEMS = [
+  { tab: 'voice', icon: '🎙️', title: 'สร้างเสียง 11Labs', what: 'สร้างพรอมต์ให้ AI ออกแบบเสียงพากย์ที่เข้ากับนีชของช่อง เอาไปใช้ใน ElevenLabs Voice Design',
+    how: ['พิมพ์นีชของช่อง หรือกดปุ่มนีชตัวอย่าง', 'กด "สร้างพรอมต์" ระบบคัดลอกให้อัตโนมัติ', 'เปิด Gemini วางพรอมต์ แล้วเอาคำอธิบายเสียงที่ได้ไปวางใน ElevenLabs Voice Design'], need: 'ไม่ต้องใช้ key (ด้านล่างแท็บมีตัวอย่างนีชและช่องจริง)' },
+  { tab: 'keywords', icon: '🔑', title: 'หาคีย์เวิร์ด', what: 'สร้างพรอมต์หาคีย์เวิร์ดที่คนค้นจริง 6 หมวด พร้อมไอเดียคลิปที่มีโอกาสไวรัล',
+    how: ['เลือกนีชและกลุ่มคนดู', 'กด "สร้างพรอมต์คีย์เวิร์ด"', 'วางใน Gemini หรือ Claude'], need: 'ไม่ต้องใช้ key' },
+  { tab: 'clips', icon: '🎬', title: 'หาคลิป X / IG', what: 'สร้างคำสั่งให้ Claude Code หาคลิปที่เอนเกจเมนต์ดีจาก X, IG, Facebook, TikTok ที่ทำ commentary ได้ แล้วโหลดลงเครื่อง',
+    how: ['เลือกนีชและจำนวนคลิป', 'กด "สร้างคำสั่งหาคลิป"', 'วางใน Claude Code หรือกด "เปิดเว็บแมว" (cobalt.tools) เพื่อโหลดเอง'], need: 'โหลดอัตโนมัติต้องใช้ Claude Code (Desktop)' },
+  { tab: 'writer', icon: '✍️', title: 'เขียนสคริปต์', what: 'วางสคริปต์หรือ transcript ที่ยอดวิวดี (ช่องเราหรือคู่แข่ง) แล้วได้สคริปต์ใหม่สไตล์เดียวกัน 3 เรื่อง ยาว 90-115 คำ ฮุกคม payoff แรง',
+    how: ['วางสคริปต์ต้นแบบ (มีวิธีแกะ transcript ในแท็บ)', 'เลือกนีชและอารมณ์ เช่น ตลก ฮีลใจ เล่าแบบสนุก', 'กด "เขียน 3 สคริปต์" แก้คำในกล่องได้ แล้วกดคัดลอก'], need: 'Gemini key (บนลิงก์ claude.ai ใช้ Claude ไม่ต้องใช้ key)' },
+  { tab: 'summary', icon: '📖', title: 'สรุปเรื่องจาก YouTube', what: 'วางลิงก์ YouTube หรือ Shorts แล้ว Gemini ดูคลิปและสรุปเรื่องทีละช่วง จุดพีค ตอนจบ และมุมเล่า commentary',
+    how: ['วางลิงก์คลิป YouTube', 'ใส่ Gemini key แล้วกด "สรุปเลย"'], need: 'Gemini key ใช้ได้บนเว็บ GitHub Pages' },
+  { tab: 'policy', icon: '🛡️', title: 'เช็คกฎ Shorts Commentary', what: 'เช็คว่าคลิป commentary เสี่ยงผิดกฎ YouTube หรือลิขสิทธิ์ไหม ระดับไหน ข้อหาอะไร และต้องแก้ตรงไหน',
+    how: ['ลากคลิปที่ตัดเสร็จมาวาง และเล่าว่าในคลิปมีอะไร จะพากย์อะไร', 'กดสร้างพรอมต์ แล้วแนบคลิปใน Gemini (บนลิงก์ claude.ai กด "เช็คเลยด้วย Claude" ได้)'], need: 'ไม่ต้องใช้ key' },
+  { tab: 'story', icon: '🎞️', title: 'Storyboard ตัดต่อ', what: 'ได้ตารางตัดต่อทีละช่วงพร้อมไอเดียการตัดต่อ เวลาตรงกับเสียงพากย์จริง',
+    how: ['ใส่หัวข้อ โทนอารมณ์ และสคริปต์', 'ลากไฟล์เสียงพากย์มาวาง (ไม่บังคับ) ระบบจับเวลาพูดให้', 'กดสร้างพรอมต์ แล้ววางใน AI'], need: 'ไม่ต้องใช้ key' },
+  { tab: 'style', icon: '🧬', title: 'แกะสไตล์ตัดต่อ', what: 'แกะสูตรการตัดต่อจากคลิปที่ชอบ ระบบหาจุดตัดให้อัตโนมัติ แล้วสร้างสูตรสไตล์ไปทำตาม',
+    how: ['วางลิงก์คลิปต้นแบบ หรือลากไฟล์คลิปมาวาง', 'ใส่นีชของเรา แล้วกดสร้างพรอมต์'], need: 'ไม่ต้องใช้ key' },
+  { tab: 'trim', icon: '✂️', title: 'ตัดเสียงเงียบ 11Labs', what: 'ตัดช่วงเงียบหัวท้ายไฟล์เสียงและย่อช่วงหยุดให้กระชับ ได้ MP3 320kbps ไฟล์ไม่ถูกอัปโหลดไปไหน',
+    how: ['ลากไฟล์ MP3 จาก ElevenLabs มาวาง (หลายไฟล์ได้)', 'กด "เริ่มตัดเสียง" ฟังแล้วกดบันทึก'], need: 'ไม่ต้องใช้ key' },
+  { tab: 'subs', icon: '🔤', title: 'ใส่ซับทีละคำ', what: 'ใส่ซับขึ้นทีละคำบนคลิป ไทยหรือ English เลือกขนาด สี และตำแหน่งได้ แก้คำและเวลาบนคลิปได้',
+    how: ['ลากคลิปมาวาง แล้ววางสคริปต์ที่พากย์', 'กด "สร้างซับ" เล่นดูตัวอย่าง แก้คำที่ผิด', 'กดบันทึกคลิปพร้อมซับ หรือเอาไฟล์ .srt ไปใส่ใน CapCut'], need: 'ไม่ต้องใช้ key' },
+  { tab: 'capcut', icon: '⬇️', title: 'ติดตั้ง CapCut + Claude', what: 'ดาวน์โหลดไฟล์ให้ Claude Code ติดตั้งเครื่องมือ แล้วสั่งตัดต่อคลิปเป็นโปรเจกต์ใน CapCut ได้',
+    how: ['ติดตั้ง Claude (Desktop) และ CapCut Desktop', 'ดาวน์โหลดไฟล์ แล้วลากเข้า Claude Code พิมพ์ "ทำตามไฟล์นี้"'], need: 'Claude Code (Desktop) + CapCut Desktop ในคอมเครื่องเดียวกัน' },
+  { tab: 'comments', icon: '💬', title: 'ดึงคอมเมนต์ YouTube', what: 'ดึงคอมเมนต์และคำตอบทั้งหมดของคลิปเป็นไฟล์ แล้วกด "วิเคราะห์คอมเมนต์" ให้ AI สรุปว่าคนดูคิดอะไร',
+    how: ['วางลิงก์คลิปและใส่ YouTube Data API key (มีคลิปสอนสร้าง key)', 'กด "ดึงคอมเมนต์" แล้วกด "วิเคราะห์คอมเมนต์"'], need: 'YouTube Data API v3 key (ฟรี)' },
+];
+const GUIDE_TOP = [
+  { icon: '📅', title: 'จองนีช (Niche)', what: 'จองเวลาปรึกษาเลือกนีชช่อง' },
+  { icon: '🎓', title: 'เรียนออนไลน์', what: 'เข้า Discord ของคอร์ส เรียนเพิ่มเติม' },
+  { icon: '📚', title: 'ตัวอย่างนีช', what: 'เปิดคลัง Niche Vault ตัวอย่างนีชและช่องจริง ค้นหาได้ ไทย/อังกฤษ' },
+  { icon: '⭐', title: 'รีวิว', what: 'ดูผลงานนักเรียนในห้อง wins-เข้าเส้นชัย บน Discord และอัลบั้มรีวิวบน Facebook' },
+  { icon: '💬', title: 'ซัพพอร์ต', what: 'ทักแชทหน่อยทาง Messenger หรือติดต่อหน่อย | เพียริค ใน Discord' },
+  { icon: '⚡', title: 'อัตโนมัติ', what: 'พิมพ์ไอเดียเดียว ได้คลิปพร้อมเสียง ภาพ และซับ (ต้องใช้ Gemini key และ Pexels key ถ้าจะใช้ภาพจาก Pexels)', tab: 'auto' },
+];
+const openTab = name => {
+  document.querySelector(`.tab[data-tab="${name}"]`)?.click();
+  $(name)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+$('guideList').innerHTML = GUIDE_ITEMS.map(g => `<div class="gd-item">
+  <div class="gd-head"><span>${g.icon}</span><b>${esc(g.title)}</b><button type="button" class="ghost" data-go="${g.tab}">เปิดแท็บนี้</button></div>
+  <p class="hint">${esc(g.what)}</p>
+  <ol class="hint">${g.how.map(h => `<li>${esc(h)}</li>`).join('')}</ol>
+  <div class="gd-need">🔑 ${esc(g.need)}</div></div>`).join('');
+$('guideTop').innerHTML = GUIDE_TOP.map(g => `<div class="gd-item">
+  <div class="gd-head"><span>${g.icon}</span><b>${esc(g.title)}</b>${g.tab ? `<button type="button" class="ghost" data-go="${g.tab}">เปิด</button>` : ''}</div>
+  <p class="hint">${esc(g.what)}</p></div>`).join('');
+$('guide').addEventListener('click', e => { const t = e.target.closest('[data-go]'); if (t) openTab(t.dataset.go); });
+$('autoOpen').addEventListener('click', () => openTab('auto'));
+
+// ═════════════ Auto: one idea -> finished vertical clip ═════════════
+// Chains the page's own tools: Gemini writes the script (same rules as the script writer) and plans the shots,
+// Google or ElevenLabs reads it, the silence trimmer tightens it, Pexels (or the student's clips) gives the
+// pictures, and the word-by-word subtitle timing + canvas recorder from the subtitle tab render the clip.
+const AUTO_VOICES = ['Kore', 'Puck', 'Charon', 'Zephyr', 'Fenrir', 'Leda', 'Orus', 'Aoede', 'Callirrhoe', 'Autonoe', 'Enceladus',
+  'Iapetus', 'Umbriel', 'Algieba', 'Despina', 'Erinome', 'Algenib', 'Rasalgethi', 'Laomedeia', 'Achernar', 'Alnilam',
+  'Schedar', 'Gacrux', 'Pulcherrima', 'Achird', 'Zubenelgenubi', 'Vindemiatrix', 'Sadachbia', 'Sadaltager', 'Sulafat'];
+const AUTO_STEPS = ['เขียนสคริปต์และวางแผนภาพ', 'ทำเสียงพากย์', 'ตัดช่วงเงียบ', 'หาภาพประกอบ', 'ใส่ซับทีละคำและเรนเดอร์คลิป'];
+let autoCancel = false, autoClipFiles = [];
+
+// Script size for the length: English ~2.2-2.6 words/s, Thai ~8-10 characters/s (spaces not counted).
+const autoRange = (sec, lang) => lang === 'ไทย' ? [Math.round(sec * 8), Math.round(sec * 10)] : [Math.round(sec * 2.2), Math.round(sec * 2.6)];
+const autoSize = (t, lang) => lang === 'ไทย' ? t.replace(/\s+/g, '').length : swWords(t);
+
+const AUTO_PROMPT = ({ idea, lang, sec }) => {
+  const [lo, hi] = autoRange(sec, lang), th = lang === 'ไทย';
+  return `You are the best YouTube Shorts scriptwriter. Turn the channel owner's idea into ONE voice-over script and plan the pictures.
+
+IDEA: """${idea}"""
+
+If you can search the web, use it so every fact is real and the angle is fresh (not a retelling of popular videos). Pick the single strongest angle.
+
+SCRIPT RULES
+- Language: ${th ? 'Thai: casual spoken Thai, natural like telling a friend, not formal written Thai' : 'English: casual, current words real Americans say today'}. Never say "in America" or name the audience.
+- Hook: the first sentence is sharp and short: a contradiction, a surprising claim, or a curiosity gap. No intro, no "Did you know".
+- Cut every filler word; every sentence pushes the story forward. Relatable: tie it to everyday life.
+- A short re-hook in the middle, then a fast, sharp payoff near the end, then end right away. Add a loop only if it fits naturally.
+- A 13-year-old understands every word. Touch a feeling that fits the story (funny, cute, healing, heartwarming or shocking).
+- Make people want to like and comment without asking them to: no "like", "subscribe" or "comment below".
+- Length: ${th ? `${lo} to ${hi} Thai characters (spaces not counted)` : `${lo} to ${hi} words`}, about ${sec} seconds read aloud. Count carefully.
+- Facts true, advertiser-friendly, no preaching. Write numbers the way they are spoken.
+
+Reply with ONE json block and nothing else:
+\`\`\`json
+{
+  "title": "catchy title in the script language, under 70 characters",
+  "script": "the full voice-over, plain spoken sentences only: no labels, no stage directions, no emojis, no hashtags",
+  "scenes": ["6 to 8 stock-footage search queries in English, 2 to 4 words each, in story order, concrete things or actions that look good in vertical video, no brands, no famous people"],
+  "description": "1-2 sentence YouTube description in the script language",
+  "hashtags": ["#up", "#to", "#five"],
+  "risk": "low, medium or high (YouTube policy, copyright and advertiser-friendliness)",
+  "risk_note": "one short Thai sentence: why that risk level and anything to fix"
+}
+\`\`\``;
+};
+
+function autoParse(text) {
+  let j = lastJsonBlock(text);
+  if (!j) { const a = text.indexOf('{'), b = text.lastIndexOf('}'); try { j = JSON.parse(text.slice(a, b + 1)); } catch { j = null; } }
+  if (!j || typeof j.script !== 'string' || j.script.trim().length < 20) throw new Error('Gemini ตอบกลับมาไม่ครบ ลองกดสร้างอีกครั้ง');
+  j.script = j.script.trim().replace(/^["“]|["”]$/g, '');
+  j.scenes = (Array.isArray(j.scenes) ? j.scenes : []).map(q => String(q).split(/\s+/).slice(0, 5).join(' ')).filter(Boolean).slice(0, 8);
+  j.hashtags = (Array.isArray(j.hashtags) ? j.hashtags : []).map(String).slice(0, 5);
+  return j;
+}
+
+// Long scripts go to the voice engines in pieces cut at paragraph or sentence ends.
+function voChunks(text, max) {
+  const parts = text.split(/\n\s*\n/).flatMap(p => p.length <= max ? [p] : p.match(new RegExp(`[^]{1,${max}}(?:[.!?]\\s+|\\s+|$)`, 'g')) || [p]);
+  const out = [];
+  for (const p of parts.map(x => x.trim()).filter(Boolean)) {
+    if (out.length && out[out.length - 1].length + p.length + 2 <= max) out[out.length - 1] += '\n\n' + p; else out.push(p);
+  }
+  return out;
+}
+
+let ttsModel = null;
+async function geminiTtsModel(key) {
+  if (ttsModel) return ttsModel;
+  const j = await gemini('/v1beta/models?pageSize=200', key);
+  const names = (j.models || []).map(m => m.name.replace('models/', '')).filter(n => /tts/.test(n) && /flash/.test(n) && !/lite/.test(n));
+  const ver = n => parseFloat((n.match(/gemini-(\d+(?:\.\d+)?)/) || [0, 0])[1]);
+  names.sort((a, b) => ver(b) - ver(a) || (/preview/.test(a) - /preview/.test(b)));
+  return ttsModel = names[0] || 'gemini-2.5-flash-preview-tts';
+}
+
+// 24 kHz voices are doubled to 48 kHz first so the MP3 is the common MPEG-1 kind every player takes.
+function pcmToMp3(pcm, rate) {
+  if (rate < 32000) {
+    const up = new Int16Array(pcm.length * 2);
+    for (let i = 0; i < pcm.length; i++) { const a = pcm[i], b = i + 1 < pcm.length ? pcm[i + 1] : a; up[2 * i] = a; up[2 * i + 1] = (a + b) >> 1; }
+    pcm = up; rate *= 2;
+  }
+  const enc = new lamejs.Mp3Encoder(1, rate, 128), out = [];
+  for (let i = 0; i < pcm.length; i += 1152) { const b = enc.encodeBuffer(pcm.subarray(i, i + 1152)); if (b.length) out.push(new Uint8Array(b)); }
+  const end = enc.flush(); if (end.length) out.push(new Uint8Array(end));
+  return new Blob(out, { type: 'audio/mpeg' });
+}
+
+async function geminiVoice(text, key, voice, lang, onStatus) {
+  const model = await geminiTtsModel(key), chunks = voChunks(text, 2500), pcm = [];
+  const note = lang === 'ไทย' ? 'อ่านแบบคนเล่าเรื่องให้เพื่อนฟัง เป็นธรรมชาติ อบอุ่น จังหวะกระชับ' : 'Read this like a friendly storyteller: natural, warm, a little excited, brisk pace';
+  let rate = 24000;
+  for (const [i, c] of chunks.entries()) {
+    onStatus(`เสียง Google ท่อน ${i + 1}/${chunks.length}`);
+    const j = await gemini(`/v1beta/models/${model}:generateContent`, key, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: `${note}:\n${c}` }] }],
+        generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } } } }) });
+    const part = j.candidates?.[0]?.content?.parts?.find(x => x.inlineData);
+    if (!part) throw new Error('Google ไม่ได้ส่งเสียงกลับมา ลองอีกครั้ง');
+    const m = /rate=(\d+)/.exec(part.inlineData.mimeType || ''); if (m) rate = +m[1];
+    const bin = atob(part.inlineData.data), bytes = new Uint8Array(bin.length);
+    for (let k = 0; k < bin.length; k++) bytes[k] = bin.charCodeAt(k);
+    pcm.push(new Int16Array(bytes.buffer, 0, bytes.length >> 1));
+  }
+  const all = new Int16Array(pcm.reduce((a, x) => a + x.length, 0));
+  pcm.reduce((o, x) => (all.set(x, o), o + x.length), 0);
+  return pcmToMp3(all, rate);
+}
+
+async function elevenVoice(text, key, voice, onStatus) {
+  const chunks = voChunks(text, 2500), parts = [];
+  for (const [i, c] of chunks.entries()) {
+    onStatus(`เสียง ElevenLabs ท่อน ${i + 1}/${chunks.length}`);
+    let res;
+    try {
+      res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voice)}?output_format=mp3_44100_128`, {
+        method: 'POST', headers: { 'xi-api-key': key, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: c, model_id: 'eleven_v3' }) });
+    } catch { throw new Error('เชื่อมต่อ ElevenLabs ไม่ได้ ตรวจสอบอินเทอร์เน็ต'); }
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({})), d = j.detail || {}, msg = d.message || (typeof d === 'string' ? d : '') || res.statusText;
+      if (res.status === 401) throw new Error(/permission/i.test(msg) ? 'ElevenLabs key นี้ยังไม่ได้เปิดสิทธิ์ Text to Speech' : 'ElevenLabs API key ไม่ถูกต้อง');
+      if (res.status === 404) throw new Error('ไม่พบ Voice ID นี้ในบัญชี ElevenLabs');
+      if (res.status === 402 || /quota|credit/i.test(msg)) throw new Error('เครดิต ElevenLabs ไม่พอ');
+      throw new Error(msg);
+    }
+    parts.push(await res.blob());
+  }
+  return new Blob(parts, { type: 'audio/mpeg' });
+}
+
+async function pexelsSearch(q, key) {
+  let res;
+  try { res = await fetch(`https://api.pexels.com/videos/search?query=${encodeURIComponent(q)}&orientation=portrait&size=medium&per_page=10`, { headers: { Authorization: key } }); }
+  catch { throw new Error('เชื่อมต่อ Pexels ไม่ได้ ตรวจสอบอินเทอร์เน็ต'); }
+  if (res.status === 401 || res.status === 403) throw new Error('Pexels API key ไม่ถูกต้อง');
+  if (res.status === 429) throw new Error('เรียก Pexels เกินโควต้า รอสักครู่แล้วลองใหม่');
+  if (!res.ok) throw new Error(`Pexels ตอบกลับผิดพลาด (${res.status})`);
+  return (await res.json()).videos || [];
+}
+// The smallest portrait HD file (720-1080 wide) keeps downloads light; otherwise the biggest there is.
+function pexelsFile(v) {
+  const f = (v.video_files || []).filter(x => x.file_type === 'video/mp4' && x.width && x.height && x.link);
+  const hd = f.filter(x => x.width >= 700 && x.width <= 1100 && x.height > x.width).sort((a, b) => a.width - b.width);
+  return hd[0] || f.sort((a, b) => b.width - a.width)[0];
+}
+
+function loadClip(blob) {
+  const v = document.createElement('video');
+  v.muted = true; v.playsInline = true; v.preload = 'auto'; v.src = URL.createObjectURL(blob);
+  return new Promise((ok, bad) => { v.onloadeddata = () => ok(v); v.onerror = () => bad(new Error('เปิดคลิปภาพประกอบไม่ได้')); });
+}
+
+// Story order: the subtitle words are split into one window per picture, never shorter than ~2 s.
+function autoWindows(cues, dur, n) {
+  n = Math.max(1, Math.min(n, Math.floor(dur / 2.2), cues.length || 1));
+  const per = Math.ceil(cues.length / n), b = [0];
+  for (let i = 1; i < n; i++) { const c = cues[Math.min(cues.length - 1, i * per)]; if (c && c.s > b[b.length - 1] + 1.8 && c.s < dur - 1.8) b.push(c.s); }
+  b.push(dur);
+  return b.slice(0, -1).map((x, i) => [x, b[i + 1]]);
+}
+
+function drawCover(ctx, v, W, H) {
+  const k = Math.max(W / v.videoWidth, H / v.videoHeight), w = v.videoWidth * k, h = v.videoHeight * k;
+  ctx.drawImage(v, (W - w) / 2, (H - h) / 2, w, h);
+}
+function drawBackdrop(ctx, W, H, t, i) {
+  const h = (i * 47 + t * 8) % 360, g = ctx.createLinearGradient(0, 0, W, H);
+  g.addColorStop(0, `hsl(${h},55%,24%)`); g.addColorStop(1, `hsl(${(h + 60) % 360},60%,10%)`);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+}
+
+// Plays the voice once and records 1080x1920 frames: the picture of the current window, a light shade, the current word.
+async function autoRender(o) {
+  const type = recorderType();
+  if (!type) throw new Error('เบราว์เซอร์นี้บันทึกวิดีโอไม่ได้ ลองใช้ Chrome หรือ Edge บนคอม');
+  const W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d'), au = new Audio(URL.createObjectURL(o.audio));
+  au.preload = 'auto';
+  await new Promise((ok, bad) => { au.onloadeddata = ok; au.onerror = () => bad(new Error('เล่นไฟล์เสียงพากย์ไม่ได้')); });
+  const ac = new AudioContext(), dest = ac.createMediaStreamDestination();
+  ac.createMediaElementSource(au).connect(dest);
+  const stream = new MediaStream([...cv.captureStream(30).getVideoTracks(), ...dest.stream.getAudioTracks()]);
+  const rec = new MediaRecorder(stream, { mimeType: type, videoBitsPerSecond: 8e6, audioBitsPerSecond: 192e3 });
+  const chunks = [];
+  rec.ondataavailable = e => e.data.size && chunks.push(e.data);
+  const done = new Promise(ok => rec.onstop = ok);
+  // Every clip waits at its start point before recording; while a clip is still seeking the last good picture stays up.
+  for (const m of o.media) {
+    if (!m.v) continue;
+    m.v.currentTime = m.off || 0;
+    await new Promise(r => { const t = setTimeout(r, 3000); m.v.addEventListener('seeked', () => { clearTimeout(t); r(); }, { once: true }); });
+  }
+  const pic = document.createElement('canvas'); pic.width = W; pic.height = H;
+  const pctx = pic.getContext('2d');
+  let cur = -1, raf, have = false;
+  const sceneAt = t => { const i = o.wins.findIndex(([a, b]) => t >= a && t < b); return i < 0 ? o.wins.length - 1 : i; };
+  const frame = () => {
+    if (autoCancel && !au.paused) { au.pause(); au.dispatchEvent(new Event('ended')); }
+    const t = au.currentTime, i = sceneAt(t), m = o.media[i] || {};
+    if (i !== cur) {
+      o.media.forEach((x, k) => { if (x.v && x.v !== m.v && !x.v.paused) x.v.pause(); });
+      if (m.v) {
+        m.v.loop = true;
+        if (Math.abs(m.v.currentTime - (m.off || 0)) > 0.3) m.v.currentTime = m.off || 0;
+        m.v.play().catch(() => {});
+      }
+      cur = i;
+    }
+    if (!m.v) { drawBackdrop(pctx, W, H, t, i); have = true; }
+    else if (m.v.readyState >= 2 && !m.v.seeking) { drawCover(pctx, m.v, W, H); have = true; }
+    else if (!have) drawBackdrop(pctx, W, H, t, i);
+    ctx.drawImage(pic, 0, 0);
+    ctx.fillStyle = 'rgba(0,0,0,0.2)'; ctx.fillRect(0, 0, W, H);
+    const c = o.cues.find(x => t >= x.s && t < x.e);
+    if (c) drawCaption(ctx, c.text, o.style);
+    o.onProgress(Math.min(1, t / o.dur));
+    raf = requestAnimationFrame(frame);
+  };
+  frame(); rec.start(1000);
+  await ac.resume(); await au.play();
+  await new Promise(ok => au.onended = ok);
+  await new Promise(r => setTimeout(r, 400));
+  cancelAnimationFrame(raf); rec.stop(); await done;
+  ac.close(); o.media.forEach(x => x.v && x.v.pause());
+  if (autoCancel) throw new Error('หยุดแล้ว');
+  return { blob: new Blob(chunks, { type: type.split(';')[0] }), ext: type.startsWith('video/mp4') ? 'mp4' : 'webm' };
+}
+
+function autoStep(i, state, note = '') {
+  const li = $('autoSteps').children[i];
+  li.className = state;
+  li.innerHTML = `${esc(AUTO_STEPS[i])}${note ? `<small>${esc(note)}</small>` : ''}`;
+}
+const autoCheck = () => { if (autoCancel) throw new Error('หยุดแล้ว'); };
+
+{
+  $('autoGemVoice').innerHTML = AUTO_VOICES.map(v => `<option>${v}</option>`).join('');
+  const sync = () => {
+    const f = $('autoFoot').value, el = $('autoVoice').value === 'eleven';
+    $('autoPexBox').hidden = f !== 'pexels'; $('autoClipsBox').hidden = f !== 'mine';
+    $('autoElBox').hidden = $('autoElKeyBox').hidden = !el; $('autoGemVoiceBox').hidden = el;
+  };
+  $('autoFoot').addEventListener('change', sync); $('autoVoice').addEventListener('change', sync); sync();
+  const g = store.get('gemKey'), px = store.get('pexKey'), el = store.get('elKey');
+  if (g) $('autoGemKey').value = g;
+  if (px) $('autoPexKey').value = px;
+  if (el) $('autoElKey').value = el;
+  if (g || px || el) $('autoRemember').checked = true;
+  const dz = $('autoDrop'), inp = $('autoFiles');
+  const setClips = list => {
+    autoClipFiles = [...list].filter(f => /^video\//.test(f.type) || /\.(mp4|mov|webm)$/i.test(f.name));
+    dz.querySelector('strong').textContent = autoClipFiles.length ? `✓ ${autoClipFiles.length} คลิป` : 'ลากคลิปของตัวเองมาวาง (หลายไฟล์ได้)';
+  };
+  dz.addEventListener('click', () => inp.click());
+  dz.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inp.click(); } });
+  inp.addEventListener('change', () => setClips(inp.files));
+  ['dragenter', 'dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('over'); }));
+  dz.addEventListener('drop', e => setClips(e.dataTransfer.files));
+  $('autoScriptEdit').addEventListener('input', () => {
+    const lang = $('autoLang').value, n = autoSize($('autoScriptEdit').value, lang), [lo, hi] = autoRange(+$('autoLen').value, lang);
+    $('autoScriptCount').textContent = `${n} ${lang === 'ไทย' ? 'ตัวอักษร' : 'คำ'} (เป้า ${lo}-${hi})`;
+  });
+  $('autoStop').addEventListener('click', () => { autoCancel = true; $('autoStatus').textContent = 'กำลังหยุด...'; });
+}
+// Inside claude.ai Gemini and Pexels can't be reached: point students to the GitHub Pages copy.
+sampleReady.then(sample => { if (sample) { $('autoForm').hidden = true; $('autoLinkNote').hidden = false; } });
+
+$('autoBtn').addEventListener('click', async () => {
+  const status = $('autoStatus'), btn = $('autoBtn'), steps = $('autoSteps'), result = $('autoResult');
+  const idea = $('autoIdea').value.trim(), lang = $('autoLang').value, sec = +$('autoLen').value, foot = $('autoFoot').value;
+  const gemKey = $('autoGemKey').value.trim(), pexKey = $('autoPexKey').value.trim(), eleven = $('autoVoice').value === 'eleven';
+  const elKey = $('autoElKey').value.trim(), elVoice = $('autoElVoice').value.trim();
+  const fail = msg => { status.className = 'status err'; status.textContent = msg; };
+  status.className = 'status'; status.textContent = '';
+  if (idea.length < 6) return fail('กรุณาพิมพ์ไอเดียคลิป');
+  if (!gemKey) return fail('กรุณาใส่ Gemini API key');
+  if (foot === 'pexels' && !pexKey) return fail('กรุณาใส่ Pexels API key หรือเลือกภาพประกอบแบบอื่น');
+  if (foot === 'mine' && !autoClipFiles.length) return fail('กรุณาลากคลิปของตัวเองมาวาง หรือเลือกภาพประกอบแบบอื่น');
+  if (eleven && (!elKey || !elVoice)) return fail('กรุณาใส่ ElevenLabs API key และ Voice ID');
+  if (typeof Intl.Segmenter === 'undefined') return fail('เบราว์เซอร์นี้ตัดคำไทยไม่ได้ ลองใช้ Chrome หรือ Edge รุ่นใหม่');
+  const remember = $('autoRemember').checked;
+  store.set('gemKey', remember ? gemKey : null);
+  if (pexKey) store.set('pexKey', remember ? pexKey : null);
+  if (elKey) store.set('elKey', remember ? elKey : null);
+
+  autoCancel = false; btn.disabled = true; $('autoStop').hidden = false; result.hidden = true; $('autoReviewBox').hidden = true;
+  steps.hidden = false; steps.innerHTML = AUTO_STEPS.map(t => `<li>${esc(t)}</li>`).join('');
+  let i = 0;
+  try {
+    // 1. script + shot list
+    autoStep(0, 'run', 'Gemini กำลังเขียน (ประมาณ 20-60 วินาที)');
+    const j = await gemini('/v1beta/models/gemini-flash-latest:generateContent', gemKey, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: AUTO_PROMPT({ idea, lang, sec }) }] }], tools: [{ google_search: {} }] }) });
+    const cand = j.candidates?.[0];
+    const text = (cand?.content?.parts || []).filter(x => x.text && !x.thought).map(x => x.text).join('').trim();
+    if (!text) throw new Error(cand?.finishReason === 'SAFETY' || j.promptFeedback?.blockReason ? 'Gemini ไม่ยอมเขียนเรื่องนี้ (ติดเรื่องความปลอดภัยของเนื้อหา)' : 'Gemini ไม่ได้ตอบกลับมา ลองใหม่อีกครั้ง');
+    const plan = autoParse(text);
+    autoStep(0, 'ok', `${plan.title} · ${autoSize(plan.script, lang)} ${lang === 'ไทย' ? 'ตัวอักษร' : 'คำ'}`);
+    autoCheck();
+    if ($('autoReview').checked) {
+      $('autoScriptEdit').value = plan.script; $('autoScriptEdit').dispatchEvent(new Event('input'));
+      $('autoReviewBox').hidden = false; status.textContent = 'แก้สคริปต์ได้ตามใจ แล้วกด "ใช้สคริปต์นี้ ทำต่อ"';
+      await new Promise((ok, bad) => {
+        $('autoContinue').onclick = ok;
+        const t = setInterval(() => { if (autoCancel) { clearInterval(t); bad(new Error('หยุดแล้ว')); } }, 300);
+        $('autoContinue').addEventListener('click', () => clearInterval(t), { once: true });
+      });
+      plan.script = $('autoScriptEdit').value.trim() || plan.script;
+      $('autoReviewBox').hidden = true; status.textContent = '';
+    }
+
+    // 2. voice
+    i = 1; autoStep(1, 'run');
+    let voice = eleven ? await elevenVoice(plan.script, elKey, elVoice, n => autoStep(1, 'run', n))
+      : await geminiVoice(plan.script, gemKey, $('autoGemVoice').value, lang, n => autoStep(1, 'run', n));
+    autoStep(1, 'ok', eleven ? `ElevenLabs · ${elVoice}` : `Google · ${$('autoGemVoice').value}`);
+    autoCheck();
+
+    // 3. silence trim (same tool as the "ตัดเสียงเงียบ" tab)
+    i = 2; autoStep(2, 'run');
+    try {
+      const { blob } = await trimFile(new File([voice], 'voice.mp3', { type: 'audio/mpeg' }), { threshold: -35, maxPause: 0.25, compress: true }, n => autoStep(2, 'run', n));
+      voice = blob; autoStep(2, 'ok');
+    } catch { autoStep(2, 'skip', 'ไม่มีช่วงเงียบให้ตัด ใช้เสียงเดิม'); }
+    autoCheck();
+    const voiceFile = new File([voice], 'voice.mp3', { type: 'audio/mpeg' });
+    const dur = (await new OfflineAudioContext(1, 1, 44100).decodeAudioData(await voice.arrayBuffer())).duration;
+    const cues = toCues(toWords(await scriptChars(voiceFile, plan.script, lang), lang), 1);
+    const wins = autoWindows(cues, dur, foot === 'color' ? Math.max(3, plan.scenes.length) : Math.max(1, plan.scenes.length || 6));
+
+    // 4. pictures
+    i = 3; autoStep(3, 'run');
+    const media = wins.map(() => ({ v: null, off: 0 })), credits = [];
+    if (foot === 'pexels') {
+      const used = new Set();
+      const queries = wins.map((_, k) => plan.scenes[k] || plan.scenes[k % Math.max(1, plan.scenes.length)] || idea.split(/\s+/).slice(0, 3).join(' '));
+      for (const [k, [a, b]] of wins.entries()) {
+        autoCheck();
+        autoStep(3, 'run', `Pexels ภาพที่ ${k + 1}/${wins.length}: ${queries[k]}`);
+        let vids = await pexelsSearch(queries[k], pexKey);
+        if (!vids.length) vids = await pexelsSearch(queries[k].split(' ').slice(-1)[0], pexKey);
+        const pick = vids.find(v => !used.has(v.id) && v.duration >= b - a) || vids.find(v => !used.has(v.id)) || vids[0];
+        const file = pick && pexelsFile(pick);
+        if (!file) continue;
+        used.add(pick.id);
+        let res;
+        try { res = await fetch(file.link); } catch { res = null; }
+        if (!res || !res.ok) continue;
+        const v = await loadClip(await res.blob());
+        media[k] = { v, off: Math.max(0, Math.min(1, v.duration - (b - a))) };
+        credits.push(`${k + 1}. "${queries[k]}" - Video by ${pick.user?.name || 'Pexels'} on Pexels: ${pick.url || ''}`);
+      }
+      const got = media.filter(m => m.v).length;
+      if (!got) throw new Error('หาภาพจาก Pexels ไม่ได้เลย ลองไอเดียอื่น หรือเลือกพื้นหลังสี');
+      autoStep(3, 'ok', `ได้ภาพ ${got}/${wins.length} ช่วง (ช่วงที่ไม่ได้ใช้พื้นหลังสีแทน)`);
+    } else if (foot === 'mine') {
+      const clips = [];
+      for (const f of autoClipFiles) { try { clips.push(await loadClip(f)); } catch {} }
+      if (!clips.length) throw new Error('เปิดคลิปของตัวเองไม่ได้ ลองแปลงเป็น MP4');
+      wins.forEach(([a, b], k) => { const v = clips[k % clips.length]; media[k] = { v, off: Math.max(0, (k * 3.7) % Math.max(0.01, v.duration - (b - a))) }; });
+      autoStep(3, 'ok', `ใช้คลิปของตัวเอง ${clips.length} ไฟล์`);
+    } else autoStep(3, 'skip', 'ใช้พื้นหลังสี');
+    autoCheck();
+
+    // 5. subtitles + render
+    i = 4; autoStep(4, 'run', 'กำลังเรนเดอร์ ใช้เวลาเท่าความยาวคลิป อย่าสลับแท็บ');
+    await document.fonts.load('700 60px Kanit').catch(() => {});
+    const style = { size: +$('autoSize').value, pos: 0.5, color: $('autoColor').value, stroke: $('autoStroke').value };
+    const out = await autoRender({ audio: voice, cues, wins, media, dur, style,
+      onProgress: f => autoStep(4, 'run', `กำลังเรนเดอร์ ${Math.round(f * 100)}% (อย่าสลับแท็บ)`) });
+    autoStep(4, 'ok', `${Math.round(dur)} วินาที · ${cues.length} คำ`);
+
+    const base = slugify(plan.title || idea, 40) || 'auto-clip', name = `${base}.${out.ext}`;
+    const caption = [plan.description, plan.hashtags.join(' ')].filter(Boolean).join('\n\n');
+    const risk = { low: 'ต่ำ', medium: 'กลาง', high: 'สูง' }[String(plan.risk).toLowerCase().split(/\W/)[0]] || plan.risk || '-';
+    result.innerHTML = `<strong>✓ ${esc(plan.title || 'คลิปเสร็จแล้ว')}</strong>
+      <video controls playsinline src="${URL.createObjectURL(out.blob)}"></video>
+      <div class="actions" style="justify-content:center">
+        <button type="button" class="dl" data-save="video">ดาวน์โหลดคลิป (.${out.ext})</button>
+        <button type="button" class="ghost" data-save="srt">ไฟล์ซับ .srt</button>
+        <button type="button" class="ghost" data-save="mp3">เสียงพากย์ .mp3</button>
+        ${credits.length ? '<button type="button" class="ghost" data-save="credits">เครดิตภาพ Pexels</button>' : ''}
+      </div>
+      <div class="auto-risk hint">🛡️ ความเสี่ยงโดยรวม: <b>${esc(risk)}</b>${plan.risk_note ? ` · ${esc(plan.risk_note)}` : ''}<br>
+        เสียงพากย์สร้างด้วย AI แนะนำให้ติ๊กแจ้งเนื้อหาสังเคราะห์ตอนอัปโหลด${credits.length ? ' และใส่เครดิต Pexels ในคำอธิบาย' : ''} ดูคลิปให้ครบก่อนโพสต์ทุกครั้ง</div>
+      <label>ชื่อคลิป + คำอธิบาย + แฮชแท็ก</label>
+      <textarea rows="4" id="autoCaption">${esc((plan.title ? plan.title + '\n\n' : '') + caption)}</textarea>
+      <label>สคริปต์</label>
+      <textarea rows="6" id="autoScriptOut">${esc(plan.script)}</textarea>
+      <div class="actions"><button type="button" class="ghost" data-copy="autoCaption">คัดลอกชื่อ + คำอธิบาย</button>
+        <button type="button" class="ghost" data-copy="autoScriptOut">คัดลอกสคริปต์</button></div>`;
+    const files = {
+      video: () => downloadBlob(name, out.blob),
+      srt: () => downloadBlob(`${base}.srt`, new Blob([toSrt(cues)], { type: 'text/plain' })),
+      mp3: () => downloadBlob(`${base}_voice.mp3`, voice),
+      credits: () => downloadBlob(`${base}_credits.txt`, new Blob([credits.join('\n') + '\n\nPexels License: https://www.pexels.com/license/\n'], { type: 'text/plain' })),
+    };
+    result.onclick = async e => {
+      const s = e.target.closest('[data-save]'), c = e.target.closest('[data-copy]');
+      if (s) files[s.dataset.save]();
+      if (c) { const ok = await copyText($(c.dataset.copy).value); c.textContent = ok ? 'คัดลอกแล้ว ✓' : 'คัดลอกไม่ได้'; }
+    };
+    result.hidden = false;
+    status.textContent = 'เสร็จแล้ว ดูคลิปด้านล่าง แล้วกดดาวน์โหลด';
+    result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (e) {
+    autoStep(i, 'err', e.message || String(e));
+    fail('ผิดพลาด: ' + (e.message || e));
+  }
+  btn.disabled = false; $('autoStop').hidden = true;
 });
 
 const savedKey = store.get('ytKey');
